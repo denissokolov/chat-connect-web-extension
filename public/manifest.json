@@ -9,6 +9,7 @@
     "side_panel": {
       "default_path": "sidepanel.html"
     },
+    "options_page": "settings.html",
     "background": {
       "service_worker": "background.js"
     },
@@ -20,6 +21,6 @@
         }
       }
     },
-    "permissions": ["sidePanel", "activeTab", "scripting"],
+    "permissions": ["sidePanel", "activeTab", "scripting", "storage"],
     "host_permissions": ["<all_urls>"]
   }
