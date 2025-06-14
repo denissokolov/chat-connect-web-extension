@@ -1,0 +1,85 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# React Hooks - Function Declaration Style
+
+## Hook Definition Pattern
+
+All React hooks should be written using **function declaration** syntax with **default export**, not arrow functions or named exports.
+
+### ✅ Correct Pattern
+```typescript
+export default function usePageContext() {
+  // hook implementation
+  return context;
+}
+
+export default function useLocalStorage<T>(key: string, initialValue: T) {
+  // hook implementation
+  return [value, setValue];
+}
+
+export default function useApi(endpoint: string) {
+  // hook implementation
+  return { data, loading, error };
+}
+```
+
+### ❌ Avoid This Pattern
+```typescript
+// Don't use arrow functions for hooks
+export const usePageContext = () => {
+  // hook implementation
+};
+
+// Don't use named exports for hooks
+export function usePageContext() {
+  // hook implementation
+}
+
+export const useLocalStorage = <T>(key: string, initialValue: T) => {
+  // hook implementation
+};
+```
+
+## Benefits of Function Declaration for Hooks
+
+1. **Hoisting**: Function declarations are hoisted, allowing hooks to be used before they're defined in the file
+2. **Debugging**: Better stack traces and debugging experience
+3. **Consistency**: Aligns with React's built-in hooks like `useState`, `useEffect` which are function declarations
+4. **Type Inference**: TypeScript handles generics more elegantly with function declarations
+
+## Hook Naming Convention
+
+- Always prefix with `use` (e.g., `usePageContext`, `useLocalStorage`)
+- Use camelCase for the rest of the name
+- Be descriptive about what the hook does
+
+## File Structure
+
+- Place all hooks in the [src/hooks/](mdc:src/hooks) directory
+- One hook per file, named matching the hook name (e.g., `usePageContext.ts`)
+- **Always use default export** for hooks
+
+## Example Hook Structure
+
+```typescript
+export default function useExampleHook(param: string) {
+  const [state, setState] = useState<string>(param);
+  
+  useEffect(() => {
+    // side effects
+  }, [param]);
+  
+  const handleAction = useCallback(() => {
+    // handler logic
+  }, [state]);
+  
+  return {
+    state,
+    handleAction,
+  };
+}
+```
