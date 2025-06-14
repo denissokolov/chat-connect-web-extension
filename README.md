@@ -1,5 +1,18 @@
 # chat-connect-web-extension
 
-## Build
+## Developent
 
-`npm run build`
+Build the extension for production
+```
+npm run build
+```
+
+Watch for changes and rebuild automatically
+```
+npm run dev
+```
+
+Run all project checks
+```
+npm run check
+```
