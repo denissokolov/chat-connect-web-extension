@@ -1,0 +1,9 @@
+{
+    "name": "Chat Connect",
+    "version": "0.1",
+    "manifest_version": 3,
+    "action": {
+      "default_icon": "icon.png",
+      "default_popup": "popup.html"
+    }
+  }
