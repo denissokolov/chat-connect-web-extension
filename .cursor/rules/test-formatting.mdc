@@ -1,0 +1,35 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Test Formatting Rules
+
+When writing tests, do not include "// Arrange", "// Act", or "// Assert" comments. The test structure should be clear from the code itself without these explicit comments.
+
+## Good Example:
+```typescript
+it('should return the text content of an h1 element', () => {
+  document.body.innerHTML = '<h1>Hello World</h1>'
+  
+  const result = getH1Text()
+  
+  expect(result).toBe('Hello World')
+})
+```
+
+## Avoid:
+```typescript
+it('should return the text content of an h1 element', () => {
+  // Arrange
+  document.body.innerHTML = '<h1>Hello World</h1>'
+  
+  // Act
+  const result = getH1Text()
+  
+  // Assert
+  expect(result).toBe('Hello World')
+})
+```
+
+Keep tests clean and readable without unnecessary commenting.

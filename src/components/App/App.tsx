@@ -8,13 +8,13 @@ export default function App() {
         <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-2">{'Page Title'}</h2>
           <p className="text-sm text-gray-600 break-words bg-white p-2 rounded border">
-            {pageContext?.title}
+            {pageContext?.title || 'No title'}
           </p>
         </div>
         <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-2">{'H1 Text'}</h2>
           <p className="text-sm text-gray-600 break-words bg-white p-2 rounded border">
-            {pageContext?.h1}
+            {pageContext?.h1 || 'No h1'}
           </p>
         </div>
       </div>
