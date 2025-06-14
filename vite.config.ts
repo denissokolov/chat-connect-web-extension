@@ -6,11 +6,21 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    target: 'chrome114',
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: 'popup.html',
+        sidepanel: 'sidepanel.html',
+        background: 'src/background.ts',
+      },
+      output: {
+        entryFileNames: chunk => {
+          if (chunk.name === 'background') {
+            return 'background.js'
+          }
+          return 'assets/[name]-[hash].js'
+        },
       },
     },
   },
