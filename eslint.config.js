@@ -34,13 +34,13 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       'import/order': [
-        'warn',
+        'error',
         {
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      'prettier/prettier': 'warn',
+      'prettier/prettier': 'error',
       'no-console': 'error',
       'react/jsx-no-literals': 'error',
       'require-await': 'error',
@@ -54,6 +54,12 @@ export default tseslint.config(
       react: {
         version: 'detect',
       },
+    },
+  },
+  {
+    files: ['src/components/ui/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 )

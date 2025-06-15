@@ -1,7 +1,7 @@
-import cn from 'classnames'
 import { memo } from 'react'
 
-import { usePlatform, Platform } from '../../hooks/usePlatform.ts'
+import { usePlatform, Platform } from '@/hooks/usePlatform.ts'
+import { cn } from '@/utils/ui.ts'
 
 interface ShortcutProps {
   className?: string

@@ -1,7 +1,8 @@
 import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 
-import { usePageContext } from '../../hooks/usePageContext'
-import Shortcut from '../Shortcut/Shortcut'
+import Shortcut from './Shortcut/Shortcut'
+
+import { usePageContext } from '@/hooks/usePageContext'
 
 export default function App() {
   const pageContext = usePageContext()
