@@ -10,7 +10,7 @@ interface ShortcutProps {
 function Shortcut({ className }: ShortcutProps) {
   const platform = usePlatform()
   return (
-    <div className={cn('text-gray-600 text-right text-sm', className)}>
+    <div className={cn('text-gray-600 text-sm', className)}>
       {`Toggle Shortcut: ${platform === Platform.Mac ? '⌘+Shift+Y' : 'Ctrl+Shift+Y'}`}
     </div>
   )
