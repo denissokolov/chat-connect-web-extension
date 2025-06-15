@@ -28,6 +28,12 @@ Run all project checks
 npm run check
 ```
 
+## Useful resources
+
+https://ui.shadcn.com/docs/components - component library
+
+https://lucide.dev/icons/ - icon library
+
 ## Installation in Google Chrome
 
 1. **Install dependencies**
