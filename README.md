@@ -1,6 +1,11 @@
 # chat-connect-web-extension
 
-## Developent
+## Development
+
+Install dependencies
+```
+npm install
+```
 
 Build the extension for production
 ```
@@ -19,27 +24,32 @@ npm run check
 
 ## Installation in Google Chrome
 
-1. **Build the extension**
+1. **Install dependencies**
+   ```
+   npm install
+   ```
+
+2. **Build the extension**
    ```
    npm run build
    ```
 
-2. **Open Chrome Extensions page**
+3. **Open Chrome Extensions page**
    - Open Google Chrome
    - Navigate to `chrome://extensions/` or go to Chrome menu → More tools → Extensions
 
-3. **Enable Developer mode**
+4. **Enable Developer mode**
    - Toggle the "Developer mode" switch in the top-right corner of the extensions page
 
-4. **Load the extension**
+5. **Load the extension**
    - Click "Load unpacked" button
    - Navigate to your project folder and select the `dist` folder (or the build output folder)
    - Click "Select Folder"
 
-5. **Verify installation**
+6. **Verify installation**
    - The extension should now appear in your extensions list
    - You should see the extension icon in your Chrome toolbar
 
 ## Usage
 
-Once installed, you can access the extension by clicking its icon in the Chrome toolbar.
+Once installed, you can access the extension by clicking its icon in the Chrome toolbar or using shortcut ⌘+Shift+Y' or 'Ctrl+Shif+Y.
