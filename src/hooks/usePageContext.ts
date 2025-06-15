@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { getH1Text } from '../utils/html'
-import { logError } from '../utils/log'
+import { getH1Text } from '@/utils/html'
+import { logError } from '@/utils/log'
 
 type PageContext = {
   title: string

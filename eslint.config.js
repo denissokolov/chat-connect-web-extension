@@ -1,5 +1,4 @@
 import js from '@eslint/js'
-import importPlugin from 'eslint-plugin-import'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -14,7 +13,6 @@ export default tseslint.config(
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
-      importPlugin.flatConfigs.recommended,
       eslintPluginPrettierRecommended,
       sonarjs.configs.recommended,
     ],
@@ -33,11 +31,15 @@ export default tseslint.config(
       ...reactPlugin.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'import/order': [
+      'no-restricted-imports': [
         'error',
         {
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
+          patterns: [
+            {
+              group: ['../*'],
+              message: 'Use absolute imports like @/components instead of relative paths.',
+            },
+          ],
         },
       ],
       'prettier/prettier': 'error',
