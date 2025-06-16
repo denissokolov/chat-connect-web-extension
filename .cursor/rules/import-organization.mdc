@@ -1,0 +1,58 @@
+---
+description: 
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+# Import Organization Rules
+
+## Import Order
+Organize imports in the following order with **1 empty line** between each group:
+
+1. **Library imports** - External dependencies from node_modules
+2. **Path alias imports** - Imports using `@` prefix 
+3. **Relative imports** - Imports from subfolders using `./` or `../`
+
+## Example - Correct Import Organization
+
+```tsx
+// Group 1: Library imports
+import { CheckCircle2Icon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+
+// Group 2: Path alias imports (@)
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+// Group 3: Relative imports (if any)
+import { HelperFunction } from './helpers'
+import { LocalComponent } from '../shared/LocalComponent'
+```
+
+## Example - Incorrect Import Organization
+
+```tsx
+// ❌ Mixed groups without proper separation
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { CheckCircle2Icon } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { HelperFunction } from './helpers'
+```
+
+## Grouping Rules
+- **No empty lines** within the same group
+- **Exactly 1 empty line** between different groups
+- Sort imports alphabetically within each group when possible
+- Combine related imports from the same module when appropriate
+
+## Reference File
+See [SettingsPage.tsx](mdc:src/components/SettingsPage/SettingsPage.tsx) - this file should follow the import organization rules.
+
+## Common Patterns
+- React imports: Always in library group
+- UI component imports: Usually in `@/components` group  
+- Utility imports: Usually in `@/utils` or `@/lib` group
+- Type imports: Follow the same grouping as regular imports

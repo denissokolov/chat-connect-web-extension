@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: src/hooks/**/*.ts
 alwaysApply: false
 ---
 # React Hooks - Function Declaration Style
