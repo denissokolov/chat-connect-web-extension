@@ -1,0 +1,67 @@
+---
+description: 
+globs: src/components/**/*.tsx
+alwaysApply: false
+---
+# React Component Rules
+
+## Component Definition
+- Always define components as functions, not arrow functions assigned to variables
+- Use `export default memo` for all components to optimize re-renders
+- Import `memo` from React: `import { memo } from 'react'`
+
+## JSX String Literals
+- **ALWAYS** wrap literal strings in JSX expression containers: `{'string'}` instead of `"string"` or `string`
+- This prevents linting errors and ensures consistent string handling
+- Apply this rule to ALL text content, including:
+  - Button text
+  - Labels
+  - Card titles and descriptions
+  - Alert messages
+  - Placeholder text
+  - Link text
+
+## Example - Good Component Structure
+
+```tsx
+import { memo } from 'react'
+import { SomeIcon } from 'lucide-react'
+
+function MyComponent() {
+  return (
+    <div>
+      <h1>{'Page Title'}</h1>
+      <p>{'Description text goes here'}</p>
+      <button>{'Click me'}</button>
+    </div>
+  )
+}
+
+export default memo(MyComponent)
+```
+
+## Example - Bad Patterns to Avoid
+
+```tsx
+// ❌ Arrow function component
+const MyComponent = () => {
+  return (
+    <div>
+      <h1>Page Title</h1> {/* ❌ Missing JSX expression container */}
+      <p>Description text</p> {/* ❌ Missing JSX expression container */}
+    </div>
+  )
+}
+
+// ❌ Missing memo
+export default MyComponent
+```
+
+## Reference File
+See [SettingsPage.tsx](mdc:src/components/SettingsPage/SettingsPage.tsx) for a component that should follow these patterns.
+
+## Common Fixes
+1. Remove any stray text nodes (like standalone "Text" without proper JSX)
+2. Wrap all string literals in `{'...'}`
+3. Add `memo` import and wrap export
+4. Ensure function declaration format

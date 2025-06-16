@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: 
+globs: src/**/*test.ts,src/**/*test.tsx
 alwaysApply: false
 ---
 # Test Formatting Rules
