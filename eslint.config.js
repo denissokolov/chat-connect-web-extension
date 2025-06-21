@@ -4,6 +4,7 @@ import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import sonarjs from 'eslint-plugin-sonarjs'
+import storybook from 'eslint-plugin-storybook'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
@@ -69,4 +70,5 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  storybook.configs['flat/recommended'],
 )
