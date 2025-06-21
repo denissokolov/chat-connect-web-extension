@@ -1,5 +1,5 @@
 import { CheckCircle2Icon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -13,28 +13,31 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { TokenStorageContext } from '@/services/TokenStorage'
+import { AIProvider } from '@/types/chat.types'
 
 export default function SettingsPage() {
-  const [token, setToken] = useState('')
+  const tokenStorage = useContext(TokenStorageContext)
+
+  const [openAIToken, setOpenAIToken] = useState('')
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    chrome.storage.sync.get('token', result => {
-      if (result.token) {
-        setToken(result.token)
+    tokenStorage.getToken(AIProvider.OpenAI).then(token => {
+      if (token) {
+        setOpenAIToken(token)
       }
     })
-  }, [])
+  }, [tokenStorage])
 
-  const handleSave = () => {
-    chrome.storage.sync.set({ token }, () => {
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    })
+  const handleSave = async () => {
+    await tokenStorage.setToken(AIProvider.OpenAI, openAIToken)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setToken(e.target.value)
+    setOpenAIToken(e.target.value)
   }
 
   return (
@@ -53,7 +56,7 @@ export default function SettingsPage() {
               <Input
                 id="token"
                 type="password"
-                value={token}
+                value={openAIToken}
                 onChange={handleTokenChange}
                 placeholder="Enter your API token"
               />
@@ -73,7 +76,7 @@ export default function SettingsPage() {
             </div>
           </CardContent>
           <CardFooter className="justify-end">
-            <Button onClick={handleSave} disabled={!token.trim()}>
+            <Button onClick={handleSave} disabled={!openAIToken.trim()}>
               {'Save Settings'}
             </Button>
           </CardFooter>

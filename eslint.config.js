@@ -39,6 +39,10 @@ export default tseslint.config(
               group: ['../*'],
               message: 'Use absolute imports like @/components instead of relative paths.',
             },
+            {
+              group: ['@/services/*/*'],
+              message: 'Use import from index.ts from @/services/* instead of @/services/*/*',
+            },
           ],
         },
       ],
@@ -51,6 +55,7 @@ export default tseslint.config(
       'no-redeclare': 'error',
       'no-shadow': 'error',
       'import/no-unresolved': 'off',
+      'sonarjs/no-nested-conditional': 'off',
     },
     settings: {
       react: {

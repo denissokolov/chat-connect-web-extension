@@ -33,7 +33,7 @@ export const usePageContext = () => {
         h1: h1[0]?.result,
       })
     } catch (error) {
-      logError(error)
+      logError('Failed to sync page context', error)
     }
   }, [])
 
