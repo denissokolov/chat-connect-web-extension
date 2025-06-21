@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react'
+import { memo } from 'react'
 import { AlertCircle, MessageCircle } from 'lucide-react'
 
 import type { Message } from '@/types/chat.types'
