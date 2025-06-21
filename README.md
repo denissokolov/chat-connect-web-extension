@@ -36,6 +36,12 @@ Run all project checks
 npm run check
 ```
 
+Run Storybook locally
+
+```bash
+npm run storybook
+```
+
 ## Useful resources
 
 https://ui.shadcn.com/docs/components - component library
