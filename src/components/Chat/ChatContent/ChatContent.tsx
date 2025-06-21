@@ -4,7 +4,7 @@ import { AlertCircle, MessageCircle } from 'lucide-react'
 import type { Message } from '@/types/chat.types'
 import { Button } from '@/components/ui/button'
 
-import ChatMessage from './ChatMessage/ChatMessage'
+import ChatMessages from './ChatMessages/ChatMessages'
 
 interface ChatContentProps {
   messages: Message[]
@@ -14,16 +14,6 @@ interface ChatContentProps {
 }
 
 function ChatContent({ messages, loading, error, retry }: ChatContentProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const scrollToBottom = (behavior: 'smooth' | 'instant' = 'smooth') => {
-    messagesEndRef.current?.scrollIntoView({ behavior })
-  }
-
-  useEffect(() => {
-    scrollToBottom('instant')
-  }, [messages])
-
   if (loading || error || messages.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center">
@@ -52,14 +42,7 @@ function ChatContent({ messages, loading, error, retry }: ChatContentProps) {
     )
   }
 
-  return (
-    <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-      {messages.map(message => (
-        <ChatMessage key={message.id} {...message} />
-      ))}
-      <div ref={messagesEndRef} />
-    </div>
-  )
+  return <ChatMessages messages={messages} />
 }
 
 export default memo(ChatContent)

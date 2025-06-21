@@ -20,7 +20,7 @@ export const usePageContext = () => {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
       if (!tab || !tab.id || !tab.title) {
-        return
+        return setContext(null)
       }
 
       const h1 = await chrome.scripting.executeScript({
@@ -45,7 +45,7 @@ export const usePageContext = () => {
     }
 
     const handleTabUpdated = (_tabId: number, changeInfo: TabChangeInfo, tab: chrome.tabs.Tab) => {
-      if (tab.active && (changeInfo.status === 'complete' || changeInfo.title)) {
+      if (tab.active && changeInfo.status === 'complete') {
         syncContext()
       }
     }
