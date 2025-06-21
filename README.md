@@ -1,5 +1,9 @@
 # Chat Connect Web Extension
 
+[![CI workflow](https://github.com/denissokolov/chat-connect-web-extension/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/denissokolov/chat-connect-web-extension/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/denissokolov/chat-connect-web-extension.svg)](https://github.com/denissokolov/chat-connect-web-extension/blob/main/LICENSE)
+[![Storybook](https://raw.githubusercontent.com/storybooks/brand/master/badge/badge-storybook.svg)](https://denissokolov.github.io/chat-connect-web-extension/)
+
 ## Prerequisites
 
 - Node.js (version 18 or higher)
@@ -9,21 +13,25 @@
 ## Development
 
 Install dependencies
+
 ```bash
 npm install
 ```
 
 Build the extension for production
+
 ```bash
 npm run build
 ```
 
 Watch for changes and rebuild automatically
+
 ```bash
 npm run dev
 ```
 
 Run all project checks
+
 ```bash
 npm run check
 ```
@@ -37,23 +45,28 @@ https://lucide.dev/icons/ - icon library
 ## Installation in Google Chrome
 
 1. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 2. **Build the extension**
+
    ```bash
    npm run build
    ```
 
 3. **Open Chrome Extensions page**
+
    - Open Google Chrome
    - Navigate to `chrome://extensions/` or go to Chrome menu → More tools → Extensions
 
 4. **Enable Developer mode**
+
    - Toggle the "Developer mode" switch in the top-right corner of the extensions page
 
 5. **Load the extension**
+
    - Click "Load unpacked" button
    - Navigate to your project folder and select the `dist` folder (or the build output folder)
    - Click "Select Folder"
@@ -65,6 +78,7 @@ https://lucide.dev/icons/ - icon library
 ## Usage
 
 Once installed, you can access the extension by clicking its icon in the Chrome toolbar or using the keyboard shortcut:
+
 - **Mac**: ⌘+Shift+Y
 - **Windows/Linux**: Ctrl+Shift+Y
 
