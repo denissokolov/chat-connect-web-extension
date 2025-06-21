@@ -11,6 +11,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:unit": "vitest --project=unit",
+    "test:storybook": "vitest --project=storybook",
     "knip": "knip",
     "check": "npm run lint && npm run knip && npm run test:run",
     "storybook": "storybook dev -p 6006",

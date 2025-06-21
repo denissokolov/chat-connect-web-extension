@@ -11,6 +11,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
+    container:
+      # https://playwright.dev/docs/docker#pull-the-image
+      image: mcr.microsoft.com/playwright:v1.53.0-noble
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -30,8 +34,11 @@ jobs:
       - name: Run knip check
         run: npm run knip
 
-      - name: Run tests
-        run: npm run test:run
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage
+
+      - name: Run storybook tests
+        run: npm run test:storybook -- --coverage
 
       - name: Build project
         run: npm run build
