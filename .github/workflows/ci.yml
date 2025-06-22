@@ -30,17 +30,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run type checking
+        run: npm run tsc
+
       - name: Run linting
         run: npm run lint
 
       - name: Run knip check
         run: npm run knip
 
-      - name: Run unit tests
-        run: npm run test:unit -- --coverage
-
-      - name: Run storybook tests
-        run: npm run test:storybook -- --coverage
+      - name: Run tests
+        run: npm run test:run -- --coverage
 
       - name: Build project
         run: npm run build

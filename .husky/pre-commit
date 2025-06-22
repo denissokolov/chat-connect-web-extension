@@ -1,0 +1,4 @@
+npx lint-staged
+npm run tsc
+npm run knip
+npm run test:run

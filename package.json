@@ -7,6 +7,9 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "dev": "tsc -b && vite build --watch",
+    "tsc:app": "tsc -p ./tsconfig.app.json --noEmit  --incremental false",
+    "tsc:node": "tsc -p ./tsconfig.node.json --noEmit  --incremental false",
+    "tsc": "npm run tsc:app && npm run tsc:node",
     "lint": "eslint .",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -14,9 +17,10 @@
     "test:unit": "vitest --project=unit run",
     "test:storybook": "vitest --project=storybook run",
     "knip": "knip",
-    "check": "npm run lint && npm run knip && npm run test:run",
+    "check": "npm run tsc && npm run lint && npm run knip && npm run test:run",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepare": "husky"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
@@ -56,8 +60,10 @@
     "eslint-plugin-sonarjs": "^3.0.3",
     "eslint-plugin-storybook": "^9.0.12",
     "globals": "^16.2.0",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "knip": "^5.61.2",
+    "lint-staged": "^16.1.2",
     "markdown-to-jsx": "^7.7.8",
     "playwright": "^1.53.1",
     "prettier": "3.5.3",
