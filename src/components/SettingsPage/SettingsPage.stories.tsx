@@ -14,13 +14,13 @@ type Story = StoryObj<typeof SettingsPage>
 
 export const Default: Story = {}
 
+const browserWithoutToken = new MockBrowser()
+browserWithoutToken.getSecureValue = () => Promise.resolve(null)
 export const Empty: Story = {
   decorators: [
     Story => {
-      const browser = new MockBrowser()
-      browser.getSecureValue = () => Promise.resolve(null)
       return (
-        <BrowserContext.Provider value={browser}>
+        <BrowserContext.Provider value={browserWithoutToken}>
           <Story />
         </BrowserContext.Provider>
       )
