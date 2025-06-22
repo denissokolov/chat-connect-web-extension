@@ -1,15 +1,17 @@
-import { memo, useCallback } from 'react'
+import { memo, useContext } from 'react'
 import { BoltIcon } from 'lucide-react'
 
-import { usePlatform, Platform } from '@/hooks/usePlatform.ts'
 import { Button } from '@/components/ui/button'
+import { BrowserContext } from '@/services/Browser'
+import { usePlatform, Platform } from '@/hooks/usePlatform.ts'
 
 function ChatFooter() {
   const platform = usePlatform()
+  const browser = useContext(BrowserContext)
 
-  const openSettings = useCallback(() => {
-    chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') })
-  }, [])
+  const openSettings = () => {
+    browser.openExtensionPage('settings.html')
+  }
 
   return (
     <div className="flex items-center justify-between pt-1 pl-1 pr-4">

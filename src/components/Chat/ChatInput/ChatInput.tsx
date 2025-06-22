@@ -3,15 +3,12 @@ import { memo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { usePageContext } from '@/hooks/usePageContext'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/utils/ui'
+
+import ChatContext from './ChatContext/ChatContext'
 
 function ChatInput() {
   const [input, setInput] = useState('')
   const disabled = false
-
-  const context = usePageContext()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,16 +22,7 @@ function ChatInput() {
 
   return (
     <div className="border-t pt-4 px-4">
-      <Badge
-        variant={context ? 'secondary' : 'outline'}
-        className={cn('mb-2', !context && 'text-muted-foreground')}
-      >
-        {context
-          ? context.title.length > 30
-            ? `${context.title.slice(0, 30)}...`
-            : context.title
-          : 'No context'}
-      </Badge>
+      <ChatContext />
       <form className="flex gap-2" onSubmit={handleSubmit}>
         <Input
           value={input}

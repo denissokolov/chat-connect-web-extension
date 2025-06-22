@@ -1,11 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import App from './components/App/App.tsx'
-import './global.css'
+import App from '@/components/App/App'
+import BrowserProvider from '@/components/BrowserProvider/BrowserProvider'
+
+import '@/global.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <BrowserProvider>
+      <App />
+    </BrowserProvider>
   </StrictMode>,
 )

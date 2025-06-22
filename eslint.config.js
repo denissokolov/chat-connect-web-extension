@@ -9,7 +9,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  { ignores: ['dist', 'node_modules', 'storybook-static'] },
   {
     extends: [
       js.configs.recommended,
@@ -41,7 +41,7 @@ export default tseslint.config(
               message: 'Use absolute imports like @/components instead of relative paths.',
             },
             {
-              group: ['@/services/*/*'],
+              group: ['@/services/*/*', './services/*/*'],
               message: 'Use import from index.ts from @/services/* instead of @/services/*/*',
             },
           ],
@@ -57,6 +57,13 @@ export default tseslint.config(
       'no-shadow': 'error',
       'import/no-unresolved': 'off',
       'sonarjs/no-nested-conditional': 'off',
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'chrome',
+          message: 'Use browser service abstraction instead of direct chrome global access.',
+        },
+      ],
     },
     settings: {
       react: {
@@ -68,6 +75,12 @@ export default tseslint.config(
     files: ['src/components/ui/**/*.tsx'],
     rules: {
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['src/services/Browser/**/*.ts', 'src/background.ts'],
+    rules: {
+      'no-restricted-globals': 'off',
     },
   },
   storybook.configs['flat/recommended'],

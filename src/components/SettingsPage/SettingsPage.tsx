@@ -13,25 +13,28 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { TokenStorageContext } from '@/services/TokenStorage'
+import { BrowserContext } from '@/services/Browser'
 import { AIProvider } from '@/types/chat.types'
+import { getTokenKey } from '@/utils/token'
+
+const openAITokenKey = getTokenKey(AIProvider.OpenAI)
 
 export default function SettingsPage() {
-  const tokenStorage = useContext(TokenStorageContext)
+  const browser = useContext(BrowserContext)
 
   const [openAIToken, setOpenAIToken] = useState('')
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    tokenStorage.getToken(AIProvider.OpenAI).then(token => {
+    browser.getSecureValue(openAITokenKey).then(token => {
       if (token) {
         setOpenAIToken(token)
       }
     })
-  }, [tokenStorage])
+  }, [browser])
 
   const handleSave = async () => {
-    await tokenStorage.setToken(AIProvider.OpenAI, openAIToken)
+    await browser.saveSecureValue(openAITokenKey, openAIToken)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
