@@ -2,7 +2,7 @@
   "name": "chat-connect-web-extension",
   "author": "Denis Sokolov <dnssokolov@gmail.com>",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
