@@ -30,6 +30,7 @@ export const Empty: Story = {
 
 export const Saved: Story = {
   play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByLabelText('OpenAI API Key'), '1234567890')
     const button = canvas.getByText('Save Settings')
     await userEvent.click(button)
     await expect(canvas.getByText('Settings saved successfully!')).toBeInTheDocument()

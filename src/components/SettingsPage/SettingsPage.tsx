@@ -55,9 +55,9 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="token">{'OpenAI API Key'}</Label>
+              <Label htmlFor="openai-token">{'OpenAI API Key'}</Label>
               <Input
-                id="token"
+                id="openai-token"
                 type="password"
                 value={openAIToken}
                 onChange={handleTokenChange}

@@ -31,7 +31,7 @@ function ChatInput() {
           disabled={disabled}
           className="flex-1"
         />
-        <Button type="submit" disabled={disabled || !input.trim()} size="icon">
+        <Button type="submit" disabled={disabled || !input.trim()} size="icon" title="Send">
           <Send className="w-4 h-4" />
         </Button>
       </form>
