@@ -15,7 +15,8 @@ interface ChatStore {
   waitingForReply: boolean
   clearHistory: () => void
   assistant: IAssistant | null
-  model: AIModel | null
+  model: AIModel
+  setModel: (model: AIModel) => void
   provider: {
     ready: boolean
     loading: boolean
@@ -73,7 +74,8 @@ const useChatStore = create<ChatStore>((set, get) => ({
   waitingForReply: false,
   clearHistory: () => set({ messages: [] }),
   assistant: null,
-  model: null,
+  model: AIModel.OpenAI_ChatGPT_4o,
+  setModel: (model: AIModel) => set({ model }),
   provider: {
     ready: false,
     loading: false,
