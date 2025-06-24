@@ -7,7 +7,7 @@ import { getProviderByModel } from '@/utils/provider'
 import { getTokenKey } from '@/utils/token'
 import { getStringError } from '@/utils/error'
 import { getBasicInstructions } from '@/utils/instructions'
-import browser from '@/services/browserService'
+import browser from '@/services/browser'
 
 interface ChatStore {
   messages: Message[]

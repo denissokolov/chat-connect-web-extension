@@ -78,7 +78,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/services/browser/**/*.ts', 'src/services/Browser/**/*.ts', 'src/background.ts'],
+    files: ['src/services/browser/**/*.ts', 'src/background.ts'],
     rules: {
       'no-restricted-globals': 'off',
     },

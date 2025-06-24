@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { AlertCircle, MessageCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import browser from '@/services/browserService'
+import browser from '@/services/browser'
 import useChatStore from '@/stores/useChatStore'
 
 import ChatMessages from './ChatMessages/ChatMessages'

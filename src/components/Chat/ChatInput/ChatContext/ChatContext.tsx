@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/ui'
-import browser from '@/services/browserService'
+import browser from '@/services/browser'
 
 function ChatContext() {
   const [pageTitle, setPageTitle] = useState<string | null>(null)
