@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react'
 
-import type { Message } from '@/types/chat.types'
+import useChatStore from '@/stores/useChatStore'
+
 import ChatMessage from './ChatMessage/ChatMessage'
+import { MessageRole } from '@/types/types'
 
-interface ChatContentProps {
-  messages: Message[]
-}
+export default function ChatMessages() {
+  const messages = useChatStore(state => state.messages)
+  const waitingForReply = useChatStore(state => state.waitingForReply)
 
-export default function ChatMessages({ messages }: ChatContentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = (behavior: 'smooth' | 'instant' = 'smooth') => {
@@ -23,6 +24,7 @@ export default function ChatMessages({ messages }: ChatContentProps) {
       {messages.map(message => (
         <ChatMessage key={message.id} {...message} />
       ))}
+      {waitingForReply && <ChatMessage role={MessageRole.Assistant} content="" progress />}
       <div ref={messagesEndRef} className="h-4" />
     </div>
   )

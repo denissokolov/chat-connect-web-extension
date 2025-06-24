@@ -3,21 +3,24 @@ import { memo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
+import useChatStore from '@/stores/useChatStore'
 import ChatContext from './ChatContext/ChatContext'
 
 function ChatInput() {
   const [input, setInput] = useState('')
-  const disabled = false
+
+  const { sendMessage } = useChatStore()
+  const { waitingForReply } = useChatStore()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (disabled || !input.trim()) {
+    if (waitingForReply || !input.trim()) {
       return
     }
 
     setInput('')
+    sendMessage(input)
   }
 
   return (
@@ -28,10 +31,9 @@ function ChatInput() {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Type your message..."
-          disabled={disabled}
           className="flex-1"
         />
-        <Button type="submit" disabled={disabled || !input.trim()} size="icon" title="Send">
+        <Button type="submit" disabled={waitingForReply || !input.trim()} size="icon" title="Send">
           <Send className="w-4 h-4" />
         </Button>
       </form>

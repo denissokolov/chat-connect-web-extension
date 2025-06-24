@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import ChatMessage from './ChatMessage'
-import { MessageRole } from '@/types/chat.types'
+import { MessageRole } from '@/types/types'
 
 const meta: Meta<typeof ChatMessage> = {
   title: 'Chat / Chat Message',
@@ -11,7 +11,7 @@ const meta: Meta<typeof ChatMessage> = {
     role: { control: 'select', options: [MessageRole.User, MessageRole.Assistant] },
     content: { control: 'text' },
     timestamp: { control: 'date' },
-    loading: { control: 'boolean' },
+    progress: { control: 'boolean' },
   },
   args: {
     role: MessageRole.Assistant,
@@ -59,6 +59,6 @@ export const AssistantChatMessageLoading: Story = {
   args: {
     role: MessageRole.Assistant,
     content: '',
-    loading: true,
+    progress: true,
   },
 }

@@ -1,9 +1,11 @@
 import { logError } from '@/utils/log'
 import type { IBrowser } from './IBrowser'
+import type { PageContext } from '@/types/types'
+import { cleanHtmlContent } from '@/utils/html'
 
 export class ChromeBrowser implements IBrowser {
-  openExtensionPage(address: string) {
-    chrome.tabs.create({ url: chrome.runtime.getURL(address) })
+  openExtensionSettings() {
+    chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') })
   }
 
   async getSecureValue(key: string): Promise<string | null> {
@@ -51,6 +53,24 @@ export class ChromeBrowser implements IBrowser {
     return () => {
       chrome.tabs.onActivated.removeListener(handleTabActivated)
       chrome.tabs.onUpdated.removeListener(handleTabUpdated)
+    }
+  }
+
+  async getPageContext(): Promise<PageContext | null> {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab || !tab.id) {
+      return null
+    }
+
+    const html = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => document.documentElement.outerHTML,
+    })
+
+    return {
+      title: tab.title || '',
+      url: tab.url || '',
+      html: cleanHtmlContent(html[0].result),
     }
   }
 }

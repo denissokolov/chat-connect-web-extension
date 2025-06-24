@@ -1,9 +1,8 @@
-import { renderHook } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { usePlatform } from './usePlatform'
+import { getPlatform } from './platform'
 
-describe('usePlatform', () => {
+describe('getPlatform', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -14,8 +13,8 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('mac')
+    const platform = getPlatform()
+    expect(platform).toBe('mac')
   })
 
   it('returns "win" when navigator.userAgent does not contain "Mac"', () => {
@@ -24,8 +23,8 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('win')
+    const platform = getPlatform()
+    expect(platform).toBe('win')
   })
 
   it('returns "win" for Linux user agent', () => {
@@ -34,8 +33,8 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('win')
+    const platform = getPlatform()
+    expect(platform).toBe('win')
   })
 
   it('returns "mac" when userAgent contains "Mac" in different case variations', () => {
@@ -44,8 +43,8 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('mac')
+    const platform = getPlatform()
+    expect(platform).toBe('mac')
   })
 
   it('returns "win" for empty user agent', () => {
@@ -54,8 +53,8 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('win')
+    const platform = getPlatform()
+    expect(platform).toBe('win')
   })
 
   it('returns "mac" for iOS devices', () => {
@@ -64,8 +63,8 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('mac')
+    const platform = getPlatform()
+    expect(platform).toBe('mac')
   })
 
   it('returns "mac" for iPad', () => {
@@ -74,7 +73,7 @@ describe('usePlatform', () => {
       configurable: true,
     })
 
-    const { result } = renderHook(() => usePlatform())
-    expect(result.current).toBe('mac')
+    const platform = getPlatform()
+    expect(platform).toBe('mac')
   })
 })

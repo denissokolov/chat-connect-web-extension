@@ -9,6 +9,7 @@ const config: KnipConfig = {
     'playwright',
     '@vitest/coverage-v8',
     'markdown-to-jsx',
+    '@testing-library/react',
   ],
 }
 

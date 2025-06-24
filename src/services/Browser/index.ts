@@ -1,3 +1,9 @@
-export * from './ChromeBrowser'
-export * from './MockBrowser'
-export * from './BrowserContext'
+import { isTestEnv, isStorybookEnv } from '@/utils/env'
+
+import { ChromeBrowser } from './ChromeBrowser'
+import { MockBrowser } from './MockBrowser'
+import type { IBrowser } from './IBrowser'
+
+const browser: IBrowser = isTestEnv() || isStorybookEnv() ? new MockBrowser() : new ChromeBrowser()
+
+export default browser

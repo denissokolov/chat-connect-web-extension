@@ -1,4 +1,4 @@
-import type { AIProvider } from '@/types/chat.types'
+import type { AIProvider } from '@/types/types'
 
 export function getTokenKey(provider: AIProvider) {
   return `token_${provider}`

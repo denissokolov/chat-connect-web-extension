@@ -1,15 +1,15 @@
 import { User, Bot } from 'lucide-react'
 
-import { MessageRole } from '@/types/chat.types'
+import { MessageRole } from '@/types/types'
 
 interface ChatMessageProps {
   role: MessageRole
   content: string
-  timestamp: Date
-  loading?: boolean
+  timestamp?: Date
+  progress?: boolean
 }
 
-function ChatMessage({ role, content, timestamp, loading }: ChatMessageProps) {
+function ChatMessage({ role, content, timestamp, progress }: ChatMessageProps) {
   return (
     <div className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start'}`}>
       {role === MessageRole.Assistant && (
@@ -18,7 +18,7 @@ function ChatMessage({ role, content, timestamp, loading }: ChatMessageProps) {
         </div>
       )}
 
-      {loading ? (
+      {progress ? (
         <div className="bg-muted rounded-lg p-3">
           <div className="flex space-x-1">
             <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
@@ -39,7 +39,7 @@ function ChatMessage({ role, content, timestamp, loading }: ChatMessageProps) {
           }`}
         >
           <p className="text-sm whitespace-pre-wrap">{content}</p>
-          <p className="text-xs opacity-70 mt-1">{timestamp.toLocaleTimeString()}</p>
+          {timestamp && <p className="text-xs opacity-70 mt-1">{timestamp.toLocaleTimeString()}</p>}
         </div>
       )}
 

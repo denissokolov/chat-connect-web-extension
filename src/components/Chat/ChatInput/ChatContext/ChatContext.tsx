@@ -1,17 +1,15 @@
-import { memo, useContext, useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
-import { BrowserContext } from '@/services/Browser'
 import { cn } from '@/utils/ui'
+import browser from '@/services/browser'
 
 function ChatContext() {
-  const browser = useContext(BrowserContext)
-
   const [pageTitle, setPageTitle] = useState<string | null>(null)
   useEffect(() => {
     const unsubscribe = browser.subscribeToPageTitle(setPageTitle)
     return () => unsubscribe()
-  }, [browser])
+  }, [])
 
   return (
     <Badge

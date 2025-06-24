@@ -7,6 +7,11 @@ const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -37,11 +42,6 @@ export default defineConfig({
             ],
           },
           setupFiles: ['.storybook/vitest.setup.ts'],
-        },
-        resolve: {
-          alias: {
-            '@': path.resolve(__dirname, './src'),
-          },
         },
         optimizeDeps: {
           include: ['react/jsx-dev-runtime'],

@@ -1,5 +1,5 @@
 import { CheckCircle2Icon } from 'lucide-react'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -13,15 +13,13 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { BrowserContext } from '@/services/Browser'
-import { AIProvider } from '@/types/chat.types'
+import { AIProvider } from '@/types/types'
 import { getTokenKey } from '@/utils/token'
+import browser from '@/services/browser'
 
 const openAITokenKey = getTokenKey(AIProvider.OpenAI)
 
 export default function SettingsPage() {
-  const browser = useContext(BrowserContext)
-
   const [openAIToken, setOpenAIToken] = useState('')
   const [saved, setSaved] = useState(false)
 
@@ -31,7 +29,7 @@ export default function SettingsPage() {
         setOpenAIToken(token)
       }
     })
-  }, [browser])
+  }, [])
 
   const handleSave = async () => {
     await browser.saveSecureValue(openAITokenKey, openAIToken)

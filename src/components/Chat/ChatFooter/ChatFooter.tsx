@@ -1,21 +1,22 @@
-import { memo, useContext } from 'react'
+import { memo } from 'react'
 import { BoltIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { BrowserContext } from '@/services/Browser'
-import { usePlatform, Platform } from '@/hooks/usePlatform.ts'
+import browser from '@/services/browser'
+import { getPlatform } from '@/utils/platform'
+import { Platform } from '@/types/types'
 
 function ChatFooter() {
-  const platform = usePlatform()
-  const browser = useContext(BrowserContext)
-
-  const openSettings = () => {
-    browser.openExtensionPage('settings.html')
-  }
+  const platform = getPlatform()
 
   return (
     <div className="flex items-center justify-between pt-1 pl-1 pr-4">
-      <Button variant="ghost" size="icon" onClick={openSettings} title="Open Settings">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={browser.openExtensionSettings}
+        title="Open Settings"
+      >
         <BoltIcon className="w-5 h-5" />
       </Button>
       <div className="text-gray-600 text-sm">
