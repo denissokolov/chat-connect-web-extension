@@ -5,10 +5,10 @@ const config: KnipConfig = {
   project: ['src/**/*.tsx', 'src/**/*.ts', 'src/**/*.css'],
   ignoreDependencies: [
     'tailwindcss',
+    '@tailwindcss/typography',
     'tw-animate-css',
     'playwright',
     '@vitest/coverage-v8',
-    'markdown-to-jsx',
     '@testing-library/react',
   ],
 }

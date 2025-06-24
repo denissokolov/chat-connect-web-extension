@@ -62,3 +62,30 @@ export const AssistantChatMessageLoading: Story = {
     progress: true,
   },
 }
+
+export const Markdown: Story = {
+  args: {
+    role: MessageRole.Assistant,
+    content: `
+**Hello**, how are you?
+
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+
+\`\`\`javascript
+console.log("Hello, world!");
+\`\`\`
+
+- List item 1
+- List item 2
+- List item 3
+
+> Blockquote
+
+*italic*
+    `,
+  },
+}

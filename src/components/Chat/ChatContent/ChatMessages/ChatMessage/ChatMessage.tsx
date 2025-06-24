@@ -1,4 +1,5 @@
 import { MessageRole } from '@/types/types'
+import Markdown from 'markdown-to-jsx'
 
 interface ChatMessageProps {
   role: MessageRole
@@ -30,7 +31,11 @@ function ChatMessage({ role, content, timestamp, progress }: ChatMessageProps) {
             role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
           }`}
         >
-          <p className="text-sm whitespace-pre-wrap">{content}</p>
+          {role === MessageRole.Assistant ? (
+            <Markdown className="text-sm prose">{content}</Markdown>
+          ) : (
+            <p className="text-sm whitespace-pre-wrap">{content}</p>
+          )}
           {timestamp && <p className="text-xs opacity-70 mt-1">{timestamp.toLocaleTimeString()}</p>}
         </div>
       )}
