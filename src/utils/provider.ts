@@ -17,11 +17,11 @@ export const getProviderByModel = (model: AIModel): AIProvider => {
 export function getModelDisplayName(model: AIModel): string {
   switch (model) {
     case AIModel.OpenAI_o4_mini:
-      return 'GPT-4o Mini'
+      return 'o4-mini'
     case AIModel.OpenAI_o3_mini:
-      return 'GPT-o3 Mini'
+      return 'o3-mini'
     case AIModel.OpenAI_o3:
-      return 'GPT-o3'
+      return 'o3'
     case AIModel.OpenAI_GPT_4_1:
       return 'GPT-4.1'
     case AIModel.OpenAI_GPT_4_1_mini:
@@ -31,7 +31,7 @@ export function getModelDisplayName(model: AIModel): string {
     case AIModel.OpenAI_GPT_4o:
       return 'GPT-4o'
     case AIModel.OpenAI_ChatGPT_4o:
-      return 'ChatGPT-4o Latest'
+      return 'ChatGPT-4o'
     default:
       return model
   }
