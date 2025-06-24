@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { BoltIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import browser from '@/services/browser'
+import browser from '@/services/browserService'
 import { getPlatform } from '@/utils/platform'
 import { Platform } from '@/types/types'
 

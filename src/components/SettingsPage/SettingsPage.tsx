@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AIProvider } from '@/types/types'
 import { getTokenKey } from '@/utils/token'
-import browser from '@/services/browser'
+import browser from '@/services/browserService'
 
 const openAITokenKey = getTokenKey(AIProvider.OpenAI)
 
