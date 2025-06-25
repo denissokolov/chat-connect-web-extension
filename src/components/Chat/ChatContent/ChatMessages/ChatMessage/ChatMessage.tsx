@@ -12,7 +12,7 @@ function ChatMessage({ role, content, progress }: ChatMessageProps) {
   return (
     <div className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start'}`}>
       {progress ? (
-        <div className="bg-muted rounded-lg p-3">
+        <div className="rounded-lg p-3">
           <div className="flex space-x-1">
             <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
             <div
@@ -26,11 +26,7 @@ function ChatMessage({ role, content, progress }: ChatMessageProps) {
           </div>
         </div>
       ) : (
-        <div
-          className={`max-w-full rounded-lg p-3 ${
-            role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-          }`}
-        >
+        <div className={`max-w-full rounded-lg ${role === MessageRole.User ? 'p-3 bg-muted' : ''}`}>
           {role === MessageRole.Assistant ? (
             <Markdown className="text-sm prose">{content}</Markdown>
           ) : (
