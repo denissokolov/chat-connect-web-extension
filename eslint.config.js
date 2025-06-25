@@ -64,6 +64,12 @@ export default tseslint.config(
           message: 'Use browser service abstraction instead of direct chrome global access.',
         },
       ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
     settings: {
       react: {

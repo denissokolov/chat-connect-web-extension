@@ -1,6 +1,11 @@
 import { AIModel, AIProvider } from '@/types/types'
+import { isStorybookEnv, isTestEnv } from './env'
 
 export const getProviderByModel = (model: AIModel): AIProvider => {
+  if (isTestEnv() || isStorybookEnv()) {
+    return AIProvider.Mock
+  }
+
   switch (model) {
     case AIModel.OpenAI_o4_mini:
     case AIModel.OpenAI_o3_mini:

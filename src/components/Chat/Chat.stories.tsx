@@ -73,13 +73,12 @@ type Story = StoryObj<typeof Chat>
 export const Default: Story = {
   decorators: [
     Story => {
-      const setState = useChatStore(state => state.setState)
       useEffect(() => {
-        setState({
+        useChatStore.setState({
           messages,
           waitingForReply: true,
         })
-      }, [setState])
+      }, [])
 
       return <Story />
     },
@@ -93,13 +92,12 @@ export const Default: Story = {
 export const Empty: Story = {
   decorators: [
     Story => {
-      const setState = useChatStore(state => state.setState)
       useEffect(() => {
-        setState({
+        useChatStore.setState({
           messages: [],
           waitingForReply: false,
         })
-      }, [setState])
+      }, [])
 
       return <Story />
     },
@@ -113,9 +111,8 @@ export const Empty: Story = {
 export const WriteMessage: Story = {
   decorators: [
     Story => {
-      const setState = useChatStore(state => state.setState)
       useEffect(() => {
-        setState({
+        useChatStore.setState({
           messages: [],
           waitingForReply: false,
           provider: {
@@ -125,7 +122,7 @@ export const WriteMessage: Story = {
             error: null,
           },
         })
-      }, [setState])
+      }, [])
 
       return <Story />
     },
@@ -135,5 +132,6 @@ export const WriteMessage: Story = {
     await userEvent.type(input, 'Hello, world!')
     await userEvent.click(canvas.getByTitle('Send'))
     await expect(canvas.getByText('Hello, world!')).toBeInTheDocument()
+    await expect(canvas.getByText('Hello, how can I help you today?')).toBeInTheDocument()
   },
 }

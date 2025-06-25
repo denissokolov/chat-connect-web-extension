@@ -3,6 +3,8 @@ import { AIProvider, MessageRole, type Message } from '@/types/types'
 import type { IAssistant } from './IAssistant'
 
 export class MockAssistant implements IAssistant {
+  constructor(_apiKey: string) {}
+
   getProvider(): AIProvider {
     return AIProvider.Mock
   }

@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   check:
+    name: Check & build
+
     runs-on: ubuntu-latest
 
     container:

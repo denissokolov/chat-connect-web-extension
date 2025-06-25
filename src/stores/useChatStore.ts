@@ -24,7 +24,6 @@ interface ChatStore {
     error: string | null
   }
   setupProvider: (model: AIModel) => Promise<void>
-  setState: (state: Partial<ChatStore>) => void
 }
 
 const useChatStore = create<ChatStore>((set, get) => ({
@@ -93,19 +92,16 @@ const useChatStore = create<ChatStore>((set, get) => ({
 
     set({ provider: { ready: false, loading: true, configured: undefined, error: null } })
 
-    const apiKey = await browser.getSecureValue(getTokenKey(provider))
-    if (!apiKey) {
-      set({
-        provider: { ...get().provider, loading: false, configured: false },
-      })
-      return
-    }
-
     try {
+      const apiKey = await browser.getSecureValue(getTokenKey(provider))
+      if (!apiKey) {
+        throw new Error('No API key found')
+      }
+
       if (provider === AIProvider.OpenAI) {
         assistant = new OpenAIAssistant(apiKey)
       } else {
-        assistant = new MockAssistant()
+        assistant = new MockAssistant(apiKey)
       }
       set({
         provider: { ready: true, loading: false, configured: true, error: null },
@@ -116,7 +112,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
       logError('Error setting up provider', error)
       set({
         provider: {
-          ...get().provider,
+          ready: false,
           loading: false,
           configured: false,
           error: getStringError(error),
@@ -124,7 +120,6 @@ const useChatStore = create<ChatStore>((set, get) => ({
       })
     }
   },
-  setState: (state: Partial<ChatStore>) => set(state),
 }))
 
 export default useChatStore
