@@ -21,13 +21,13 @@ function ModelSelect() {
   const setModel = useChatStore(state => state.setModel)
   const model = useChatStore(state => state.model)
 
-  const handleValueChange = (value: string) => {
+  const handleValueChange = useCallback((value: string) => {
     if (value === 'manage-keys') {
       browser.openExtensionSettings()
     } else {
       setModel(value as AIModel)
     }
-  }
+  }, [setModel])
 
   return (
     <div className="p-4 border-b">
