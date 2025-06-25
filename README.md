@@ -18,6 +18,12 @@ Install dependencies
 npm install
 ```
 
+Install browsers for running playwright tests
+
+```
+npx playwright install
+```
+
 Build the extension for production
 
 ```bash
