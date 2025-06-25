@@ -1,6 +1,5 @@
 import { memo, useCallback, useEffect } from 'react'
 
-import ChatFooter from './ChatFooter/ChatFooter'
 import ChatInput from './ChatInput/ChatInput'
 import ChatContent from './ChatContent/ChatContent'
 import useChatStore from '@/stores/useChatStore'
@@ -23,7 +22,6 @@ function Chat() {
       <ModelSelect />
       <ChatContent retryInitialization={retryInitialization} />
       <ChatInput />
-      <ChatFooter />
     </div>
   )
 }

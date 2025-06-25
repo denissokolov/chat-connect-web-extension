@@ -24,7 +24,7 @@ function ChatInput() {
   }
 
   return (
-    <div className="border-t pt-4 px-4">
+    <div className="border-t pt-4 px-4 mb-4">
       <ChatContext />
       <form className="flex gap-2" onSubmit={handleSubmit}>
         <Input
