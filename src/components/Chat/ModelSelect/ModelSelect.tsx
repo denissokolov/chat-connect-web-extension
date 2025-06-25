@@ -44,7 +44,7 @@ function ModelSelect() {
               </SelectItem>
             ))}
             <SelectSeparator />
-            <SelectItem value="manage-keys">
+            <SelectItem value="manage-keys" aria-label="Manage API Keys">
               <span className="absolute left-2 top-1/2 -translate-y-1/2 flex h-3.5 w-3.5 items-center justify-center">
                 <Settings className="h-4 w-4" />
               </span>
