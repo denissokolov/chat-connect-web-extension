@@ -2,6 +2,8 @@ import type { Preview } from '@storybook/react-vite'
 
 import '@/global.css'
 
+window['IS_STORYBOOK'] = true
+
 const preview: Preview = {
   parameters: {
     controls: {

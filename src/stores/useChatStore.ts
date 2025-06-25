@@ -24,6 +24,7 @@ interface ChatStore {
     error: string | null
   }
   setupProvider: (model: AIModel) => Promise<void>
+  setState: (state: Partial<ChatStore>) => void
 }
 
 const useChatStore = create<ChatStore>((set, get) => ({
@@ -123,6 +124,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
       })
     }
   },
+  setState: (state: Partial<ChatStore>) => set(state),
 }))
 
 export default useChatStore

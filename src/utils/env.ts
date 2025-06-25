@@ -6,5 +6,8 @@ export function isTestEnv(): boolean {
 }
 
 export function isStorybookEnv(): boolean {
-  return typeof process !== 'undefined' && process.env.STORYBOOK_ENV !== undefined
+  return (
+    (typeof process !== 'undefined' && process.env.STORYBOOK_ENV !== undefined) ||
+    (typeof window !== 'undefined' && 'IS_STORYBOOK' in window && window['IS_STORYBOOK'] === true)
+  )
 }

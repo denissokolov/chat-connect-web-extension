@@ -20,7 +20,7 @@ export default function ChatMessages() {
   }, [messages])
 
   return (
-    <div className="flex-1 pt-4 px-4 space-y-4 overflow-y-auto">
+    <div className="flex-1 pt-4 px-4 space-y-4 overflow-y-auto" tabIndex={0}>
       {messages.map(message => (
         <ChatMessage key={message.id} {...message} />
       ))}

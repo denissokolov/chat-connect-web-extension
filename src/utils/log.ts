@@ -1,5 +1,9 @@
 /* eslint-disable no-console */
 
+import { isTestEnv } from './env'
+
 export function logError(message: string, error: unknown) {
-  console.error(message, error)
+  if (!isTestEnv()) {
+    console.error(message, error)
+  }
 }
