@@ -11,8 +11,9 @@ import browser from '@/services/browser'
 
 interface ChatStore {
   messages: Message[]
-  sendMessage: (text: string) => Promise<void>
+  sendMessage: (text: string, useStreaming?: boolean) => Promise<void>
   waitingForReply: boolean
+  streamingMessageId: string | null
   clearHistory: () => void
   assistant: IAssistant | null
   model: AIModel
@@ -24,16 +25,19 @@ interface ChatStore {
     error: string | null
   }
   setupProvider: (model: AIModel) => Promise<void>
+  updateStreamingMessage: (id: string, content: string) => void
+  finalizeStreamingMessage: (id: string) => void
 }
 
 const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
-  sendMessage: async (text: string) => {
+  sendMessage: async (text: string, useStreaming = true) => {
     const { assistant, model, messages } = get()
     if (!assistant || !model) {
       throw new Error('Assistant not initialized')
     }
 
+    // Add user message
     set(state => ({
       messages: [
         ...state.messages,
@@ -49,18 +53,60 @@ const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       const pageContext = await browser.getPageContext()
-
-      const response = await assistant.sendMessage({
+      const params = {
         model: model,
         instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
         text: text,
         history: messages,
-      })
+      }
 
-      set(state => ({
-        messages: [...state.messages, response],
-        waitingForReply: false,
-      }))
+      // Check if streaming is supported and requested
+      if (useStreaming && assistant.sendMessageStream) {
+        // Create placeholder assistant message for streaming
+        const assistantMessageId = crypto.randomUUID()
+        set(state => ({
+          messages: [
+            ...state.messages,
+            {
+              id: assistantMessageId,
+              role: MessageRole.Assistant,
+              content: '',
+              timestamp: new Date(),
+              streaming: true,
+            },
+          ],
+          waitingForReply: false,
+          streamingMessageId: assistantMessageId,
+        }))
+
+        // Start streaming
+        let fullContent = ''
+        try {
+          for await (const chunk of assistant.sendMessageStream(params)) {
+            fullContent += chunk
+            get().updateStreamingMessage(assistantMessageId, fullContent)
+          }
+          // Finalize streaming message
+          get().finalizeStreamingMessage(assistantMessageId)
+        } catch (streamError) {
+          logError('Error during streaming', streamError)
+          set(state => ({
+            messages: state.messages.map(msg =>
+              msg.id === assistantMessageId
+                ? { ...msg, error: getStringError(streamError), streaming: false }
+                : msg,
+            ),
+            streamingMessageId: null,
+          }))
+        }
+      } else {
+        // Fallback to non-streaming
+        const response = await assistant.sendMessage(params)
+        set(state => ({
+          messages: [...state.messages, response],
+          waitingForReply: false,
+        }))
+      }
     } catch (error) {
       logError('Error sending message', error)
       set(state => ({
@@ -68,10 +114,12 @@ const useChatStore = create<ChatStore>((set, get) => ({
           index === state.messages.length - 1 ? { ...msg, error: getStringError(error) } : msg,
         ),
         waitingForReply: false,
+        streamingMessageId: null,
       }))
     }
   },
   waitingForReply: false,
+  streamingMessageId: null,
   clearHistory: () => set({ messages: [] }),
   assistant: null,
   model: AIModel.OpenAI_ChatGPT_4o,
@@ -122,6 +170,17 @@ const useChatStore = create<ChatStore>((set, get) => ({
         },
       })
     }
+  },
+  updateStreamingMessage: (id: string, content: string) => {
+    set(state => ({
+      messages: state.messages.map(msg => (msg.id === id ? { ...msg, content } : msg)),
+    }))
+  },
+  finalizeStreamingMessage: (id: string) => {
+    set(state => ({
+      messages: state.messages.map(msg => (msg.id === id ? { ...msg, streaming: false } : msg)),
+      streamingMessageId: null,
+    }))
   },
 }))
 
