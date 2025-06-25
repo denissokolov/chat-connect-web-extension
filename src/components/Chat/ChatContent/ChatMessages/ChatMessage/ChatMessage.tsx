@@ -8,7 +8,7 @@ interface ChatMessageProps {
   progress?: boolean
 }
 
-function ChatMessage({ role, content, timestamp, progress }: ChatMessageProps) {
+function ChatMessage({ role, content, progress }: ChatMessageProps) {
   return (
     <div className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start'}`}>
       {progress ? (
@@ -27,7 +27,7 @@ function ChatMessage({ role, content, timestamp, progress }: ChatMessageProps) {
         </div>
       ) : (
         <div
-          className={`max-w-[88%] rounded-lg p-3 ${
+          className={`max-w-full rounded-lg p-3 ${
             role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
           }`}
         >
@@ -36,7 +36,6 @@ function ChatMessage({ role, content, timestamp, progress }: ChatMessageProps) {
           ) : (
             <p className="text-sm whitespace-pre-wrap">{content}</p>
           )}
-          {timestamp && <p className="text-xs opacity-70 mt-1">{timestamp.toLocaleTimeString()}</p>}
         </div>
       )}
     </div>
