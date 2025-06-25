@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 import { Settings } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
@@ -21,13 +21,16 @@ function ModelSelect() {
   const setModel = useChatStore(state => state.setModel)
   const model = useChatStore(state => state.model)
 
-  const handleValueChange = useCallback((value: string) => {
-    if (value === 'manage-keys') {
-      browser.openExtensionSettings()
-    } else {
-      setModel(value as AIModel)
-    }
-  }, [setModel])
+  const handleValueChange = useCallback(
+    (value: string) => {
+      if (value === 'manage-keys') {
+        browser.openExtensionSettings()
+      } else {
+        setModel(value as AIModel)
+      }
+    },
+    [setModel],
+  )
 
   return (
     <div className="p-4 border-b">
