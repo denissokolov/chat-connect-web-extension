@@ -1,7 +1,6 @@
 import { memo, useCallback } from 'react'
 import { Settings } from 'lucide-react'
 
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -33,30 +32,25 @@ function ModelSelect() {
   )
 
   return (
-    <div className="p-4 border-b">
-      <div className="flex items-center gap-2">
-        <Label htmlFor="model-select">{'Model:'}</Label>
-        <Select value={model} onValueChange={handleValueChange}>
-          <SelectTrigger className="w-48" id="model-select">
-            <SelectValue placeholder={'Select a model'} />
-          </SelectTrigger>
-          <SelectContent>
-            {availableModels.map(i => (
-              <SelectItem key={i} value={i}>
-                {getModelDisplayName(i)}
-              </SelectItem>
-            ))}
-            <SelectSeparator />
-            <SelectItem value="manage-keys" aria-label="Manage API Keys">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 flex h-3.5 w-3.5 items-center justify-center">
-                <Settings className="h-4 w-4" />
-              </span>
-              {'Manage Keys'}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
+    <Select value={model} onValueChange={handleValueChange}>
+      <SelectTrigger className="w-48" id="model-select" aria-label="Select AI model">
+        <SelectValue placeholder={'Select a model'} />
+      </SelectTrigger>
+      <SelectContent>
+        {availableModels.map(i => (
+          <SelectItem key={i} value={i}>
+            {getModelDisplayName(i)}
+          </SelectItem>
+        ))}
+        <SelectSeparator />
+        <SelectItem value="manage-keys" aria-label="Manage API Keys">
+          <span className="absolute left-2 top-1/2 -translate-y-1/2 flex h-3.5 w-3.5 items-center justify-center">
+            <Settings className="h-4 w-4" />
+          </span>
+          {'Manage Keys'}
+        </SelectItem>
+      </SelectContent>
+    </Select>
   )
 }
 
