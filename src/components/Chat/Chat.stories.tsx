@@ -135,3 +135,26 @@ export const WriteMessage: Story = {
     await expect(canvas.getByText('Hello, how can I help you today?')).toBeInTheDocument()
   },
 }
+
+export const WithError: Story = {
+  decorators: [
+    Story => {
+      useEffect(() => {
+        useChatStore.setState({
+          messages: [
+            {
+              id: '1',
+              content: 'Hello, world!',
+              role: MessageRole.User,
+              timestamp: new Date(),
+              error:
+                '401 Incorrect API key provided: 123. You can find your API key at https://platform.openai.com/account/api-keys.',
+            },
+          ],
+        })
+      }, [])
+
+      return <Story />
+    },
+  ],
+}

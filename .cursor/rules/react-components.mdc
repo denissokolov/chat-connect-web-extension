@@ -65,3 +65,5 @@ See [SettingsPage.tsx](mdc:src/components/SettingsPage/SettingsPage.tsx) for a c
 2. Wrap all string literals in `{'...'}`
 3. Add `memo` import and wrap export
 4. Ensure function declaration format
+
+## Use icons from lucide-react package
