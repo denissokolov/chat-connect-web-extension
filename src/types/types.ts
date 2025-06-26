@@ -9,7 +9,6 @@ export type Message = {
   content: string
   timestamp: Date
   error?: string
-  streaming?: boolean
 }
 
 export enum AIProvider {

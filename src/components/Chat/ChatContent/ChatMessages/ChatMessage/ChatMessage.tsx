@@ -6,10 +6,9 @@ interface ChatMessageProps {
   content: string
   timestamp?: Date
   progress?: boolean
-  streaming?: boolean
 }
 
-function ChatMessage({ role, content, progress, streaming }: ChatMessageProps) {
+function ChatMessage({ role, content, progress }: ChatMessageProps) {
   return (
     <div className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start'}`}>
       {progress ? (
@@ -29,14 +28,7 @@ function ChatMessage({ role, content, progress, streaming }: ChatMessageProps) {
       ) : (
         <div className={`max-w-full rounded-lg ${role === MessageRole.User ? 'p-3 bg-muted' : ''}`}>
           {role === MessageRole.Assistant ? (
-            <div className="relative">
-              <Markdown className="text-sm prose">{content}</Markdown>
-              {streaming && (
-                <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1 align-text-bottom">
-                  {'|'}
-                </span>
-              )}
-            </div>
+            <Markdown className="text-sm prose">{content}</Markdown>
           ) : (
             <p className="text-sm whitespace-pre-wrap">{content}</p>
           )}
