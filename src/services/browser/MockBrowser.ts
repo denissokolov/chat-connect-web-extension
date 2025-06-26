@@ -12,8 +12,13 @@ export class MockBrowser implements IBrowser {
     return Promise.resolve()
   }
 
-  subscribeToPageTitle(callback: (title: string | null) => void): () => void {
-    callback('mock-title')
+  subscribeToPageInfo(
+    callback: (title: string | null, favicon: string | null) => void,
+  ): () => void {
+    callback(
+      'mock-title',
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVDiNpZNLaJNnGMd/7/clX5I2aZq0SdM0bWqrtVpb29pWW6/4AREv4AURF148gOLAiQdPHjx4cA',
+    )
     return () => {}
   }
 

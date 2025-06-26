@@ -17,21 +17,23 @@ export class ChromeBrowser implements IBrowser {
     await chrome.storage.sync.set({ [key]: value })
   }
 
-  subscribeToPageTitle(callback: (title: string | null) => void): () => void {
-    const getPageTitle = async () => {
+  subscribeToPageInfo(
+    callback: (title: string | null, favicon: string | null) => void,
+  ): () => void {
+    const getPageInfo = async () => {
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-        callback(tab?.title || null)
+        callback(tab?.title || null, tab?.favIconUrl || null)
       } catch (error) {
-        logError('Failed to get page title', error)
-        callback(null)
+        logError('Failed to get page info', error)
+        callback(null, null)
       }
     }
 
-    getPageTitle()
+    getPageInfo()
 
     const handleTabActivated = () => {
-      getPageTitle()
+      getPageInfo()
     }
 
     const handleTabUpdated = (
@@ -39,11 +41,15 @@ export class ChromeBrowser implements IBrowser {
       changeInfo: {
         status?: string
         title?: string
+        favIconUrl?: string
       },
       tab: chrome.tabs.Tab,
     ) => {
-      if (tab.active && changeInfo.status === 'complete') {
-        getPageTitle()
+      if (
+        tab.active &&
+        (changeInfo.status === 'complete' || changeInfo.title || changeInfo.favIconUrl)
+      ) {
+        getPageInfo()
       }
     }
 

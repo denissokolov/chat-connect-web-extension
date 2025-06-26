@@ -3,7 +3,6 @@ import { memo, useCallback, useEffect } from 'react'
 import ChatInput from './ChatInput/ChatInput'
 import ChatContent from './ChatContent/ChatContent'
 import useChatStore from '@/stores/useChatStore'
-import ModelSelect from './ModelSelect/ModelSelect'
 
 function Chat() {
   const setupProvider = useChatStore(state => state.setupProvider)
@@ -19,7 +18,6 @@ function Chat() {
 
   return (
     <div className="h-full flex-1 flex flex-col">
-      <ModelSelect />
       <ChatContent retryInitialization={retryInitialization} />
       <ChatInput />
     </div>
