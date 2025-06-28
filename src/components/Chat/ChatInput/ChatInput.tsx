@@ -10,9 +10,11 @@ import ModelSelect from '@/components/Chat/ModelSelect/ModelSelect'
 function ChatInput() {
   const [input, setInput] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const { sendMessage } = useChatStore()
-  const { waitingForReply } = useChatStore()
+  const sendMessage = useChatStore(state => state.sendMessage)
+  const startNewThread = useChatStore(state => state.startNewThread)
+  const waitingForReply = useChatStore(state => state.waitingForReply)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -32,12 +34,24 @@ function ChatInput() {
     }
   }
 
+  const handleStartNewThread = () => {
+    setInput('')
+    startNewThread()
+    textareaRef.current?.focus()
+  }
+
   return (
     <div className="border-t pt-4 px-4 mb-4">
-      <ChatContext />
+      <div className="flex justify-between mb-2">
+        <ChatContext />
+        <Button type="button" variant="ghost" size="sm" onClick={handleStartNewThread}>
+          {'New thread'}
+        </Button>
+      </div>
 
       <form ref={formRef} onSubmit={handleSubmit}>
         <Textarea
+          ref={textareaRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

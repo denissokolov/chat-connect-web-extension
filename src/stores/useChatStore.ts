@@ -20,7 +20,7 @@ interface ChatStore {
   model: AIModel
   setModel: (model: AIModel) => void
   threadId: string
-  setThreadId: (threadId: string) => void
+  startNewThread: () => void
   provider: {
     ready: boolean
     loading: boolean
@@ -74,6 +74,9 @@ const useChatStore = create<ChatStore>((set, get) => ({
         text: text,
         history: messages,
       })
+      if (get().threadId !== threadId) {
+        return
+      }
       set(state => ({
         messages: [...state.messages, response],
         waitingForReply: false,
@@ -81,6 +84,9 @@ const useChatStore = create<ChatStore>((set, get) => ({
       await repository.createMessage(response)
     } catch (error) {
       logError('Error sending message', error)
+      if (get().threadId !== threadId) {
+        return
+      }
       set(state => ({
         messages: state.messages.map((msg, index) =>
           index === state.messages.length - 1 ? { ...msg, error: getStringError(error) } : msg,
@@ -95,7 +101,8 @@ const useChatStore = create<ChatStore>((set, get) => ({
   model: AIModel.OpenAI_ChatGPT_4o,
   setModel: (model: AIModel) => set({ model }),
   threadId: crypto.randomUUID(),
-  setThreadId: (threadId: string) => set({ threadId }),
+  startNewThread: () =>
+    set({ threadId: crypto.randomUUID(), messages: [], waitingForReply: false }),
   provider: {
     ready: false,
     loading: false,
