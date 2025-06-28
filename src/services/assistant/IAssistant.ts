@@ -4,6 +4,7 @@ export interface IAssistant {
   getProvider: () => AIProvider
 
   sendMessage: (params: {
+    threadId: string
     model: AIModel
     instructions?: string
     text: string

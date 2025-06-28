@@ -1,8 +1,10 @@
+import { DateTime } from 'luxon'
 import { describe, it, expect, beforeEach, vi, type Mock, type MockedFunction } from 'vitest'
 
 import { AIModel, AIProvider, MessageRole, type Message, type PageContext } from '@/types/types'
 import { MockAssistant, type IAssistant } from '@/services/assistant'
 import browser from '@/services/browser'
+import repository from '@/services/repository'
 
 import useChatStore from './useChatStore'
 
@@ -14,6 +16,15 @@ vi.mock('@/services/browser', () => ({
   default: {
     getPageContext: vi.fn(),
     getSecureValue: vi.fn(),
+  },
+}))
+
+vi.mock('@/services/repository', () => ({
+  default: {
+    init: vi.fn(),
+    createMessage: vi.fn(),
+    createThread: vi.fn(),
+    updateThread: vi.fn(),
   },
 }))
 
@@ -30,10 +41,11 @@ describe('useChatStore', () => {
   }
 
   const mockMessage: Message = {
+    threadId: 'test-thread-id',
     id: 'test-message-id',
     role: MessageRole.Assistant,
     content: 'Test response',
-    timestamp: new Date('2024-01-01T12:00:00Z'),
+    createdAt: '2024-01-01T12:00:00Z',
   }
 
   beforeEach(() => {
@@ -48,9 +60,15 @@ describe('useChatStore', () => {
         configured: undefined,
         error: null,
       },
+      threadId: 'test-thread-id',
     })
 
     vi.clearAllMocks()
+
+    // Clear repository mocks
+    ;(repository.createMessage as Mock).mockClear()
+    ;(repository.createThread as Mock).mockClear()
+    ;(repository.updateThread as Mock).mockClear()
   })
 
   describe('initial state', () => {
@@ -67,6 +85,7 @@ describe('useChatStore', () => {
         configured: undefined,
         error: null,
       })
+      expect(state.threadId).toBe('test-thread-id')
     })
   })
 
@@ -98,13 +117,15 @@ describe('useChatStore', () => {
             id: '1',
             role: MessageRole.User,
             content: 'Hello',
-            timestamp: new Date(),
+            createdAt: DateTime.now().toISO(),
+            threadId: 'test-thread-id',
           },
           {
             id: '2',
             role: MessageRole.Assistant,
             content: 'Hi there',
-            timestamp: new Date(),
+            createdAt: DateTime.now().toISO(),
+            threadId: 'test-thread-id',
           },
         ],
       })
@@ -160,8 +181,8 @@ describe('useChatStore', () => {
     })
 
     it('should add user message and send to assistant successfully', async () => {
-      const mockDate = new Date('2024-01-01T12:00:00Z')
-      vi.setSystemTime(mockDate)
+      const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDate.toJSDate())
       ;(browser.getPageContext as Mock).mockResolvedValue(mockPageContext)
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
@@ -175,12 +196,14 @@ describe('useChatStore', () => {
         id: expect.any(String),
         role: MessageRole.User,
         content: 'Hello',
-        timestamp: mockDate,
+        createdAt: mockDate.toISO(),
+        threadId: 'test-thread-id',
       })
       expect(state.messages[1]).toEqual(mockMessage)
 
       expect(state.waitingForReply).toBe(false)
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
+        threadId: 'test-thread-id',
         model: AIModel.OpenAI_ChatGPT_4o,
         instructions: expect.stringContaining('Test Page'),
         text: 'Hello',
@@ -201,16 +224,18 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: 'Hello',
         history: [],
+        threadId: 'test-thread-id',
       })
     })
 
     it('should include message history when sending', async () => {
-      const existingMessages = [
+      const existingMessages: Message[] = [
         {
           id: '1',
           role: MessageRole.User,
           content: 'Previous message',
-          timestamp: new Date(),
+          createdAt: DateTime.now().toISO(),
+          threadId: 'test-thread-id',
         },
       ]
 
@@ -227,6 +252,7 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: 'Hello',
         history: existingMessages,
+        threadId: 'test-thread-id',
       })
     })
 
@@ -275,6 +301,7 @@ describe('useChatStore', () => {
       await sendMessage('')
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
+        threadId: 'test-thread-id',
         model: AIModel.OpenAI_ChatGPT_4o,
         instructions: undefined,
         text: '',
@@ -295,6 +322,65 @@ describe('useChatStore', () => {
       expect(state.messages).toHaveLength(1)
       expect(state.messages[0].error).toBe('Page context error')
       expect(state.waitingForReply).toBe(false)
+    })
+
+    it('should create message in repository after successful send', async () => {
+      ;(browser.getPageContext as Mock).mockResolvedValue(null)
+      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      const { sendMessage } = useChatStore.getState()
+
+      await sendMessage('Hello')
+
+      expect(repository.createMessage).toHaveBeenCalledWith(mockMessage)
+    })
+
+    it('should create thread in repository for first message', async () => {
+      const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDate.toJSDate())
+
+      useChatStore.setState({ messages: [] }) // Ensure empty messages
+      ;(browser.getPageContext as Mock).mockResolvedValue(null)
+      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      const { sendMessage } = useChatStore.getState()
+
+      await sendMessage('Hello')
+
+      expect(repository.createThread).toHaveBeenCalledWith({
+        id: 'test-thread-id',
+        createdAt: mockDate.toISO(),
+        updatedAt: mockDate.toISO(),
+      })
+    })
+
+    it('should update thread in repository for subsequent messages', async () => {
+      const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDate.toJSDate())
+
+      const existingMessages: Message[] = [
+        {
+          id: '1',
+          role: MessageRole.User,
+          content: 'Previous message',
+          createdAt: DateTime.now().toISO(),
+          threadId: 'test-thread-id',
+        },
+      ]
+
+      useChatStore.setState({ messages: existingMessages })
+      ;(browser.getPageContext as Mock).mockResolvedValue(null)
+      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      const { sendMessage } = useChatStore.getState()
+
+      await sendMessage('Hello')
+
+      expect(repository.updateThread).toHaveBeenCalledWith({
+        id: 'test-thread-id',
+        updatedAt: mockDate.toISO(),
+      })
+      expect(repository.createThread).not.toHaveBeenCalled()
     })
   })
 

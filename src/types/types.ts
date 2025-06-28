@@ -7,8 +7,9 @@ export type Message = {
   id: string
   role: MessageRole
   content: string
-  timestamp: Date
+  createdAt: string
   error?: string
+  threadId: string
 }
 
 export enum AIProvider {
@@ -36,4 +37,10 @@ export interface PageContext {
 export enum Platform {
   Mac = 'mac',
   Win = 'win',
+}
+
+export type Thread = {
+  id: string
+  createdAt: string
+  updatedAt: string
 }

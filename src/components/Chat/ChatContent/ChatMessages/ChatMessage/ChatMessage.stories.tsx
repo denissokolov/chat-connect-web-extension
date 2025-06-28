@@ -10,13 +10,11 @@ const meta: Meta<typeof ChatMessage> = {
   argTypes: {
     role: { control: 'select', options: [MessageRole.User, MessageRole.Assistant] },
     content: { control: 'text' },
-    timestamp: { control: 'date' },
     progress: { control: 'boolean' },
   },
   args: {
     role: MessageRole.Assistant,
     content: 'Hello, how are you?',
-    timestamp: new Date(),
   },
 }
 

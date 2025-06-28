@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { DateTime } from 'luxon'
 
 import { AIModel, AIProvider, MessageRole, type Message } from '@/types/types'
 import { OpenAIAssistant, MockAssistant, type IAssistant } from '@/services/assistant'
@@ -8,6 +9,7 @@ import { getTokenKey } from '@/utils/token'
 import { getStringError } from '@/utils/error'
 import { getBasicInstructions } from '@/utils/instructions'
 import browser from '@/services/browser'
+import repository from '@/services/repository'
 
 interface ChatStore {
   messages: Message[]
@@ -17,6 +19,8 @@ interface ChatStore {
   assistant: IAssistant | null
   model: AIModel
   setModel: (model: AIModel) => void
+  threadId: string
+  setThreadId: (threadId: string) => void
   provider: {
     ready: boolean
     loading: boolean
@@ -29,38 +33,52 @@ interface ChatStore {
 const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   sendMessage: async (text: string) => {
-    const { assistant, model, messages } = get()
+    const { assistant, model, messages, threadId } = get()
     if (!assistant || !model) {
       throw new Error('Assistant not initialized')
     }
 
+    const newMessage = {
+      id: crypto.randomUUID(),
+      role: MessageRole.User,
+      content: text,
+      createdAt: DateTime.now().toISO(),
+      threadId,
+    }
     set(state => ({
-      messages: [
-        ...state.messages,
-        {
-          id: crypto.randomUUID(),
-          role: MessageRole.User,
-          content: text,
-          timestamp: new Date(),
-        },
-      ],
+      messages: [...state.messages, newMessage],
       waitingForReply: true,
     }))
+    await repository.createMessage(newMessage)
+
+    if (messages.length === 0) {
+      await repository.createThread({
+        id: threadId,
+        createdAt: DateTime.now().toISO(),
+        updatedAt: DateTime.now().toISO(),
+      })
+    } else {
+      await repository.updateThread({
+        id: threadId,
+        updatedAt: DateTime.now().toISO(),
+      })
+    }
 
     try {
       const pageContext = await browser.getPageContext()
 
       const response = await assistant.sendMessage({
+        threadId,
         model: model,
         instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
         text: text,
         history: messages,
       })
-
       set(state => ({
         messages: [...state.messages, response],
         waitingForReply: false,
       }))
+      await repository.createMessage(response)
     } catch (error) {
       logError('Error sending message', error)
       set(state => ({
@@ -76,6 +94,8 @@ const useChatStore = create<ChatStore>((set, get) => ({
   assistant: null,
   model: AIModel.OpenAI_ChatGPT_4o,
   setModel: (model: AIModel) => set({ model }),
+  threadId: crypto.randomUUID(),
+  setThreadId: (threadId: string) => set({ threadId }),
   provider: {
     ready: false,
     loading: false,
@@ -91,6 +111,16 @@ const useChatStore = create<ChatStore>((set, get) => ({
     }
 
     set({ provider: { ready: false, loading: true, configured: undefined, error: null } })
+
+    try {
+      await repository.init()
+    } catch (error) {
+      logError('Error initializing repository', error)
+      set({
+        provider: { ready: false, loading: false, configured: false, error: getStringError(error) },
+      })
+      return
+    }
 
     try {
       const apiKey = await browser.getSecureValue(getTokenKey(provider))

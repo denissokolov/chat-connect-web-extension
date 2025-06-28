@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
+import { DateTime } from 'luxon'
 
 import Chat from './Chat'
 import useChatStore from '@/stores/useChatStore'
@@ -11,44 +12,51 @@ const messages: Message[] = [
     id: '1',
     content: 'Please make a summary of this page',
     role: MessageRole.User,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
   {
     id: '2',
     content:
       'This is the summary of the page: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
     role: MessageRole.Assistant,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
   {
     id: '3',
     content: 'What is the main idea of the page?',
     role: MessageRole.User,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
   {
     id: '4',
     content: 'The main idea of the page is to make a summary of the page',
     role: MessageRole.Assistant,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
   {
     id: '5',
     content: 'What time is it?',
     role: MessageRole.User,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
   {
     id: '6',
     content: 'It is 12:00 PM',
     role: MessageRole.Assistant,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
   {
     id: '7',
     content: 'Ultimate Question of Life, the Universe, and Everything',
     role: MessageRole.User,
-    timestamp: new Date(),
+    createdAt: DateTime.now().toISO(),
+    threadId: '1',
   },
 ]
 
@@ -146,9 +154,10 @@ export const WithError: Story = {
               id: '1',
               content: 'Hello, world!',
               role: MessageRole.User,
-              timestamp: new Date(),
+              createdAt: DateTime.now().toISO(),
               error:
                 '401 Incorrect API key provided: 123. You can find your API key at https://platform.openai.com/account/api-keys.',
+              threadId: '1',
             },
           ],
         })

@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { DateTime } from 'luxon'
 
 import { AIModel, AIProvider, type Message, MessageRole } from '@/types/types'
 
@@ -19,6 +20,7 @@ export class OpenAIAssistant implements IAssistant {
   }
 
   async sendMessage(params: {
+    threadId: string
     model: AIModel
     instructions?: string
     text: string
@@ -40,8 +42,9 @@ export class OpenAIAssistant implements IAssistant {
     return {
       id: response.id,
       role: MessageRole.Assistant,
-      timestamp: new Date(),
+      createdAt: DateTime.now().toISO(),
       content: response.output_text,
+      threadId: params.threadId,
     }
   }
 }

@@ -7,7 +7,6 @@ import { MessageRole } from '@/types/types'
 interface ChatMessageProps {
   role: MessageRole
   content: string
-  timestamp?: Date
   progress?: boolean
   error?: string
 }
