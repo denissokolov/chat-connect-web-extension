@@ -19,7 +19,7 @@ function ChatContext() {
   return (
     <Badge
       variant={pageTitle ? 'secondary' : 'outline'}
-      className={cn('mb-2 flex items-center gap-2', !pageTitle && 'text-muted-foreground')}
+      className={cn('bg-white flex items-center gap-1', !pageTitle && 'text-muted-foreground')}
     >
       {pageFavicon && (
         <img

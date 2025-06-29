@@ -1,4 +1,4 @@
-import { SendHorizontal } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -13,7 +13,6 @@ function ChatInput() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const sendMessage = useChatStore(state => state.sendMessage)
-  const startNewThread = useChatStore(state => state.startNewThread)
   const waitingForReply = useChatStore(state => state.waitingForReply)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,19 +33,10 @@ function ChatInput() {
     }
   }
 
-  const handleStartNewThread = () => {
-    setInput('')
-    startNewThread()
-    textareaRef.current?.focus()
-  }
-
   return (
-    <div className="border-t pt-4 px-4 mb-4">
-      <div className="flex justify-between mb-2">
+    <div className="rounded-t-xl bg-slate-100">
+      <div className="flex justify-start m-2">
         <ChatContext />
-        <Button type="button" variant="ghost" size="sm" onClick={handleStartNewThread}>
-          {'New thread'}
-        </Button>
       </div>
 
       <form ref={formRef} onSubmit={handleSubmit}>
@@ -55,18 +45,20 @@ function ChatInput() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
+          placeholder="Ask about page..."
+          className="border-none outline-none focus-visible:ring-0 resize-none shadow-none pt-2 pb-3"
         />
 
-        <div className="flex justify-between items-center mt-2">
+        <div className="flex justify-between items-center m-2">
           <ModelSelect />
           <Button
             type="submit"
             disabled={waitingForReply || !input.trim()}
             size="icon"
             title="Send"
+            className="rounded-full disabled:bg-white disabled:text-gray-600 disabled:border hover:bg-blue-600 bg-blue-500"
           >
-            <SendHorizontal className="w-4 h-4" />
+            <ArrowUp className="size-5" />
           </Button>
         </div>
       </form>
