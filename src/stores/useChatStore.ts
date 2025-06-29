@@ -14,6 +14,7 @@ import repository from '@/services/repository'
 interface ChatStore {
   messages: Message[]
   sendMessage: (text: string) => Promise<void>
+  stopMessage: () => void
   waitingForReply: boolean
   clearHistory: () => void
   assistant: IAssistant | null
@@ -28,6 +29,7 @@ interface ChatStore {
     error: string | null
   }
   setupProvider: (model: AIModel) => Promise<void>
+  currentAbortController: AbortController | null
 }
 
 const useChatStore = create<ChatStore>((set, get) => ({
@@ -37,6 +39,9 @@ const useChatStore = create<ChatStore>((set, get) => ({
     if (!assistant || !model) {
       throw new Error('Assistant not initialized')
     }
+
+    // Create abort controller for this request
+    const abortController = new AbortController()
 
     const newMessage = {
       id: crypto.randomUUID(),
@@ -48,6 +53,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
     set(state => ({
       messages: [...state.messages, newMessage],
       waitingForReply: true,
+      currentAbortController: abortController,
     }))
     await repository.createMessage(newMessage)
 
@@ -73,6 +79,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
         instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
         text: text,
         history: messages,
+        signal: abortController.signal,
       })
       if (get().threadId !== threadId) {
         return
@@ -80,6 +87,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
       set(state => ({
         messages: [...state.messages, response],
         waitingForReply: false,
+        currentAbortController: null,
       }))
       await repository.createMessage(response)
     } catch (error) {
@@ -87,12 +95,27 @@ const useChatStore = create<ChatStore>((set, get) => ({
       if (get().threadId !== threadId) {
         return
       }
+
+      // Check if error is due to abort
+      const isAborted =
+        error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))
+
       set(state => ({
-        messages: state.messages.map((msg, index) =>
-          index === state.messages.length - 1 ? { ...msg, error: getStringError(error) } : msg,
-        ),
+        messages: isAborted
+          ? state.messages // Don't show error for cancelled requests
+          : state.messages.map((msg, index) =>
+              index === state.messages.length - 1 ? { ...msg, error: getStringError(error) } : msg,
+            ),
         waitingForReply: false,
+        currentAbortController: null,
       }))
+    }
+  },
+  stopMessage: () => {
+    const { currentAbortController } = get()
+    if (currentAbortController) {
+      currentAbortController.abort()
+      set({ currentAbortController: null, waitingForReply: false })
     }
   },
   waitingForReply: false,
@@ -102,7 +125,13 @@ const useChatStore = create<ChatStore>((set, get) => ({
   setModel: (model: AIModel) => set({ model }),
   threadId: crypto.randomUUID(),
   startNewThread: () =>
-    set({ threadId: crypto.randomUUID(), messages: [], waitingForReply: false }),
+    set({
+      threadId: crypto.randomUUID(),
+      messages: [],
+      waitingForReply: false,
+      currentAbortController: null,
+    }),
+  currentAbortController: null,
   provider: {
     ready: false,
     loading: false,
