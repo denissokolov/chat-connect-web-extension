@@ -1,4 +1,4 @@
-import { SendHorizontal } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -34,8 +34,8 @@ function ChatInput() {
   }
 
   return (
-    <div className="pt-4 px-4 mb-4">
-      <div className="flex justify-start mb-2">
+    <div className="rounded-t-xl bg-slate-100">
+      <div className="flex justify-start m-2">
         <ChatContext />
       </div>
 
@@ -45,18 +45,20 @@ function ChatInput() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
+          placeholder="Ask about page..."
+          className="border-none outline-none focus-visible:ring-0 resize-none shadow-none pb-4"
         />
 
-        <div className="flex justify-between items-center mt-2">
+        <div className="flex justify-between items-center m-2">
           <ModelSelect />
           <Button
             type="submit"
             disabled={waitingForReply || !input.trim()}
             size="icon"
             title="Send"
+            className="rounded-full disabled:bg-white disabled:text-gray-600 disabled:border hover:bg-blue-600 bg-blue-500"
           >
-            <SendHorizontal className="w-4 h-4" />
+            <ArrowUp className="size-5" />
           </Button>
         </div>
       </form>
