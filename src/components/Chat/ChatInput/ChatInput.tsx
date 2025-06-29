@@ -13,7 +13,6 @@ function ChatInput() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const sendMessage = useChatStore(state => state.sendMessage)
-  const startNewThread = useChatStore(state => state.startNewThread)
   const waitingForReply = useChatStore(state => state.waitingForReply)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,19 +33,10 @@ function ChatInput() {
     }
   }
 
-  const handleStartNewThread = () => {
-    setInput('')
-    startNewThread()
-    textareaRef.current?.focus()
-  }
-
   return (
-    <div className="border-t pt-4 px-4 mb-4">
-      <div className="flex justify-between mb-2">
+    <div className="pt-4 px-4 mb-4">
+      <div className="flex justify-start mb-2">
         <ChatContext />
-        <Button type="button" variant="ghost" size="sm" onClick={handleStartNewThread}>
-          {'New thread'}
-        </Button>
       </div>
 
       <form ref={formRef} onSubmit={handleSubmit}>
