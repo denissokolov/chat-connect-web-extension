@@ -34,13 +34,13 @@ function ModelSelect() {
   return (
     <Select value={model} onValueChange={handleValueChange}>
       <SelectTrigger
-        className="w-auto shadow-none gap-2 px-2 text-xs font-medium text-gray-700 rounded-lg bg-white focus:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+        className=" hover:border-gray-300 w-auto shadow-none gap-2 px-2 text-xs font-medium text-gray-700 rounded-lg bg-white cursor-pointer"
         id="model-select"
         aria-label="Select AI model"
       >
         <SelectValue placeholder={'Select a model'} />
       </SelectTrigger>
-      <SelectContent className="shadow-none">
+      <SelectContent className="shadow-none rounded-lg">
         {availableModels.map(i => (
           <SelectItem key={i} value={i} className="cursor-pointer">
             {getModelDisplayName(i)}
