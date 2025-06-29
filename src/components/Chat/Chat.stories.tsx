@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect } from 'storybook/test'
+import { expect, waitFor } from 'storybook/test'
 import { DateTime } from 'luxon'
 
 import Chat from './Chat'
 import useChatStore from '@/stores/useChatStore'
 import { type Message, MessageRole } from '@/types/types'
 import { useEffect } from 'react'
+import { MockAssistant } from '@/services/assistant'
 
 const messages: Message[] = [
   {
@@ -120,9 +121,11 @@ export const WriteMessage: Story = {
   decorators: [
     Story => {
       useEffect(() => {
+        const mockAssistant = new MockAssistant('mock-api-key')
         useChatStore.setState({
           messages: [],
           waitingForReply: false,
+          assistant: mockAssistant,
           provider: {
             ready: true,
             loading: false,
@@ -140,7 +143,12 @@ export const WriteMessage: Story = {
     await userEvent.type(input, 'Hello, world!')
     await userEvent.click(canvas.getByTitle('Send'))
     await expect(canvas.getByText('Hello, world!')).toBeInTheDocument()
-    await expect(canvas.getByText('Hello, how can I help you today?')).toBeInTheDocument()
+
+    // Wait for the assistant response to appear (MockAssistant has 1s delay)
+    await waitFor(
+      () => expect(canvas.getByText('Hello, how can I help you today?')).toBeInTheDocument(),
+      { timeout: 3000 },
+    )
   },
 }
 

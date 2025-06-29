@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 
-import { AIProvider, MessageRole, type Message } from '@/types/types'
+import { AIModel, AIProvider, MessageRole, type Message } from '@/types/types'
 
 import type { IAssistant } from './IAssistant'
 
@@ -16,6 +16,10 @@ export class MockAssistant implements IAssistant {
     signal,
   }: {
     threadId: string
+    model: AIModel
+    instructions?: string
+    text: string
+    history?: Message[]
     signal?: AbortSignal
   }): Promise<Message> {
     // Simulate API delay
