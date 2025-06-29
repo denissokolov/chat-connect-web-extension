@@ -208,6 +208,7 @@ describe('useChatStore', () => {
         instructions: expect.stringContaining('Test Page'),
         text: 'Hello',
         history: [],
+        signal: expect.any(AbortSignal),
       })
     })
 
@@ -225,6 +226,7 @@ describe('useChatStore', () => {
         text: 'Hello',
         history: [],
         threadId: 'test-thread-id',
+        signal: expect.any(AbortSignal),
       })
     })
 
@@ -253,6 +255,7 @@ describe('useChatStore', () => {
         text: 'Hello',
         history: existingMessages,
         threadId: 'test-thread-id',
+        signal: expect.any(AbortSignal),
       })
     })
 
@@ -306,6 +309,7 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: '',
         history: [],
+        signal: expect.any(AbortSignal),
       })
     })
 

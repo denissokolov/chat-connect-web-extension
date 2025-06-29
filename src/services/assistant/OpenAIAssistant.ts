@@ -25,19 +25,25 @@ export class OpenAIAssistant implements IAssistant {
     instructions?: string
     text: string
     history?: Message[]
+    signal?: AbortSignal
   }): Promise<Message> {
     const previousResponseId =
       params.history && params.history.length > 0
         ? params.history[params.history.length - 1]?.id
         : undefined
 
-    const response = await this.client.responses.create({
-      model: params.model,
-      instructions: params.instructions,
-      input: params.text,
-      previous_response_id: previousResponseId,
-      store: true,
-    })
+    const response = await this.client.responses.create(
+      {
+        model: params.model,
+        instructions: params.instructions,
+        input: params.text,
+        previous_response_id: previousResponseId,
+        store: true,
+      },
+      {
+        signal: params.signal,
+      },
+    )
 
     return {
       id: response.id,

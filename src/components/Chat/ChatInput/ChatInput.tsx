@@ -1,4 +1,4 @@
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, X } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ function ChatInput() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const sendMessage = useChatStore(state => state.sendMessage)
+  const stopMessage = useChatStore(state => state.stopMessage)
   const waitingForReply = useChatStore(state => state.waitingForReply)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -33,6 +34,10 @@ function ChatInput() {
     }
   }
 
+  const handleStop = () => {
+    stopMessage()
+  }
+
   return (
     <div className="rounded-t-xl bg-slate-100">
       <div className="flex justify-start m-2">
@@ -51,15 +56,27 @@ function ChatInput() {
 
         <div className="flex justify-between items-center m-2">
           <ModelSelect />
-          <Button
-            type="submit"
-            disabled={waitingForReply || !input.trim()}
-            size="icon"
-            title="Send"
-            className="rounded-full disabled:bg-white disabled:text-gray-600 disabled:border hover:bg-blue-600 bg-blue-500"
-          >
-            <ArrowUp className="size-5" />
-          </Button>
+          {waitingForReply ? (
+            <Button
+              type="button"
+              onClick={handleStop}
+              size="icon"
+              title="Stop"
+              className="rounded-full hover:bg-blue-600 bg-blue-500 text-white"
+            >
+              <X className="size-5" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={!input.trim()}
+              size="icon"
+              title="Send"
+              className="rounded-full disabled:bg-white disabled:text-gray-600 disabled:border hover:bg-blue-600 bg-blue-500"
+            >
+              <ArrowUp className="size-5" />
+            </Button>
+          )}
         </div>
       </form>
     </div>

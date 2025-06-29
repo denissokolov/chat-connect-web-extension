@@ -9,5 +9,6 @@ export interface IAssistant {
     instructions?: string
     text: string
     history?: Message[]
+    signal?: AbortSignal
   }) => Promise<Message>
 }
