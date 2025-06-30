@@ -88,6 +88,23 @@ console.log("Hello, world!");
   },
 }
 
+export const MarkdownWithLinks: Story = {
+  args: {
+    role: MessageRole.Assistant,
+    content: `
+Here are some useful links:
+
+- [OpenAI Documentation](https://platform.openai.com/docs)
+- [React Documentation](https://react.dev)
+- [Tailwind CSS](https://tailwindcss.com)
+
+You can also visit https://github.com for more resources.
+
+Check out this [inline link](https://example.com) in the middle of text.
+    `,
+  },
+}
+
 export const ErrorMessage: Story = {
   args: {
     role: MessageRole.User,

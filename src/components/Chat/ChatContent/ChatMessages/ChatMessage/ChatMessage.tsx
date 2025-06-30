@@ -37,7 +37,22 @@ function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
             className={`max-w-full rounded-lg ${role === MessageRole.User ? 'p-3 bg-muted' : ''}`}
           >
             {role === MessageRole.Assistant ? (
-              <Markdown className="text-sm prose">{content}</Markdown>
+              <Markdown
+                className="text-sm prose"
+                options={{
+                  overrides: {
+                    a: {
+                      props: {
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        className: 'underline hover:text-blue-600 transition-colors',
+                      },
+                    },
+                  },
+                }}
+              >
+                {content}
+              </Markdown>
             ) : (
               <p className="text-sm whitespace-pre-wrap">{content}</p>
             )}
