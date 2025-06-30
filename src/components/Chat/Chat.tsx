@@ -36,47 +36,49 @@ function Chat() {
 
   return (
     <div className="h-full flex-1 flex flex-col">
-      <div className="flex justify-between items-center p-1 border-b">
+      <div className="flex justify-between gap-1 items-center p-1 border-b">
         {currentView === 'history' && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToChat}
-            className="rounded-xl"
-            aria-label="Back to chat"
-          >
-            <ArrowLeft />
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleBackToChat}
+              className="rounded-xl"
+              aria-label="Back to chat"
+            >
+              <ArrowLeft />
+            </Button>
+            <p>{'Chat history'}</p>
+            <div className="h-8 w-9"></div>
+          </>
         )}
-        {currentView === 'chat' && <div />}
 
-        <div className="w-full flex gap-1 justify-between">
-          {currentView === 'chat' && (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleShowHistory}
-                className="rounded-xl"
-                aria-label="Show chat history"
-              >
-                <History />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleStartNewThread}
-                className="rounded-xl"
-                aria-label="Start new chat thread"
-              >
-                <MessageSquarePlus />
-              </Button>
-            </>
-          )}
-        </div>
+        {currentView === 'chat' && (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleShowHistory}
+              className="rounded-xl"
+              aria-label="Show chat history"
+            >
+              <History />
+            </Button>
+            <p>{'New chat'}</p>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleStartNewThread}
+              className="rounded-xl"
+              aria-label="Start new chat thread"
+            >
+              <MessageSquarePlus />
+            </Button>
+          </>
+        )}
       </div>
 
       {currentView === 'chat' ? (
