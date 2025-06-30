@@ -125,7 +125,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
   waitingForReply: false,
   clearHistory: () => set({ messages: [] }),
   assistant: null,
-  model: AIModel.OpenAI_ChatGPT_4o,
+  model: AIModel.OpenAI_GPT_4_1,
   setModel: (model: AIModel) => set({ model }),
   threadId: crypto.randomUUID(),
   startNewThread: () =>
