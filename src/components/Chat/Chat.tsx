@@ -51,7 +51,7 @@ function Chat() {
         )}
         {currentView === 'chat' && <div />}
 
-        <div className="flex gap-1">
+        <div className="w-full flex gap-1 justify-between">
           {currentView === 'chat' && (
             <>
               <Button
