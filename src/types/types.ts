@@ -3,10 +3,28 @@ export enum MessageRole {
   Assistant = 'assistant',
 }
 
+export enum MessageContentType {
+  OutputText = 'output_text',
+  FunctionCall = 'function_call',
+}
+
+export type MessageContent =
+  | {
+      id: string
+      type: MessageContentType.OutputText
+      text: string
+    }
+  | {
+      id: string
+      type: MessageContentType.FunctionCall
+      name: string
+      arguments: string
+    }
+
 export type Message = {
   id: string
   role: MessageRole
-  content: string
+  content: MessageContent[]
   createdAt: string
   error?: string
   threadId: string

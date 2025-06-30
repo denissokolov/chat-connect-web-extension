@@ -4,57 +4,78 @@ import { DateTime } from 'luxon'
 
 import Chat from './Chat'
 import useChatStore from '@/stores/useChatStore'
-import { type Message, MessageRole } from '@/types/types'
+import { type Message, MessageContentType, MessageRole } from '@/types/types'
 import { useEffect } from 'react'
 import { MockAssistant } from '@/services/assistant'
 
 const messages: Message[] = [
   {
     id: '1',
-    content: 'Please make a summary of this page',
+    content: [
+      { type: MessageContentType.OutputText, text: 'Please make a summary of this page', id: '1' },
+    ],
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
   },
   {
     id: '2',
-    content:
-      'This is the summary of the page: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    content: [
+      {
+        type: MessageContentType.OutputText,
+        text: 'This is the summary of the page: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        id: '2',
+      },
+    ],
     role: MessageRole.Assistant,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
   },
   {
     id: '3',
-    content: 'What is the main idea of the page?',
+    content: [
+      { type: MessageContentType.OutputText, text: 'What is the main idea of the page?', id: '3' },
+    ],
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
   },
   {
     id: '4',
-    content: 'The main idea of the page is to make a summary of the page',
+    content: [
+      {
+        type: MessageContentType.OutputText,
+        text: 'The main idea of the page is to make a summary of the page',
+        id: '4',
+      },
+    ],
     role: MessageRole.Assistant,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
   },
   {
     id: '5',
-    content: 'What time is it?',
+    content: [{ type: MessageContentType.OutputText, text: 'What time is it?', id: '5' }],
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
   },
   {
     id: '6',
-    content: 'It is 12:00 PM',
+    content: [{ type: MessageContentType.OutputText, text: 'It is 12:00 PM', id: '6' }],
     role: MessageRole.Assistant,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
   },
   {
     id: '7',
-    content: 'Ultimate Question of Life, the Universe, and Everything',
+    content: [
+      {
+        type: MessageContentType.OutputText,
+        text: 'Ultimate Question of Life, the Universe, and Everything',
+        id: '7',
+      },
+    ],
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
@@ -160,7 +181,7 @@ export const WithError: Story = {
           messages: [
             {
               id: '1',
-              content: 'Hello, world!',
+              content: [{ type: MessageContentType.OutputText, text: 'Hello, world!', id: '1' }],
               role: MessageRole.User,
               createdAt: DateTime.now().toISO(),
               error:

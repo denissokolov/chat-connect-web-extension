@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 
-import { AIModel, AIProvider, MessageRole, type Message } from '@/types/types'
+import { AIModel, AIProvider, MessageContentType, MessageRole, type Message } from '@/types/types'
 
 import type { IAssistant } from './IAssistant'
 
@@ -38,7 +38,9 @@ export class MockAssistant implements IAssistant {
       threadId,
       id: 'mock-assistant',
       role: MessageRole.Assistant,
-      content: 'Hello, how can I help you today?',
+      content: [
+        { type: MessageContentType.OutputText, text: 'Hello, how can I help you today?', id: '1' },
+      ],
       createdAt: DateTime.now().toISO(),
     }
   }

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
-    "dev": "tsc -b && vite build --watch",
+    "dev": "tsc -b && vite build --watch --mode development",
     "tsc:app": "tsc -p ./tsconfig.app.json --noEmit  --incremental false",
     "tsc:node": "tsc -p ./tsconfig.node.json --noEmit  --incremental false",
     "tsc": "npm run tsc:app && npm run tsc:node",

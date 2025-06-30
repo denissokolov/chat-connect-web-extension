@@ -50,7 +50,10 @@ function ChatHistory({
           {sortedThreads.map(thread => {
             const messages = getThreadMessages?.(thread.id) || []
             const firstUserMessage = messages.find(msg => msg.role === 'user')
-            const preview = firstUserMessage?.content || 'New conversation'
+            const preview =
+              firstUserMessage?.content
+                .map(item => (item.type === 'output_text' ? item.text : ''))
+                .join(' ') || 'New conversation'
             const isSelected = selectedThreadId === thread.id
 
             return (

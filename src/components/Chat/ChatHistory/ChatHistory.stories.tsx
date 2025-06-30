@@ -3,7 +3,7 @@ import { expect, userEvent } from 'storybook/test'
 import { DateTime } from 'luxon'
 
 import ChatHistory from './ChatHistory'
-import { MessageRole, type Thread, type Message } from '@/types/types'
+import { MessageContentType, MessageRole, type Thread, type Message } from '@/types/types'
 
 // Mock data for stories
 const mockThreads: Thread[] = [
@@ -34,22 +34,39 @@ const mockMessages: Record<string, Message[]> = {
     {
       id: 'msg-1',
       role: MessageRole.User,
-      content: 'How do I implement a React component with TypeScript?',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'How do I implement a React component with TypeScript?',
+          id: '1',
+        },
+      ],
       createdAt: DateTime.now().minus({ hours: 2 }).toISO(),
       threadId: 'thread-1',
     },
     {
       id: 'msg-2',
       role: MessageRole.Assistant,
-      content:
-        'To implement a React component with TypeScript, you need to define the component props interface and use proper typing...',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'To implement a React component with TypeScript, you need to define the component props interface and use proper typing...',
+          id: '2',
+        },
+      ],
       createdAt: DateTime.now().minus({ hours: 2, minutes: 1 }).toISO(),
       threadId: 'thread-1',
     },
     {
       id: 'msg-3',
       role: MessageRole.User,
-      content: 'Can you show me an example with hooks?',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'Can you show me an example with hooks?',
+          id: '3',
+        },
+      ],
       createdAt: DateTime.now().minus({ minutes: 30 }).toISO(),
       threadId: 'thread-1',
     },
@@ -58,15 +75,26 @@ const mockMessages: Record<string, Message[]> = {
     {
       id: 'msg-4',
       role: MessageRole.User,
-      content: 'What are the best practices for state management in React?',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'What are the best practices for state management in React?',
+          id: '4',
+        },
+      ],
       createdAt: DateTime.now().minus({ days: 1 }).toISO(),
       threadId: 'thread-2',
     },
     {
       id: 'msg-5',
       role: MessageRole.Assistant,
-      content:
-        'There are several approaches to state management in React, including useState, useReducer, Context API, and external libraries like Zustand or Redux...',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'There are several approaches to state management in React, including useState, useReducer, Context API, and external libraries like Zustand or Redux...',
+          id: '5',
+        },
+      ],
       createdAt: DateTime.now().minus({ days: 1, minutes: 2 }).toISO(),
       threadId: 'thread-2',
     },
@@ -75,7 +103,13 @@ const mockMessages: Record<string, Message[]> = {
     {
       id: 'msg-6',
       role: MessageRole.User,
-      content: 'Explain the difference between useEffect and useLayoutEffect',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'Explain the difference between useEffect and useLayoutEffect',
+          id: '6',
+        },
+      ],
       createdAt: DateTime.now().minus({ days: 3 }).toISO(),
       threadId: 'thread-3',
     },
@@ -84,22 +118,39 @@ const mockMessages: Record<string, Message[]> = {
     {
       id: 'msg-7',
       role: MessageRole.User,
-      content: 'Help me debug this CSS flexbox layout issue',
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: 'Help me debug this CSS flexbox layout issue',
+          id: '7',
+        },
+      ],
       createdAt: DateTime.now().minus({ weeks: 1 }).toISO(),
       threadId: 'thread-4',
     },
     {
       id: 'msg-8',
       role: MessageRole.Assistant,
-      content:
-        "I'd be happy to help you debug your flexbox layout. Can you share the CSS code you're working with?",
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: "I'd be happy to help you debug your flexbox layout. Can you share the CSS code you're working with?",
+          id: '8',
+        },
+      ],
       createdAt: DateTime.now().minus({ weeks: 1, minutes: 1 }).toISO(),
       threadId: 'thread-4',
     },
     {
       id: 'msg-9',
       role: MessageRole.User,
-      content: "Here's my CSS: .container { display: flex; justify-content: space-between; }",
+      content: [
+        {
+          type: MessageContentType.OutputText,
+          text: "Here's my CSS: .container { display: flex; justify-content: space-between; }",
+          id: '9',
+        },
+      ],
       createdAt: DateTime.now().minus({ days: 5 }).toISO(),
       threadId: 'thread-4',
     },

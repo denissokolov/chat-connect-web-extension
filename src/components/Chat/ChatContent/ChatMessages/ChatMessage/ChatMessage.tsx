@@ -2,13 +2,26 @@ import { memo } from 'react'
 import { AlertCircle } from 'lucide-react'
 import Markdown from 'markdown-to-jsx'
 
-import { MessageRole } from '@/types/types'
+import { MessageRole, type MessageContent } from '@/types/types'
+import { cn } from '@/utils/ui'
 
 interface ChatMessageProps {
   role: MessageRole
-  content: string
+  content?: MessageContent[]
   progress?: boolean
   error?: string
+}
+
+const markdownOptions = {
+  overrides: {
+    a: {
+      props: {
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        className: 'underline hover:text-blue-600 transition-colors',
+      },
+    },
+  },
 }
 
 function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
@@ -32,32 +45,26 @@ function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
               ></div>
             </div>
           </div>
-        ) : (
+        ) : content ? (
           <div
-            className={`max-w-full rounded-lg ${role === MessageRole.User ? 'p-3 bg-muted' : ''}`}
+            className={cn(
+              'max-w-full rounded-lg leading-1',
+              role === MessageRole.User && 'p-3 bg-muted',
+            )}
           >
-            {role === MessageRole.Assistant ? (
-              <Markdown
-                className="text-sm prose"
-                options={{
-                  overrides: {
-                    a: {
-                      props: {
-                        target: '_blank',
-                        rel: 'noopener noreferrer',
-                        className: 'underline hover:text-blue-600 transition-colors',
-                      },
-                    },
-                  },
-                }}
-              >
-                {content}
-              </Markdown>
-            ) : (
-              <p className="text-sm whitespace-pre-wrap">{content}</p>
+            {content.map(item =>
+              item.type === 'output_text' ? (
+                <Markdown
+                  key={item.id}
+                  className={cn('prose text-sm', role === MessageRole.User && 'text-foreground')}
+                  options={markdownOptions}
+                >
+                  {item.text}
+                </Markdown>
+              ) : null,
             )}
           </div>
-        )}
+        ) : null}
       </div>
       {error && (
         <div className="flex items-center gap-2 mt-2">

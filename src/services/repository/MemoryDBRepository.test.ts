@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { MessageRole, type Message, type Thread } from '@/types/types'
+import {
+  MessageContentType,
+  MessageRole,
+  type Message,
+  type MessageContent,
+  type Thread,
+} from '@/types/types'
 
 import { MemoryDBRepository } from './MemoryDBRepository'
 
@@ -22,7 +28,7 @@ describe('MemoryDBRepository', () => {
   const mockMessage1: Message = {
     id: 'message-1',
     role: MessageRole.User,
-    content: 'Hello world',
+    content: [{ type: MessageContentType.OutputText, text: 'Hello world', id: '1' }],
     createdAt: '2024-01-01T10:30:00Z',
     threadId: 'thread-1',
   }
@@ -30,7 +36,7 @@ describe('MemoryDBRepository', () => {
   const mockMessage2: Message = {
     id: 'message-2',
     role: MessageRole.Assistant,
-    content: 'Hello there!',
+    content: [{ type: MessageContentType.OutputText, text: 'Hello there!', id: '2' }],
     createdAt: '2024-01-01T10:31:00Z',
     threadId: 'thread-1',
   }
@@ -38,7 +44,7 @@ describe('MemoryDBRepository', () => {
   const mockMessage3: Message = {
     id: 'message-3',
     role: MessageRole.User,
-    content: 'How are you?',
+    content: [{ type: MessageContentType.OutputText, text: 'How are you?', id: '3' }],
     createdAt: '2024-01-01T11:30:00Z',
     threadId: 'thread-2',
   }
@@ -271,7 +277,9 @@ describe('MemoryDBRepository', () => {
       const message = { ...mockMessage1 }
       await repository.createMessage(message)
 
-      message.content = 'Modified content'
+      message.content = [
+        { id: '333', type: MessageContentType.OutputText, text: 'Modified content' },
+      ]
 
       const messages = await repository.getMessages('thread-1')
       expect(messages[0]).toEqual(mockMessage1)
@@ -314,7 +322,16 @@ describe('MemoryDBRepository', () => {
       const updatedThread = { ...mockThread1, updatedAt: '2024-01-01T16:00:00Z' }
       await repository.updateThread(updatedThread)
 
-      const createdMessage = { ...mockMessage1, content: 'Updated hello' }
+      const createdMessage = {
+        ...mockMessage1,
+        content: [
+          {
+            id: '444',
+            text: 'Updated hello',
+            type: MessageContentType.OutputText,
+          } as MessageContent,
+        ],
+      }
       await repository.createMessage(createdMessage)
 
       await repository.deleteThread('thread-2')
@@ -325,7 +342,13 @@ describe('MemoryDBRepository', () => {
       expect(threads).toHaveLength(1)
       expect(threads[0]).toEqual(updatedThread)
       expect(messages).toHaveLength(2)
-      expect(messages[0].content).toBe('Updated hello')
+      expect(messages[0].content).toEqual([
+        {
+          id: '444',
+          text: 'Updated hello',
+          type: MessageContentType.OutputText,
+        },
+      ])
     })
 
     it('should handle same ID replacement for threads', async () => {
@@ -350,7 +373,7 @@ describe('MemoryDBRepository', () => {
       const replacementMessage: Message = {
         id: 'message-1',
         role: MessageRole.Assistant,
-        content: 'Replacement content',
+        content: [{ id: '555', type: MessageContentType.OutputText, text: 'Replacement content' }],
         createdAt: '2024-01-01T12:00:00Z',
         threadId: 'thread-1',
       }

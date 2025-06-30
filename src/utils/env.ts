@@ -11,3 +11,7 @@ export function isStorybookEnv(): boolean {
     (typeof window !== 'undefined' && 'IS_STORYBOOK' in window && window['IS_STORYBOOK'] === true)
   )
 }
+
+export function isDevEnv(): boolean {
+  return import.meta.env.MODE === 'development'
+}

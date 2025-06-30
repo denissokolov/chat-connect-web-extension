@@ -8,11 +8,11 @@ export default function ChatMessages() {
   const waitingForReply = useChatStore(state => state.waitingForReply)
 
   return (
-    <div className="flex-1 pt-4 px-4 space-y-4 overflow-y-auto" tabIndex={0}>
+    <div className="flex-1 py-4 px-4 space-y-4 overflow-y-auto" tabIndex={0}>
       {messages.map(message => (
         <ChatMessage key={message.id} {...message} />
       ))}
-      {waitingForReply && <ChatMessage role={MessageRole.Assistant} content="" progress />}
+      {waitingForReply && <ChatMessage role={MessageRole.Assistant} progress />}
     </div>
   )
 }

@@ -1,7 +1,14 @@
 import { DateTime } from 'luxon'
 import { describe, it, expect, beforeEach, vi, type Mock, type MockedFunction } from 'vitest'
 
-import { AIModel, AIProvider, MessageRole, type Message, type PageContext } from '@/types/types'
+import {
+  AIModel,
+  AIProvider,
+  MessageContentType,
+  MessageRole,
+  type Message,
+  type PageContext,
+} from '@/types/types'
 import { MockAssistant, type IAssistant } from '@/services/assistant'
 import browser from '@/services/browser'
 import repository from '@/services/repository'
@@ -44,7 +51,7 @@ describe('useChatStore', () => {
     threadId: 'test-thread-id',
     id: 'test-message-id',
     role: MessageRole.Assistant,
-    content: 'Test response',
+    content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
     createdAt: '2024-01-01T12:00:00Z',
   }
 
@@ -116,14 +123,14 @@ describe('useChatStore', () => {
           {
             id: '1',
             role: MessageRole.User,
-            content: 'Hello',
+            content: [{ type: MessageContentType.OutputText, text: 'Hello', id: '1' }],
             createdAt: DateTime.now().toISO(),
             threadId: 'test-thread-id',
           },
           {
             id: '2',
             role: MessageRole.Assistant,
-            content: 'Hi there',
+            content: [{ type: MessageContentType.OutputText, text: 'Hi there', id: '2' }],
             createdAt: DateTime.now().toISO(),
             threadId: 'test-thread-id',
           },
@@ -195,7 +202,7 @@ describe('useChatStore', () => {
       expect(state.messages[0]).toEqual({
         id: expect.any(String),
         role: MessageRole.User,
-        content: 'Hello',
+        content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
         createdAt: mockDate.toISO(),
         threadId: 'test-thread-id',
       })
@@ -235,7 +242,7 @@ describe('useChatStore', () => {
         {
           id: '1',
           role: MessageRole.User,
-          content: 'Previous message',
+          content: [{ type: MessageContentType.OutputText, text: 'Previous message', id: '1' }],
           createdAt: DateTime.now().toISO(),
           threadId: 'test-thread-id',
         },
@@ -366,7 +373,7 @@ describe('useChatStore', () => {
         {
           id: '1',
           role: MessageRole.User,
-          content: 'Previous message',
+          content: [{ type: MessageContentType.OutputText, text: 'Previous message', id: '1' }],
           createdAt: DateTime.now().toISO(),
           threadId: 'test-thread-id',
         },
