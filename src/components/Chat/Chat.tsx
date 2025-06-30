@@ -36,7 +36,7 @@ function Chat() {
 
   return (
     <div className="h-full flex-1 flex flex-col">
-      <div className="flex justify-between gap-1 items-center p-1 border-b">
+      <div className="flex justify-between gap-1 items-center p-1 border-b border-[#EDF2FA]">
         {currentView === 'history' && (
           <>
             <Button
