@@ -134,6 +134,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
       messages: [],
       waitingForReply: false,
       currentAbortController: null,
+      currentView: 'chat',
     }),
   currentAbortController: null,
   currentView: 'chat',

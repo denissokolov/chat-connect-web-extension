@@ -50,7 +50,16 @@ function Chat() {
               <ArrowLeft />
             </Button>
             <p>{'Chat history'}</p>
-            <div className="h-8 w-9"></div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleStartNewThread}
+              className="rounded-xl"
+              aria-label="Start new chat thread"
+            >
+              <MessageSquarePlus />
+            </Button>
           </>
         )}
 
