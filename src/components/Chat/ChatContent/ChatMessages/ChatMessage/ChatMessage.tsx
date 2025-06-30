@@ -14,7 +14,9 @@ interface ChatMessageProps {
 function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
   return (
     <>
-      <div className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start mb-8'}`}
+      >
         {error && <AlertCircle className="w-4 h-4 text-red-500 mt-3" />}
         {progress ? (
           <div className="rounded-lg p-3">
