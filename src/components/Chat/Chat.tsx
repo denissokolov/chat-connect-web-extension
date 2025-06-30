@@ -1,16 +1,15 @@
 import { memo, useCallback, useEffect } from 'react'
-import { MessageSquarePlus, History, ArrowLeft } from 'lucide-react'
 
 import ChatInput from './ChatInput/ChatInput'
 import ChatContent from './ChatContent/ChatContent'
 import ChatHistory from './ChatHistory/ChatHistory'
+import ChatHeader from './ChatHeader/ChatHeader'
 import useChatStore from '@/stores/useChatStore'
-import { Button } from '@/components/ui/button'
 
 function Chat() {
   const setupProvider = useChatStore(state => state.setupProvider)
   const model = useChatStore(state => state.model)
-  const startNewThread = useChatStore(state => state.startNewThread)
+
   const currentView = useChatStore(state => state.currentView)
   const setCurrentView = useChatStore(state => state.setCurrentView)
 
@@ -22,74 +21,9 @@ function Chat() {
     setupProvider(model)
   }, [setupProvider, model])
 
-  const handleStartNewThread = useCallback(() => {
-    startNewThread()
-  }, [startNewThread])
-
-  const handleShowHistory = useCallback(() => {
-    setCurrentView('history')
-  }, [setCurrentView])
-
-  const handleBackToChat = useCallback(() => {
-    setCurrentView('chat')
-  }, [setCurrentView])
-
   return (
     <div className="h-full flex-1 flex flex-col">
-      <div className="flex justify-between gap-1 items-center p-1 border-b border-[#EDF2FA]">
-        {currentView === 'history' && (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleBackToChat}
-              className="rounded-xl"
-              aria-label="Back to chat"
-            >
-              <ArrowLeft />
-            </Button>
-            <p>{'Chat history'}</p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleStartNewThread}
-              className="rounded-xl"
-              aria-label="Start new chat thread"
-            >
-              <MessageSquarePlus />
-            </Button>
-          </>
-        )}
-
-        {currentView === 'chat' && (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleShowHistory}
-              className="rounded-xl"
-              aria-label="Show chat history"
-            >
-              <History />
-            </Button>
-            <p>{'New chat'}</p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleStartNewThread}
-              className="rounded-xl"
-              aria-label="Start new chat thread"
-            >
-              <MessageSquarePlus />
-            </Button>
-          </>
-        )}
-      </div>
-
+      <ChatHeader currentView={currentView} setCurrentView={setCurrentView} />
       {currentView === 'chat' ? (
         <>
           <ChatContent retryInitialization={retryInitialization} />
