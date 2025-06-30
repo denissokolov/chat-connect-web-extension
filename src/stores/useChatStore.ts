@@ -11,6 +11,8 @@ import { getBasicInstructions } from '@/utils/instructions'
 import browser from '@/services/browser'
 import repository from '@/services/repository'
 
+type ChatView = 'chat' | 'history'
+
 interface ChatStore {
   messages: Message[]
   sendMessage: (text: string) => Promise<void>
@@ -30,6 +32,8 @@ interface ChatStore {
   }
   setupProvider: (model: AIModel) => Promise<void>
   currentAbortController: AbortController | null
+  currentView: ChatView
+  setCurrentView: (view: ChatView) => void
 }
 
 const useChatStore = create<ChatStore>((set, get) => ({
@@ -130,8 +134,11 @@ const useChatStore = create<ChatStore>((set, get) => ({
       messages: [],
       waitingForReply: false,
       currentAbortController: null,
+      currentView: 'chat',
     }),
   currentAbortController: null,
+  currentView: 'chat',
+  setCurrentView: (view: ChatView) => set({ currentView: view }),
   provider: {
     ready: false,
     loading: false,
