@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import useChatStore from '@/stores/useChatStore'
 
@@ -10,14 +10,6 @@ export default function ChatMessages() {
   const waitingForReply = useChatStore(state => state.waitingForReply)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const scrollToBottom = (behavior: 'smooth' | 'instant' = 'smooth') => {
-    messagesEndRef.current?.scrollIntoView({ behavior })
-  }
-
-  useEffect(() => {
-    scrollToBottom('instant')
-  }, [messages])
 
   return (
     <div className="flex-1 pt-4 px-4 space-y-4 overflow-y-auto" tabIndex={0}>
