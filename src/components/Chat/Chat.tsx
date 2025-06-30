@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect } from 'react'
+import { MessageSquarePlus } from 'lucide-react'
 
 import ChatInput from './ChatInput/ChatInput'
 import ChatContent from './ChatContent/ChatContent'
@@ -24,9 +25,16 @@ function Chat() {
 
   return (
     <div className="h-full flex-1 flex flex-col">
-      <div className="flex justify-end p-2 border-b">
-        <Button type="button" variant="ghost" size="sm" onClick={handleStartNewThread}>
-          {'New thread'}
+      <div className="flex justify-end p-1 border-b">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleStartNewThread}
+          className="rounded-xl"
+          aria-label="Start new chat thread"
+        >
+          <MessageSquarePlus />
         </Button>
       </div>
       <ChatContent retryInitialization={retryInitialization} />
