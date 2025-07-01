@@ -8,6 +8,22 @@ export enum MessageContentType {
   FunctionCall = 'function_call',
 }
 
+export enum FunctionName {
+  FillInput = 'fill_input',
+}
+
+export type SingleFunctionCall = {
+  id: string
+  name: FunctionName.FillInput
+  arguments: {
+    input_type: string
+    input_value: string
+    input_name?: string | null
+    input_id?: string | null
+    label_value: string
+  }
+}
+
 export type MessageContent =
   | {
       id: string
@@ -17,8 +33,7 @@ export type MessageContent =
   | {
       id: string
       type: MessageContentType.FunctionCall
-      name: string
-      arguments: string
+      batch: SingleFunctionCall[]
     }
 
 export type MessageContext = {

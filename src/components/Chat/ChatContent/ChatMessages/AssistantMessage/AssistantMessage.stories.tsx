@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
 import AssistantMessage from './AssistantMessage'
-import { MessageContentType, type MessageContent } from '@/types/types'
+import { FunctionName, MessageContentType, type MessageContent } from '@/types/types'
 
 const meta: Meta<typeof AssistantMessage> = {
   title: 'Chat / Assistant Message',
@@ -198,5 +198,140 @@ All links will open in a new tab for your convenience.`,
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
+  },
+}
+
+export const WithOneFunctionCall: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        batch: [
+          {
+            id: '8',
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'input',
+              input_value: '1234',
+              input_name: 'postalcode',
+              input_id: null,
+              label_value: 'Postcode',
+            },
+          },
+        ],
+      },
+    ] as MessageContent[],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Postcode:')).toBeInTheDocument()
+    expect(canvas.getByText('1234')).toBeInTheDocument()
+    expect(canvas.getByText('Execute')).toBeInTheDocument()
+  },
+}
+
+export const WithMultipleFunctionCalls: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        batch: [
+          {
+            id: '8',
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'input',
+              input_value: '1234',
+              input_name: 'postalcode',
+              input_id: null,
+              label_value: 'Postcode',
+            },
+          },
+          {
+            id: '9',
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'input',
+              input_value: 'AB',
+              input_name: 'postalcode_letters',
+              input_id: null,
+              label_value: 'Postcode letters',
+            },
+          },
+        ],
+      },
+    ] as MessageContent[],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Postcode:')).toBeInTheDocument()
+    expect(canvas.getByText('1234')).toBeInTheDocument()
+    expect(canvas.getByText('Postcode letters:')).toBeInTheDocument()
+    expect(canvas.getByText('AB')).toBeInTheDocument()
+    expect(canvas.getByText('Execute')).toBeInTheDocument()
+  },
+}
+
+export const WithMultipleFunctionCallsAndText: Story = {
+  args: {
+    content: [
+      {
+        id: '6',
+        type: MessageContentType.OutputText,
+        text: 'Hello! I can help you with various tasks. ',
+      },
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        batch: [
+          {
+            id: '8',
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'input',
+              input_value: '1234',
+              input_name: 'postalcode',
+              input_id: null,
+              label_value: 'Postcode',
+            },
+          },
+          {
+            id: '9',
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'input',
+              input_value: 'AB',
+              input_name: 'postalcode_letters',
+              input_id: null,
+              label_value: 'Postcode letters',
+            },
+          },
+        ],
+      },
+      {
+        id: '8',
+        type: MessageContentType.OutputText,
+        text: 'If you need more information, please let me know.',
+      },
+      {
+        id: '9',
+        type: MessageContentType.FunctionCall,
+        batch: [
+          {
+            id: '10',
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'input',
+              input_value: '1234',
+              input_name: 'postalcode',
+              input_id: null,
+              label_value: 'Postcode',
+            },
+          },
+        ],
+      },
+    ] as MessageContent[],
   },
 }

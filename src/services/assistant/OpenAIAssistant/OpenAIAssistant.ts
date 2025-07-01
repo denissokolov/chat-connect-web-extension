@@ -69,13 +69,6 @@ export class OpenAIAssistant implements IAssistant {
               })
             }
           })
-        } else if (output.type === 'function_call') {
-          acc.push({
-            id: output.id ?? output.call_id,
-            type: MessageContentType.FunctionCall,
-            name: output.name,
-            arguments: output.arguments,
-          })
         }
         return acc
       }, [] as MessageContent[]),
@@ -87,26 +80,35 @@ export class OpenAIAssistant implements IAssistant {
     return {
       type: 'function',
       name: 'fill_input',
-      description: 'Fill the input on the page with the given value',
+      description: `Fill the given value into the input field on the page. At least one of 'input_name' or 'input_id' is required.`,
       strict: true,
       parameters: {
         type: 'object',
         properties: {
-          input_name: {
-            type: 'string',
-            description: 'The name attribute of the input to fill',
-          },
           input_type: {
             type: 'string',
             enum: ['input', 'textarea', 'select', 'radio', 'checkbox'],
             description: 'The type of the input to fill',
           },
-          value: {
+          input_value: {
             type: 'string',
             description: 'The value to fill in the input',
           },
+          input_name: {
+            type: ['string', 'null'],
+            description: 'The name attribute of the input to fill',
+          },
+          input_id: {
+            type: ['string', 'null'],
+            description: 'The id attribute of the input to fill',
+          },
+          label_value: {
+            type: 'string',
+            description:
+              'The value of the label of the input to fill. Provide any relevant details if there is no label, e.g. the placeholder text.',
+          },
         },
-        required: ['input_name', 'input_type', 'value'],
+        required: ['input_type', 'input_value', 'input_name', 'input_id', 'label_value'],
         additionalProperties: false,
       },
     }

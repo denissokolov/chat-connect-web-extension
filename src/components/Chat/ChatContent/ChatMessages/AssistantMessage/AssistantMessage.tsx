@@ -1,7 +1,8 @@
 import { memo } from 'react'
 
-import { type MessageContent } from '@/types/types'
+import { MessageContentType, type MessageContent } from '@/types/types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
+import FunctionCallMessage from './FunctionCallMessage/FunctionCallMessage'
 
 interface AssistantMessageProps {
   content?: MessageContent[]
@@ -29,8 +30,10 @@ function AssistantMessage({ content, progress }: AssistantMessageProps) {
         ) : content ? (
           <div className="max-w-full rounded-lg leading-1">
             {content.map(item =>
-              item.type === 'output_text' ? (
+              item.type === MessageContentType.OutputText ? (
                 <MarkdownMessage key={item.id} text={item.text} />
+              ) : item.type === MessageContentType.FunctionCall ? (
+                <FunctionCallMessage key={item.id} batch={item.batch} />
               ) : null,
             )}
           </div>

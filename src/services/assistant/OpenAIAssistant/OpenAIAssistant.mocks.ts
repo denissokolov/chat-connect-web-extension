@@ -28,35 +28,66 @@ export const mockMultipleOutputsResponse: Response = {
       role: 'assistant',
     },
     {
-      id: 'fc_686145c4c71c8198a1aac83e83356f160b325342bb03bdeb',
+      id: 'fc_6864535ec228819ba2559f273bac03b8060efbe81c5b5256',
       type: 'function_call',
       status: 'completed',
-      arguments: '{"input_name":"typeofclient","input_type":"radio","value":"business"}',
-      call_id: 'call_XuyJhWjdt4MbFZ5eYksl8N6g',
+      arguments:
+        '{"input_type":"radio","input_value":"personal","input_name":"typeofclient","input_id":"personal","label_value":"Particulier"}',
+      call_id: 'call_V8DXgOfseNt66chXUplx7L2Z',
       name: 'fill_input',
     },
     {
-      id: 'fc_686145c4ece48198a7c84fa9e263e4bd0b325342bb03bdeb',
+      id: 'fc_6864535f2404819ba1555e61809b5f81060efbe81c5b5256',
       type: 'function_call',
       status: 'completed',
-      arguments: '{"input_name":"companyname","input_type":"input","value":"ABC Consultants"}',
-      call_id: 'call_1sOnx1OigbuYT82c2tv3frTg',
+      arguments:
+        '{"input_type":"input","input_value":"Jan","input_name":"firstname","input_id":null,"label_value":"Naam"}',
+      call_id: 'call_LH7df6L6NqMKezUq1DN81PYb',
       name: 'fill_input',
     },
     {
-      id: 'fc_686145c4ffbc81989d85d5f3dfcb6ca70b325342bb03bdeb',
+      id: 'fc_6864536001f4819bab78433adec1a78e060efbe81c5b5256',
       type: 'function_call',
       status: 'completed',
-      arguments: '{"input_name":"firstname","input_type":"input","value":"Lucas"}',
-      call_id: 'call_GUgTaX7aC9JIyI1jJ8aKekG0',
+      arguments:
+        '{"input_type":"input","input_value":"Jansen","input_name":"lastname","input_id":null,"label_value":"Achternaam"}',
+      call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
       name: 'fill_input',
     },
     {
-      id: 'fc_686145c52870819896d493ab6649d3b80b325342bb03bdeb',
+      id: 'fc_68645360f48c819b8c95f455693346f2060efbe81c5b5256',
       type: 'function_call',
       status: 'completed',
-      arguments: '{"input_name":"lastname","input_type":"input","value":"Vermeer"}',
-      call_id: 'call_kmSQxXa5vn3AQdxK3RypTNQz',
+      arguments:
+        '{"input_type":"input","input_value":"Kleine Houtweg","input_name":"street","input_id":null,"label_value":"Adres"}',
+      call_id: 'call_TMdRqbD9sDEmriGMik1KSPzJ',
+      name: 'fill_input',
+    },
+    {
+      id: 'fc_686453613364819b862f1b3bb6f44158060efbe81c5b5256',
+      type: 'function_call',
+      status: 'completed',
+      arguments:
+        '{"input_type":"input","input_value":"14A","input_name":"streetnumber","input_id":null,"label_value":"Huisnummer"}',
+      call_id: 'call_fTOzaEii78aY84mSZt9PRg0v',
+      name: 'fill_input',
+    },
+    {
+      id: 'fc_686453617e38819b949d395a8a405ea0060efbe81c5b5256',
+      type: 'function_call',
+      status: 'completed',
+      arguments:
+        '{"input_type":"input","input_value":"1234","input_name":"postalcode","input_id":null,"label_value":"Postcode"}',
+      call_id: 'call_KgqM5HkDpnw0v4WhMN4uUwXh',
+      name: 'fill_input',
+    },
+    {
+      id: 'fc_68645362c628819bbe945b8cc269ba08060efbe81c5b5256',
+      type: 'function_call',
+      status: 'completed',
+      arguments:
+        '{"input_type":"input","input_value":"AB","input_name":"postalcode_letters","input_id":null,"label_value":"Postcode letters"}',
+      call_id: 'call_WuRN10hEM0PzggxT7e8Ob20C',
       name: 'fill_input',
     },
   ],
