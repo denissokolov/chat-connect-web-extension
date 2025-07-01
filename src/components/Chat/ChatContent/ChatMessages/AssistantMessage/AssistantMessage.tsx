@@ -2,11 +2,9 @@ import { memo } from 'react'
 import { AlertCircle } from 'lucide-react'
 import Markdown from 'markdown-to-jsx'
 
-import { MessageRole, type MessageContent } from '@/types/types'
-import { cn } from '@/utils/ui'
+import { type MessageContent } from '@/types/types'
 
-interface ChatMessageProps {
-  role: MessageRole
+interface AssistantMessageProps {
   content?: MessageContent[]
   progress?: boolean
   error?: string
@@ -24,12 +22,10 @@ const markdownOptions = {
   },
 }
 
-function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
+function AssistantMessage({ content, progress, error }: AssistantMessageProps) {
   return (
     <>
-      <div
-        className={`flex gap-3 ${role === MessageRole.User ? 'justify-end' : 'justify-start mb-8'}`}
-      >
+      <div className="flex gap-3 justify-start mb-8">
         {error && <AlertCircle className="w-4 h-4 text-red-500 mt-3" />}
         {progress ? (
           <div className="rounded-lg p-3">
@@ -46,19 +42,10 @@ function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
             </div>
           </div>
         ) : content ? (
-          <div
-            className={cn(
-              'max-w-full rounded-lg leading-1',
-              role === MessageRole.User && 'p-3 bg-muted',
-            )}
-          >
+          <div className="max-w-full rounded-lg leading-1">
             {content.map(item =>
               item.type === 'output_text' ? (
-                <Markdown
-                  key={item.id}
-                  className={cn('prose text-sm', role === MessageRole.User && 'text-foreground')}
-                  options={markdownOptions}
-                >
+                <Markdown key={item.id} className="prose text-sm" options={markdownOptions}>
                   {item.text}
                 </Markdown>
               ) : null,
@@ -75,4 +62,4 @@ function ChatMessage({ role, content, progress, error }: ChatMessageProps) {
   )
 }
 
-export default memo(ChatMessage)
+export default memo(AssistantMessage)
