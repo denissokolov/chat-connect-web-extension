@@ -19,7 +19,7 @@ export default function ChatMessages() {
             context={message.context}
           />
         ) : (
-          <AssistantMessage key={message.id} content={message.content} error={message.error} />
+          <AssistantMessage key={message.id} content={message.content} />
         ),
       )}
       {waitingForReply && <AssistantMessage progress />}

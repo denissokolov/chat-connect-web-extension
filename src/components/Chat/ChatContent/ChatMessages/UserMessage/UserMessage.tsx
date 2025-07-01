@@ -1,26 +1,14 @@
 import { memo } from 'react'
 import { AlertCircle } from 'lucide-react'
-import Markdown from 'markdown-to-jsx'
 
 import { type MessageContent, type MessageContext } from '@/types/types'
-import ContextDisplay from '@/components/ui/context-display'
+import ContextDisplay from '@/components/Chat/ContextDisplay/ContextDisplay'
+import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 
 interface UserMessageProps {
   content?: MessageContent[]
   error?: string
   context?: MessageContext
-}
-
-const markdownOptions = {
-  overrides: {
-    a: {
-      props: {
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        className: 'underline hover:text-blue-600 transition-colors',
-      },
-    },
-  },
 }
 
 function UserMessage({ content, error, context }: UserMessageProps) {
@@ -37,13 +25,7 @@ function UserMessage({ content, error, context }: UserMessageProps) {
           <div className="max-w-full rounded-lg leading-1 p-3 bg-muted">
             {content.map(item =>
               item.type === 'output_text' ? (
-                <Markdown
-                  key={item.id}
-                  className="prose text-sm text-foreground"
-                  options={markdownOptions}
-                >
-                  {item.text}
-                </Markdown>
+                <MarkdownMessage key={item.id} text={item.text} className="text-foreground" />
               ) : null,
             )}
           </div>

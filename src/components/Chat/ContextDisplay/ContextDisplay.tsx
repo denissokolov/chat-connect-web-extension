@@ -6,12 +6,8 @@ import { type MessageContext } from '@/types/types'
 import browser from '@/services/browser'
 
 interface ContextDisplayProps {
-  // Static context mode (replaces MessageContextPill)
   context?: MessageContext
-
-  // Live context mode (replaces ChatContext)
   live?: boolean
-
   className?: string
 }
 
@@ -29,14 +25,11 @@ function ContextDisplay({ context, live = false, className }: ContextDisplayProp
     return () => unsubscribe()
   }, [live])
 
-  // Determine which data to use
   const title = live ? liveTitle : context?.title
   const favicon = live ? liveFavicon : context?.favicon
 
-  // Determine variant - for live mode, use outline when no title, otherwise secondary
   const variant = live ? (title ? 'secondary' : 'outline') : 'secondary'
 
-  // Determine display text
   const displayText = title
     ? title.length > 30
       ? `${title.slice(0, 30)}...`
@@ -44,6 +37,8 @@ function ContextDisplay({ context, live = false, className }: ContextDisplayProp
     : live
       ? 'No context'
       : ''
+
+  if (!displayText) return null
 
   return (
     <Badge
@@ -57,7 +52,7 @@ function ContextDisplay({ context, live = false, className }: ContextDisplayProp
       {favicon && (
         <img
           src={favicon}
-          alt="Site favicon"
+          alt={title ? `${title} favicon` : 'Site favicon'}
           className="w-4 h-4 flex-shrink-0"
           onError={e => {
             e.currentTarget.style.display = 'none'

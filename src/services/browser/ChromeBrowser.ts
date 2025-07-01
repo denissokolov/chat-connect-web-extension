@@ -62,19 +62,6 @@ export class ChromeBrowser implements IBrowser {
     }
   }
 
-  async getCurrentPageInfo(): Promise<{ title: string | null; favicon: string | null }> {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-      return {
-        title: tab?.title || null,
-        favicon: tab?.favIconUrl || null,
-      }
-    } catch (error) {
-      logError('Failed to get current page info', error)
-      return { title: null, favicon: null }
-    }
-  }
-
   async getPageContext(): Promise<PageContext | null> {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (!tab || !tab.id) {
@@ -89,6 +76,7 @@ export class ChromeBrowser implements IBrowser {
     return {
       title: tab.title || '',
       url: tab.url || '',
+      favicon: tab.favIconUrl || null,
       html: cleanHtmlContent(html[0].result),
     }
   }

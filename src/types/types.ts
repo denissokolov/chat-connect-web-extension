@@ -24,6 +24,7 @@ export type MessageContent =
 export type MessageContext = {
   title: string
   favicon?: string
+  url?: string
 }
 
 export type Message = {
@@ -56,6 +57,7 @@ export interface PageContext {
   title: string
   url: string
   html: string
+  favicon: string | null
 }
 
 export enum Platform {

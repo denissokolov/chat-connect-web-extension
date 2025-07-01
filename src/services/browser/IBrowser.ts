@@ -7,7 +7,6 @@ export interface IBrowser {
   saveSecureValue: (key: string, value: string) => Promise<void>
 
   subscribeToPageInfo(callback: (title: string | null, favicon: string | null) => void): () => void
-  getCurrentPageInfo: () => Promise<{ title: string | null; favicon: string | null }>
 
   getPageContext: () => Promise<PageContext | null>
 }

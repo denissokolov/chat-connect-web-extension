@@ -46,6 +46,7 @@ describe('useChatStore', () => {
     title: 'Test Page',
     url: 'https://example.com',
     html: '<html><body>Test content</body></html>',
+    favicon: 'test-favicon.ico',
   }
 
   const mockMessage: Message = {
@@ -192,10 +193,6 @@ describe('useChatStore', () => {
       const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
       vi.setSystemTime(mockDate.toJSDate())
       ;(browser.getPageContext as Mock).mockResolvedValue(mockPageContext)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({
-        title: 'Test Page',
-        favicon: 'test-favicon.ico',
-      })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -210,7 +207,7 @@ describe('useChatStore', () => {
         content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
         createdAt: mockDate.toISO(),
         threadId: 'test-thread-id',
-        context: { title: 'Test Page', favicon: 'test-favicon.ico' },
+        context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
       })
       expect(state.messages[1]).toEqual(mockMessage)
 
@@ -227,7 +224,6 @@ describe('useChatStore', () => {
 
     it('should send message without page context when getPageContext returns null', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -257,7 +253,6 @@ describe('useChatStore', () => {
 
       useChatStore.setState({ messages: existingMessages })
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -277,7 +272,6 @@ describe('useChatStore', () => {
     it('should handle sendMessage error by adding error to user message', async () => {
       const error = new Error('Network error')
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockRejectedValue(error)
 
       const { sendMessage } = useChatStore.getState()
@@ -297,7 +291,6 @@ describe('useChatStore', () => {
       })
 
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockReturnValue(promise)
 
       const { sendMessage } = useChatStore.getState()
@@ -317,7 +310,6 @@ describe('useChatStore', () => {
 
     it('should handle empty message string', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -337,7 +329,6 @@ describe('useChatStore', () => {
     it('should handle browser.getPageContext error gracefully', async () => {
       const error = new Error('Page context error')
       ;(browser.getPageContext as Mock).mockRejectedValue(error)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -352,7 +343,6 @@ describe('useChatStore', () => {
 
     it('should create message in repository after successful send', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -368,7 +358,6 @@ describe('useChatStore', () => {
 
       useChatStore.setState({ messages: [] }) // Ensure empty messages
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
@@ -398,7 +387,6 @@ describe('useChatStore', () => {
 
       useChatStore.setState({ messages: existingMessages })
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(browser.getCurrentPageInfo as Mock).mockResolvedValue({ title: null, favicon: null })
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()

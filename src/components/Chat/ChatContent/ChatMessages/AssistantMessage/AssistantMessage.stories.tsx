@@ -15,10 +15,6 @@ const meta: Meta<typeof AssistantMessage> = {
       control: 'boolean',
       description: 'Shows loading animation when true',
     },
-    error: {
-      control: 'text',
-      description: 'Error message to display',
-    },
     content: {
       control: 'object',
       description: 'Array of message content items',
@@ -141,56 +137,11 @@ export const LoadingState: Story = {
   },
 }
 
-export const WithError: Story = {
-  args: {
-    content: sampleTextContent,
-    error: 'Failed to generate response. Please try again.',
-  },
-  play: ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // Check that error message is displayed
-    expect(canvas.getByText(/Failed to generate response/)).toBeInTheDocument()
-
-    // Check that error icon is present
-    const errorIcon = canvasElement.querySelector('.text-red-500')
-    expect(errorIcon).toBeInTheDocument()
-  },
-}
-
-export const ErrorOnly: Story = {
-  args: {
-    error: 'Network connection failed. Please check your internet connection and try again.',
-  },
-  play: ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // Check that only error is displayed (no content)
-    expect(canvas.getByText(/Network connection failed/)).toBeInTheDocument()
-    expect(canvas.queryByText('Hello!')).not.toBeInTheDocument()
-  },
-}
-
 export const EmptyState: Story = {
   args: {},
   play: ({ canvasElement }) => {
     // Component should render but be essentially empty
     expect(canvasElement.children).toHaveLength(1)
-  },
-}
-
-export const LoadingWithError: Story = {
-  args: {
-    progress: true,
-    error: 'Processing request...',
-  },
-  play: ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // Both loading animation and error should be present
-    const loadingDots = canvasElement.querySelectorAll('.animate-bounce')
-    expect(loadingDots).toHaveLength(3)
-    expect(canvas.getByText(/Processing request/)).toBeInTheDocument()
   },
 }
 

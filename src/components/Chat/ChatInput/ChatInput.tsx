@@ -3,7 +3,7 @@ import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import ContextDisplay from '@/components/ui/context-display'
+import ContextDisplay from '@/components/Chat/ContextDisplay/ContextDisplay'
 import useChatStore from '@/stores/useChatStore'
 import ModelSelect from '@/components/Chat/ModelSelect/ModelSelect'
 
