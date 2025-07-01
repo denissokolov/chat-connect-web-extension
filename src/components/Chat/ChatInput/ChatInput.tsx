@@ -3,8 +3,8 @@ import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import ContextDisplay from '@/components/ui/context-display'
 import useChatStore from '@/stores/useChatStore'
-import ChatContext from './ChatContext/ChatContext'
 import ModelSelect from '@/components/Chat/ModelSelect/ModelSelect'
 
 function ChatInput() {
@@ -41,7 +41,7 @@ function ChatInput() {
   return (
     <div className="rounded-t-xl bg-slate-100">
       <div className="flex justify-start m-2">
-        <ChatContext />
+        <ContextDisplay live />
       </div>
 
       <form ref={formRef} onSubmit={handleSubmit}>

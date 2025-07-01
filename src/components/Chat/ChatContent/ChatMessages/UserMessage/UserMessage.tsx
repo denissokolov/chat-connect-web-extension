@@ -2,11 +2,13 @@ import { memo } from 'react'
 import { AlertCircle } from 'lucide-react'
 import Markdown from 'markdown-to-jsx'
 
-import { type MessageContent } from '@/types/types'
+import { type MessageContent, type MessageContext } from '@/types/types'
+import ContextDisplay from '@/components/ui/context-display'
 
 interface UserMessageProps {
   content?: MessageContent[]
   error?: string
+  context?: MessageContext
 }
 
 const markdownOptions = {
@@ -21,9 +23,14 @@ const markdownOptions = {
   },
 }
 
-function UserMessage({ content, error }: UserMessageProps) {
+function UserMessage({ content, error, context }: UserMessageProps) {
   return (
     <>
+      {context && (
+        <div className="flex justify-end mb-2">
+          <ContextDisplay context={context} />
+        </div>
+      )}
       <div className="flex gap-3 justify-end items-center">
         {error && <AlertCircle className="w-4 h-4 text-red-500" />}
         {content ? (

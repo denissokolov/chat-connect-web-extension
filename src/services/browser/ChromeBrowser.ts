@@ -62,6 +62,19 @@ export class ChromeBrowser implements IBrowser {
     }
   }
 
+  async getCurrentPageInfo(): Promise<{ title: string | null; favicon: string | null }> {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+      return {
+        title: tab?.title || null,
+        favicon: tab?.favIconUrl || null,
+      }
+    } catch (error) {
+      logError('Failed to get current page info', error)
+      return { title: null, favicon: null }
+    }
+  }
+
   async getPageContext(): Promise<PageContext | null> {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (!tab || !tab.id) {

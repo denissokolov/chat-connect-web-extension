@@ -12,7 +12,12 @@ export default function ChatMessages() {
     <div className="flex-1 py-4 px-4 space-y-4 overflow-y-auto" tabIndex={0}>
       {messages.map(message =>
         message.role === MessageRole.User ? (
-          <UserMessage key={message.id} content={message.content} error={message.error} />
+          <UserMessage
+            key={message.id}
+            content={message.content}
+            error={message.error}
+            context={message.context}
+          />
         ) : (
           <AssistantMessage key={message.id} content={message.content} error={message.error} />
         ),

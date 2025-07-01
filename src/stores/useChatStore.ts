@@ -1,7 +1,14 @@
 import { create } from 'zustand'
 import { DateTime } from 'luxon'
 
-import { AIModel, AIProvider, MessageContentType, MessageRole, type Message } from '@/types/types'
+import {
+  AIModel,
+  AIProvider,
+  MessageContentType,
+  MessageRole,
+  type Message,
+  type MessageContext,
+} from '@/types/types'
 import { OpenAIAssistant, MockAssistant, type IAssistant } from '@/services/assistant'
 import { logError } from '@/utils/log'
 import { getProviderByModel } from '@/utils/provider'
@@ -47,12 +54,22 @@ const useChatStore = create<ChatStore>((set, get) => ({
     // Create abort controller for this request
     const abortController = new AbortController()
 
+    // Get current page info for context
+    const pageInfo = await browser.getCurrentPageInfo()
+    const messageContext: MessageContext | undefined = pageInfo.title
+      ? {
+          title: pageInfo.title,
+          favicon: pageInfo.favicon || undefined,
+        }
+      : undefined
+
     const newMessage: Message = {
       id: crypto.randomUUID(),
       role: MessageRole.User,
       content: [{ type: MessageContentType.OutputText, text, id: crypto.randomUUID() }],
       createdAt: DateTime.now().toISO(),
       threadId,
+      context: messageContext,
     }
     set(state => ({
       messages: [...state.messages, newMessage],
