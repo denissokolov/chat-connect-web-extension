@@ -76,6 +76,7 @@ export class ChromeBrowser implements IBrowser {
     return {
       title: tab.title || '',
       url: tab.url || '',
+      favicon: tab.favIconUrl || null,
       html: cleanHtmlContent(html[0].result),
     }
   }

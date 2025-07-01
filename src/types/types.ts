@@ -21,6 +21,12 @@ export type MessageContent =
       arguments: string
     }
 
+export type MessageContext = {
+  title: string
+  favicon?: string
+  url?: string
+}
+
 export type Message = {
   id: string
   role: MessageRole
@@ -28,6 +34,7 @@ export type Message = {
   createdAt: string
   error?: string
   threadId: string
+  context?: MessageContext
 }
 
 export enum AIProvider {
@@ -50,6 +57,7 @@ export interface PageContext {
   title: string
   url: string
   html: string
+  favicon: string | null
 }
 
 export enum Platform {

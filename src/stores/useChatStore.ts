@@ -1,7 +1,14 @@
 import { create } from 'zustand'
 import { DateTime } from 'luxon'
 
-import { AIModel, AIProvider, MessageContentType, MessageRole, type Message } from '@/types/types'
+import {
+  AIModel,
+  AIProvider,
+  MessageContentType,
+  MessageRole,
+  type Message,
+  type PageContext,
+} from '@/types/types'
 import { OpenAIAssistant, MockAssistant, type IAssistant } from '@/services/assistant'
 import { logError } from '@/utils/log'
 import { getProviderByModel } from '@/utils/provider'
@@ -44,8 +51,14 @@ const useChatStore = create<ChatStore>((set, get) => ({
       throw new Error('Assistant not initialized')
     }
 
-    // Create abort controller for this request
-    const abortController = new AbortController()
+    let pageContext: PageContext | null = null
+    let pageContextError: string | undefined = undefined
+    try {
+      pageContext = await browser.getPageContext()
+    } catch (error) {
+      logError('Error getting page context', error)
+      pageContextError = getStringError(error)
+    }
 
     const newMessage: Message = {
       id: crypto.randomUUID(),
@@ -53,14 +66,25 @@ const useChatStore = create<ChatStore>((set, get) => ({
       content: [{ type: MessageContentType.OutputText, text, id: crypto.randomUUID() }],
       createdAt: DateTime.now().toISO(),
       threadId,
+      error: pageContextError,
+      context: pageContext?.title
+        ? {
+            title: pageContext?.title,
+            favicon: pageContext?.favicon || undefined,
+            url: pageContext?.url || undefined,
+          }
+        : undefined,
     }
+
+    const abortController = new AbortController()
+
     set(state => ({
       messages: [...state.messages, newMessage],
-      waitingForReply: true,
+      waitingForReply: !pageContextError,
       currentAbortController: abortController,
     }))
-    await repository.createMessage(newMessage)
 
+    await repository.createMessage(newMessage)
     if (messages.length === 0) {
       await repository.createThread({
         id: threadId,
@@ -74,9 +98,11 @@ const useChatStore = create<ChatStore>((set, get) => ({
       })
     }
 
-    try {
-      const pageContext = await browser.getPageContext()
+    if (pageContextError) {
+      return
+    }
 
+    try {
       const response = await assistant.sendMessage({
         threadId,
         model: model,
@@ -100,7 +126,6 @@ const useChatStore = create<ChatStore>((set, get) => ({
         return
       }
 
-      // Check if error is due to abort
       const isAborted =
         error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))
 

@@ -22,6 +22,7 @@ vi.mock('@/services/assistant', () => ({
 vi.mock('@/services/browser', () => ({
   default: {
     getPageContext: vi.fn(),
+    getCurrentPageInfo: vi.fn(),
     getSecureValue: vi.fn(),
   },
 }))
@@ -45,6 +46,7 @@ describe('useChatStore', () => {
     title: 'Test Page',
     url: 'https://example.com',
     html: '<html><body>Test content</body></html>',
+    favicon: 'test-favicon.ico',
   }
 
   const mockMessage: Message = {
@@ -205,6 +207,7 @@ describe('useChatStore', () => {
         content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
         createdAt: mockDate.toISO(),
         threadId: 'test-thread-id',
+        context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
       })
       expect(state.messages[1]).toEqual(mockMessage)
 
@@ -293,6 +296,9 @@ describe('useChatStore', () => {
       const { sendMessage } = useChatStore.getState()
 
       const sendPromise = sendMessage('Hello')
+
+      // Wait a tick for the async getCurrentPageInfo to complete
+      await new Promise(resolve => setTimeout(resolve, 0))
 
       expect(useChatStore.getState().waitingForReply).toBe(true)
 
