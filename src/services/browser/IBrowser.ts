@@ -9,4 +9,7 @@ export interface IBrowser {
   subscribeToPageInfo(callback: (title: string | null, favicon: string | null) => void): () => void
 
   getPageContext: () => Promise<PageContext | null>
+
+  setFieldValue(selector: string, value: string): Promise<boolean>
+  clickButton(selector: string): Promise<boolean>
 }

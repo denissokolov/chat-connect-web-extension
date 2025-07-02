@@ -48,4 +48,12 @@ export class MockBrowser implements IBrowser {
       `,
     })
   }
+
+  setFieldValue(_selector: string, _value: string): Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  clickButton(_selector: string): Promise<boolean> {
+    return Promise.resolve(true)
+  }
 }

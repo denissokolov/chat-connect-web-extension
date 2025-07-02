@@ -2,14 +2,22 @@
 
 import { isDevEnv, isTestEnv } from './env'
 
-export function logError(message: string, error: unknown) {
+export function logError(message: string, error?: unknown) {
   if (!isTestEnv()) {
-    console.error(message, error)
+    if (error) {
+      console.error(message, error)
+    } else {
+      console.error(message)
+    }
   }
 }
 
-export function logDebug(message: string, data: unknown) {
+export function logDebug(message: string, data?: unknown) {
   if (isDevEnv()) {
-    console.debug(message, data)
+    if (data) {
+      console.debug(message, data)
+    } else {
+      console.debug(message)
+    }
   }
 }
