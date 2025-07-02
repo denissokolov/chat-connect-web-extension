@@ -104,7 +104,6 @@ const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       const response = await assistant.sendMessage({
-        threadId,
         model: model,
         instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
         text: text,
@@ -114,12 +113,20 @@ const useChatStore = create<ChatStore>((set, get) => ({
       if (get().threadId !== threadId) {
         return
       }
+
+      const responseMessage: Message = {
+        id: response.id,
+        role: MessageRole.Assistant,
+        content: response.content,
+        createdAt: DateTime.now().toISO(),
+        threadId,
+      }
       set(state => ({
-        messages: [...state.messages, response],
+        messages: [...state.messages, responseMessage],
         waitingForReply: false,
         currentAbortController: null,
       }))
-      await repository.createMessage(response)
+      await repository.createMessage(responseMessage)
     } catch (error) {
       logError('Error sending message', error)
       if (get().threadId !== threadId) {

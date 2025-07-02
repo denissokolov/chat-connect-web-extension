@@ -32,7 +32,7 @@ export const mockMultipleOutputsResponse: Response = {
       type: 'function_call',
       status: 'completed',
       arguments:
-        '{"input_type":"radio","input_value":"personal","input_name":"typeofclient","input_id":"personal","label_value":"Particulier"}',
+        '{"input_type":"radio","input_value":"personal","input_selector":"typeofclient","label_value":"Particulier"}',
       call_id: 'call_V8DXgOfseNt66chXUplx7L2Z',
       name: 'fill_input',
     },
@@ -41,7 +41,7 @@ export const mockMultipleOutputsResponse: Response = {
       type: 'function_call',
       status: 'completed',
       arguments:
-        '{"input_type":"input","input_value":"Jan","input_name":"firstname","input_id":null,"label_value":"Naam"}',
+        '{"input_type":"input","input_value":"Jan","input_selector":"#firstname","label_value":"Naam"}',
       call_id: 'call_LH7df6L6NqMKezUq1DN81PYb',
       name: 'fill_input',
     },
@@ -49,46 +49,9 @@ export const mockMultipleOutputsResponse: Response = {
       id: 'fc_6864536001f4819bab78433adec1a78e060efbe81c5b5256',
       type: 'function_call',
       status: 'completed',
-      arguments:
-        '{"input_type":"input","input_value":"Jansen","input_name":"lastname","input_id":null,"label_value":"Achternaam"}',
+      arguments: '{"button_selector":"#submit","button_text":"Bestellen"}',
       call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
-      name: 'fill_input',
-    },
-    {
-      id: 'fc_68645360f48c819b8c95f455693346f2060efbe81c5b5256',
-      type: 'function_call',
-      status: 'completed',
-      arguments:
-        '{"input_type":"input","input_value":"Kleine Houtweg","input_name":"street","input_id":null,"label_value":"Adres"}',
-      call_id: 'call_TMdRqbD9sDEmriGMik1KSPzJ',
-      name: 'fill_input',
-    },
-    {
-      id: 'fc_686453613364819b862f1b3bb6f44158060efbe81c5b5256',
-      type: 'function_call',
-      status: 'completed',
-      arguments:
-        '{"input_type":"input","input_value":"14A","input_name":"streetnumber","input_id":null,"label_value":"Huisnummer"}',
-      call_id: 'call_fTOzaEii78aY84mSZt9PRg0v',
-      name: 'fill_input',
-    },
-    {
-      id: 'fc_686453617e38819b949d395a8a405ea0060efbe81c5b5256',
-      type: 'function_call',
-      status: 'completed',
-      arguments:
-        '{"input_type":"input","input_value":"1234","input_name":"postalcode","input_id":null,"label_value":"Postcode"}',
-      call_id: 'call_KgqM5HkDpnw0v4WhMN4uUwXh',
-      name: 'fill_input',
-    },
-    {
-      id: 'fc_68645362c628819bbe945b8cc269ba08060efbe81c5b5256',
-      type: 'function_call',
-      status: 'completed',
-      arguments:
-        '{"input_type":"input","input_value":"AB","input_name":"postalcode_letters","input_id":null,"label_value":"Postcode letters"}',
-      call_id: 'call_WuRN10hEM0PzggxT7e8Ob20C',
-      name: 'fill_input',
+      name: 'click_button',
     },
   ],
   parallel_tool_calls: true,

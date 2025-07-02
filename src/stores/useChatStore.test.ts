@@ -209,11 +209,16 @@ describe('useChatStore', () => {
         threadId: 'test-thread-id',
         context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
       })
-      expect(state.messages[1]).toEqual(mockMessage)
+      expect(state.messages[1]).toEqual({
+        id: expect.any(String),
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
+        createdAt: mockDate.toISO(),
+        threadId: 'test-thread-id',
+      })
 
       expect(state.waitingForReply).toBe(false)
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        threadId: 'test-thread-id',
         model: AIModel.OpenAI_ChatGPT_4o,
         instructions: expect.stringContaining('Test Page'),
         text: 'Hello',
@@ -235,7 +240,6 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: 'Hello',
         history: [],
-        threadId: 'test-thread-id',
         signal: expect.any(AbortSignal),
       })
     })
@@ -264,7 +268,6 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: 'Hello',
         history: existingMessages,
-        threadId: 'test-thread-id',
         signal: expect.any(AbortSignal),
       })
     })
@@ -317,7 +320,6 @@ describe('useChatStore', () => {
       await sendMessage('')
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        threadId: 'test-thread-id',
         model: AIModel.OpenAI_ChatGPT_4o,
         instructions: undefined,
         text: '',
@@ -349,7 +351,13 @@ describe('useChatStore', () => {
 
       await sendMessage('Hello')
 
-      expect(repository.createMessage).toHaveBeenCalledWith(mockMessage)
+      expect(repository.createMessage).toHaveBeenCalledWith({
+        id: expect.any(String),
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
+        createdAt: expect.any(String),
+        threadId: 'test-thread-id',
+      })
     })
 
     it('should create thread in repository for first message', async () => {

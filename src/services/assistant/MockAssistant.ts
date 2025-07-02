@@ -1,6 +1,10 @@
-import { DateTime } from 'luxon'
-
-import { AIModel, AIProvider, MessageContentType, MessageRole, type Message } from '@/types/types'
+import {
+  AIModel,
+  AIProvider,
+  MessageContentType,
+  type Message,
+  type ProviderMessageResponse,
+} from '@/types/types'
 
 import type { IAssistant } from './IAssistant'
 
@@ -12,16 +16,14 @@ export class MockAssistant implements IAssistant {
   }
 
   async sendMessage({
-    threadId,
     signal,
   }: {
-    threadId: string
     model: AIModel
     instructions?: string
     text: string
     history?: Message[]
     signal?: AbortSignal
-  }): Promise<Message> {
+  }): Promise<ProviderMessageResponse> {
     // Simulate API delay
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(resolve, 1000)
@@ -35,13 +37,14 @@ export class MockAssistant implements IAssistant {
     })
 
     return {
-      threadId,
-      id: 'mock-assistant',
-      role: MessageRole.Assistant,
+      id: 'mock-message-id',
       content: [
-        { type: MessageContentType.OutputText, text: 'Hello, how can I help you today?', id: '1' },
+        {
+          id: '1',
+          type: MessageContentType.OutputText,
+          text: 'Hello, how can I help you today?',
+        },
       ],
-      createdAt: DateTime.now().toISO(),
     }
   }
 }

@@ -207,27 +207,24 @@ export const WithOneFunctionCall: Story = {
       {
         id: '7',
         type: MessageContentType.FunctionCall,
-        batch: [
+        name: FunctionName.FillInput,
+        arguments: [
           {
-            id: '8',
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: 'input',
-              input_value: '1234',
-              input_name: 'postalcode',
-              input_id: null,
-              label_value: 'Postcode',
-            },
+            id: 'call_1',
+            input_type: 'input',
+            input_value: '1234',
+            input_selector: '#postalcode',
+            label_value: 'Postcode',
           },
         ],
       },
-    ] as MessageContent[],
+    ],
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    expect(canvas.getByText('Postcode:')).toBeInTheDocument()
+    expect(canvas.getByText('Postcode')).toBeInTheDocument()
     expect(canvas.getByText('1234')).toBeInTheDocument()
-    expect(canvas.getByText('Execute')).toBeInTheDocument()
+    expect(canvas.getByText('Fill the field')).toBeInTheDocument()
   },
 }
 
@@ -237,40 +234,33 @@ export const WithMultipleFunctionCalls: Story = {
       {
         id: '7',
         type: MessageContentType.FunctionCall,
-        batch: [
+        name: FunctionName.FillInput,
+        arguments: [
           {
-            id: '8',
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: 'input',
-              input_value: '1234',
-              input_name: 'postalcode',
-              input_id: null,
-              label_value: 'Postcode',
-            },
+            id: 'call_1',
+            input_type: 'input',
+            input_value: '1234',
+            input_selector: '#postalcode',
+            label_value: 'Postcode',
           },
           {
-            id: '9',
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: 'input',
-              input_value: 'AB',
-              input_name: 'postalcode_letters',
-              input_id: null,
-              label_value: 'Postcode letters',
-            },
+            id: 'call_2',
+            input_type: 'input',
+            input_value: 'AB',
+            input_selector: '#postalcode_letters',
+            label_value: 'Postcode letters',
           },
         ],
       },
-    ] as MessageContent[],
+    ],
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    expect(canvas.getByText('Postcode:')).toBeInTheDocument()
+    expect(canvas.getByText('Postcode')).toBeInTheDocument()
     expect(canvas.getByText('1234')).toBeInTheDocument()
-    expect(canvas.getByText('Postcode letters:')).toBeInTheDocument()
+    expect(canvas.getByText('Postcode letters')).toBeInTheDocument()
     expect(canvas.getByText('AB')).toBeInTheDocument()
-    expect(canvas.getByText('Execute')).toBeInTheDocument()
+    expect(canvas.getByText('Fill the fields')).toBeInTheDocument()
   },
 }
 
@@ -285,28 +275,21 @@ export const WithMultipleFunctionCallsAndText: Story = {
       {
         id: '7',
         type: MessageContentType.FunctionCall,
-        batch: [
+        name: FunctionName.FillInput,
+        arguments: [
           {
-            id: '8',
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: 'input',
-              input_value: '1234',
-              input_name: 'postalcode',
-              input_id: null,
-              label_value: 'Postcode',
-            },
+            id: 'call_1',
+            input_type: 'input',
+            input_value: '1234',
+            input_selector: '#postalcode',
+            label_value: 'Postcode',
           },
           {
-            id: '9',
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: 'input',
-              input_value: 'AB',
-              input_name: 'postalcode_letters',
-              input_id: null,
-              label_value: 'Postcode letters',
-            },
+            id: 'call_2',
+            input_type: 'input',
+            input_value: 'AB',
+            input_selector: '#postalcode_letters',
+            label_value: 'Postcode letters',
           },
         ],
       },
@@ -316,22 +299,34 @@ export const WithMultipleFunctionCallsAndText: Story = {
         text: 'If you need more information, please let me know.',
       },
       {
-        id: '9',
+        id: '88',
         type: MessageContentType.FunctionCall,
-        batch: [
+        name: FunctionName.FillInput,
+        arguments: [
           {
-            id: '10',
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: 'input',
-              input_value: '1234',
-              input_name: 'postalcode',
-              input_id: null,
-              label_value: 'Postcode',
-            },
+            id: 'call_3',
+            input_type: 'input',
+            input_value: 'AB',
+            input_selector: '#postalcode_letters',
+            label_value: 'Postcode letters',
           },
         ],
       },
-    ] as MessageContent[],
+      {
+        id: '11',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.ClickButton,
+        arguments: {
+          id: 'call_5',
+          button_selector: '#submit',
+          button_text: 'Bestellen',
+        },
+      },
+    ],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Click the button')).toBeInTheDocument()
+    expect(canvas.getByText('Bestellen')).toBeInTheDocument()
   },
 }

@@ -1,8 +1,9 @@
 import { memo } from 'react'
 
-import { MessageContentType, type MessageContent } from '@/types/types'
+import { FunctionName, MessageContentType, type MessageContent } from '@/types/types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
-import FunctionCallMessage from './FunctionCallMessage/FunctionCallMessage'
+import FillInputMessage from './functions/FillInputMessage'
+import ClickButtonMessage from './functions/ClickButtonMessage'
 
 interface AssistantMessageProps {
   content?: MessageContent[]
@@ -29,13 +30,22 @@ function AssistantMessage({ content, progress }: AssistantMessageProps) {
           </div>
         ) : content ? (
           <div className="max-w-full rounded-lg leading-1">
-            {content.map(item =>
-              item.type === MessageContentType.OutputText ? (
-                <MarkdownMessage key={item.id} text={item.text} />
-              ) : item.type === MessageContentType.FunctionCall ? (
-                <FunctionCallMessage key={item.id} batch={item.batch} />
-              ) : null,
-            )}
+            {content.map(item => {
+              if (item.type === MessageContentType.OutputText) {
+                return <MarkdownMessage key={item.id} text={item.text} />
+              }
+
+              if (item.type === MessageContentType.FunctionCall) {
+                if (item.name === FunctionName.FillInput) {
+                  return <FillInputMessage key={item.id} args={item.arguments} />
+                }
+                if (item.name === FunctionName.ClickButton) {
+                  return <ClickButtonMessage key={item.id} args={item.arguments} />
+                }
+              }
+
+              return null
+            })}
           </div>
         ) : null}
       </div>
