@@ -15,6 +15,7 @@ import { getProviderByModel } from '@/utils/provider'
 import { getTokenKey } from '@/utils/token'
 import { getStringError } from '@/utils/error'
 import { getBasicInstructions } from '@/utils/instructions'
+import { createAssistantMessage } from '@/utils/message'
 import browser from '@/services/browser'
 import repository from '@/services/repository'
 
@@ -114,13 +115,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
         return
       }
 
-      const responseMessage: Message = {
-        id: response.id,
-        role: MessageRole.Assistant,
-        content: response.content,
-        createdAt: DateTime.now().toISO(),
-        threadId,
-      }
+      const responseMessage = createAssistantMessage(response, threadId)
       set(state => ({
         messages: [...state.messages, responseMessage],
         waitingForReply: false,
