@@ -330,3 +330,35 @@ export const WithMultipleFunctionCallsAndText: Story = {
     expect(canvas.getByText('Bestellen')).toBeInTheDocument()
   },
 }
+
+export const WithFunctionCallError: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.FillInput,
+        arguments: [
+          {
+            id: 'call_1',
+            input_type: 'input',
+            input_value: '1234',
+            // eslint-disable-next-line sonarjs/code-eval
+            input_selector: 'javascript:alert("test")',
+            label_value: 'Postcode',
+          },
+        ],
+      },
+    ],
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByText('Fill the field')
+    expect(button).toBeInTheDocument()
+    await userEvent.click(button)
+    expect(await canvas.findByText('Error!')).toBeInTheDocument()
+    expect(
+      await canvas.findByText('Failed to execute action. See console for details.'),
+    ).toBeInTheDocument()
+  },
+}
