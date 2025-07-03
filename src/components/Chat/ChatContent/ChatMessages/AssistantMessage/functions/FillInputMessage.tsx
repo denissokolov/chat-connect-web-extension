@@ -4,7 +4,7 @@ import { memo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { type FillInputArguments } from '@/types/types'
 import browser from '@/services/browser'
-import { sanitizeSelector } from '@/utils/html'
+import { sanitizeSelector } from '@/utils/html/sanitizeSelector'
 import { logError } from '@/utils/log'
 
 interface FunctionCallMessageProps {

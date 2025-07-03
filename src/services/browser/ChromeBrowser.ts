@@ -1,7 +1,9 @@
 import { logError } from '@/utils/log'
 import type { IBrowser } from './IBrowser'
 import type { PageContext } from '@/types/types'
-import { cleanHtmlContent, clickButton, setFieldValue } from '@/utils/html'
+import { cleanHtmlContent } from '@/utils/html/cleanHtmlContent'
+import { clickButton } from '@/utils/html/clickButton'
+import { setFieldValue } from '@/utils/html/setFieldValue'
 
 export class ChromeBrowser implements IBrowser {
   openExtensionSettings() {
