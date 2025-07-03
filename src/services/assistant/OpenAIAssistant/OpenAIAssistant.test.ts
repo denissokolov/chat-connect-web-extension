@@ -1,15 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 import { OpenAIAssistant } from './OpenAIAssistant'
 import { mockMultipleOutputsResponse, mockSingleOutputResponse } from './OpenAIAssistant.mocks'
+import { AIModel } from '@/types/types'
 
 describe('OpenAIAssistant', () => {
   it('should parse response with multiple outputs', () => {
     const assistant = new OpenAIAssistant('test')
-    const message = assistant.parseResponse('resp_123', mockMultipleOutputsResponse)
+    const message = assistant.parseResponse(mockMultipleOutputsResponse)
 
     expect(message).toBeDefined()
-    expect(message.id).toBe('resp_123')
+    expect(message.id).toBe(mockMultipleOutputsResponse.id)
 
     expect(message.content).toBeDefined()
     expect(message.content.length).toBe(4)
@@ -66,10 +67,10 @@ describe('OpenAIAssistant', () => {
 
   it('should parse response with single output', () => {
     const assistant = new OpenAIAssistant('test')
-    const message = assistant.parseResponse('resp_123', mockSingleOutputResponse)
+    const message = assistant.parseResponse(mockSingleOutputResponse)
 
     expect(message).toBeDefined()
-    expect(message.id).toBe('resp_123')
+    expect(message.id).toBe(mockSingleOutputResponse.id)
 
     expect(message.content).toBeDefined()
     expect(message.content.length).toBe(1)
@@ -83,5 +84,82 @@ describe('OpenAIAssistant', () => {
     ) {
       expect(message.content[0].text).toBe(mockSingleOutputResponse.output[0].content[0].text)
     }
+  })
+
+  it('should automatically send function call response', async () => {
+    // Mock the OpenAI client
+    const mockCreate = vi.fn()
+    const assistant = new OpenAIAssistant('test')
+
+    // Mock the client.responses.create method
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(assistant as any).client.responses.create = mockCreate
+
+    // First call returns response with function calls
+    // Second call returns response after function call execution
+    const functionCallResponse = {
+      ...mockSingleOutputResponse,
+      id: 'resp_function_call_response',
+      output: [
+        {
+          id: 'msg_function_call_response',
+          type: 'message',
+          status: 'completed',
+          content: [
+            {
+              type: 'output_text',
+              text: 'Function call executed successfully.',
+              annotations: [],
+              logprobs: [],
+            },
+          ],
+          role: 'assistant',
+        },
+      ],
+    }
+
+    mockCreate
+      .mockResolvedValueOnce(mockMultipleOutputsResponse)
+      .mockResolvedValueOnce(functionCallResponse)
+
+    const message = await assistant.sendMessage({
+      model: AIModel.OpenAI_GPT_4_1,
+      text: 'Fill the input field with the value "test"',
+    })
+
+    // Assert that the client was called twice (initial + function call response)
+    expect(mockCreate).toHaveBeenCalledTimes(2)
+
+    // Assert that the second call includes function call outputs
+    expect(mockCreate).toHaveBeenNthCalledWith(2, {
+      model: AIModel.OpenAI_GPT_4_1,
+      input: [
+        {
+          type: 'function_call_output',
+          call_id: 'call_V8DXgOfseNt66chXUplx7L2Z',
+          output: 'success',
+        },
+        {
+          type: 'function_call_output',
+          call_id: 'call_LH7df6L6NqMKezUq1DN81PYb',
+          output: 'success',
+        },
+        {
+          type: 'function_call_output',
+          call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
+          output: 'success',
+        },
+      ],
+      previous_response_id: mockMultipleOutputsResponse.id,
+      store: true,
+      tools: expect.any(Array),
+      instructions: expect.stringContaining("Don't say anything about the result"),
+    })
+
+    // Assert that the final response uses the function call response ID
+    expect(message.id).toBe('resp_function_call_response')
+
+    // Assert that content includes both original and function call responses
+    expect(message.content).toHaveLength(5) // 4 from original + 1 from function call response
   })
 })
