@@ -39,7 +39,7 @@ function ChatInput() {
   }
 
   return (
-    <div className="rounded-t-xl bg-slate-100">
+    <div className="rounded-t-xl bg-card">
       <div className="flex justify-start m-2">
         <ContextDisplay live />
       </div>
