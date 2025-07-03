@@ -129,37 +129,126 @@ describe('clickButton', () => {
     expect(logError).not.toHaveBeenCalled()
   })
 
-  it('returns false for input[type="button"] elements (not HTMLButtonElement)', () => {
+  it('returns true for input[type="button"] elements', () => {
     const input = document.createElement('input')
     input.type = 'button'
     input.id = 'input-button'
     input.value = 'Click me'
     document.body.appendChild(input)
 
+    const clickSpy = vi.spyOn(input, 'click')
+
     const result = clickButton('#input-button')
 
+    expect(result).toBe(true)
+    expect(clickSpy).toHaveBeenCalledOnce()
+    expect(logError).not.toHaveBeenCalled()
+  })
+
+  it('returns false for disabled input[type="button"] elements', () => {
+    const input = document.createElement('input')
+    input.type = 'button'
+    input.id = 'disabled-input-button'
+    input.disabled = true
+    input.value = 'Disabled Button'
+    document.body.appendChild(input)
+
+    const clickSpy = vi.spyOn(input, 'click')
+
+    const result = clickButton('#disabled-input-button')
+
     expect(result).toBe(false)
+    expect(clickSpy).not.toHaveBeenCalled()
     expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button not found for selector: #input-button',
+      'clickButton: Button is disabled for selector: #disabled-input-button',
     )
   })
 
-  it('returns false for input[type="submit"] elements (not HTMLButtonElement)', () => {
+  it('returns false for input[type="text"] elements', () => {
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.id = 'text-input'
+    input.value = 'Text Input'
+    document.body.appendChild(input)
+
+    const result = clickButton('#text-input')
+
+    expect(result).toBe(false)
+    expect(logError).toHaveBeenCalledWith('clickButton: Button not found for selector: #text-input')
+  })
+
+  it('returns true for input[type="button"] with onclick handler', () => {
+    const input = document.createElement('input')
+    input.type = 'button'
+    input.id = 'onclick-input-button'
+    input.value = 'Click me'
+    let clicked = false
+    input.onclick = () => {
+      clicked = true
+    }
+    document.body.appendChild(input)
+
+    const result = clickButton('#onclick-input-button')
+
+    expect(result).toBe(true)
+    expect(clicked).toBe(true)
+    expect(logError).not.toHaveBeenCalled()
+  })
+
+  it('returns true for input[type="submit"] elements', () => {
     const input = document.createElement('input')
     input.type = 'submit'
     input.id = 'submit-button'
     input.value = 'Submit'
     document.body.appendChild(input)
 
+    const clickSpy = vi.spyOn(input, 'click')
+
     const result = clickButton('#submit-button')
 
+    expect(result).toBe(true)
+    expect(clickSpy).toHaveBeenCalledOnce()
+    expect(logError).not.toHaveBeenCalled()
+  })
+
+  it('returns false for disabled input[type="submit"] elements', () => {
+    const input = document.createElement('input')
+    input.type = 'submit'
+    input.id = 'disabled-submit-button'
+    input.disabled = true
+    input.value = 'Disabled Submit'
+    document.body.appendChild(input)
+
+    const clickSpy = vi.spyOn(input, 'click')
+
+    const result = clickButton('#disabled-submit-button')
+
     expect(result).toBe(false)
+    expect(clickSpy).not.toHaveBeenCalled()
     expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button not found for selector: #submit-button',
+      'clickButton: Button is disabled for selector: #disabled-submit-button',
     )
   })
 
-  it('works with disabled buttons (still HTMLButtonElement)', () => {
+  it('returns true for input[type="submit"] with onclick handler', () => {
+    const input = document.createElement('input')
+    input.type = 'submit'
+    input.id = 'onclick-submit-button'
+    input.value = 'Submit Form'
+    let clicked = false
+    input.onclick = () => {
+      clicked = true
+    }
+    document.body.appendChild(input)
+
+    const result = clickButton('#onclick-submit-button')
+
+    expect(result).toBe(true)
+    expect(clicked).toBe(true)
+    expect(logError).not.toHaveBeenCalled()
+  })
+
+  it('returns false for disabled buttons', () => {
     const button = document.createElement('button')
     button.id = 'disabled-button'
     button.disabled = true
@@ -169,9 +258,11 @@ describe('clickButton', () => {
 
     const result = clickButton('#disabled-button')
 
-    expect(result).toBe(true) // The function still returns true as it successfully calls click()
-    expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
+    expect(result).toBe(false)
+    expect(clickSpy).not.toHaveBeenCalled()
+    expect(logError).toHaveBeenCalledWith(
+      'clickButton: Button is disabled for selector: #disabled-button',
+    )
   })
 
   it('handles nested button elements', () => {
