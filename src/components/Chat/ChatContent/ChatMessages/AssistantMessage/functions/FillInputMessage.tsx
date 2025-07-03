@@ -1,49 +1,30 @@
-import { CheckIcon, Loader2, PlayIcon } from 'lucide-react'
-import { memo, useState } from 'react'
+import { memo, useCallback } from 'react'
 
-import { Button } from '@/components/ui/button'
 import { type FillInputArguments } from '@/types/types'
 import browser from '@/services/browser'
 import { sanitizeSelector } from '@/utils/html/sanitizeSelector'
-import { logError } from '@/utils/log'
+
+import ExecuteFunction from './ExecuteFunction'
 
 interface FunctionCallMessageProps {
   args: FillInputArguments[]
 }
 
 function FillInputMessage({ args }: FunctionCallMessageProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-
-  const handleClick = async () => {
-    setIsLoading(true)
-
+  const execute = useCallback(async (): Promise<boolean> => {
     let allSuccess = true
     for (const arg of args) {
-      try {
-        const sanitizedSelector = sanitizeSelector(arg.input_selector)
-        if (!sanitizedSelector) {
-          allSuccess = false
-          break
-        }
-
-        const success = await browser.setFieldValue(sanitizedSelector, arg.input_value)
-        if (!success) {
-          allSuccess = false
-        }
-      } catch (error) {
-        logError(`Error setting field value: ${error}`)
+      const sanitizedSelector = sanitizeSelector(arg.input_selector)
+      if (!sanitizedSelector) {
+        return false
+      }
+      const success = await browser.setFieldValue(sanitizedSelector, arg.input_value)
+      if (!success) {
         allSuccess = false
       }
     }
-
-    setIsSuccess(allSuccess)
-    setIsLoading(false)
-
-    if (allSuccess) {
-      setTimeout(() => setIsSuccess(false), 2000)
-    }
-  }
+    return allSuccess
+  }, [args])
 
   return (
     <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border border-gray-200">
@@ -55,26 +36,7 @@ function FillInputMessage({ args }: FunctionCallMessageProps) {
           </div>
         )
       })}
-      <Button
-        variant="default"
-        className="min-w-60 w-full"
-        onClick={handleClick}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : isSuccess ? (
-          <>
-            <CheckIcon className="w-4 h-4" />
-            <span>{'Success!'}</span>
-          </>
-        ) : (
-          <>
-            <PlayIcon className="w-4 h-4" />
-            <span>{`Fill the field${args.length > 1 ? 's' : ''}`}</span>
-          </>
-        )}
-      </Button>
+      <ExecuteFunction execute={execute} label={`Fill the field${args.length > 1 ? 's' : ''}`} />
     </div>
   )
 }
