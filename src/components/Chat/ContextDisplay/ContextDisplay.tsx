@@ -44,7 +44,7 @@ function ContextDisplay({ context, live = false, className }: ContextDisplayProp
     <Badge
       variant={variant}
       className={cn(
-        'bg-white flex items-center gap-1',
+        'flex items-center gap-1',
         live && !title && 'text-muted-foreground',
         className,
       )}

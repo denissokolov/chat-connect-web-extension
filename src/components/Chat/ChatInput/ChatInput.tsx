@@ -51,7 +51,7 @@ function ChatInput() {
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask about page..."
-          className="text-sm border-none outline-none focus-visible:ring-0 resize-none shadow-none pt-2 pb-3"
+          className="text-sm border-none bg-transparent outline-none focus-visible:ring-0 resize-none shadow-none pt-2 pb-3"
         />
 
         <div className="flex justify-between items-center m-2">
@@ -63,7 +63,7 @@ function ChatInput() {
               size="icon"
               title="Stop"
               aria-label="Stop generating response"
-              className="rounded-full hover:bg-blue-600 bg-blue-500 text-white"
+              className="rounded-full"
             >
               <X className="size-5" />
             </Button>
@@ -74,7 +74,7 @@ function ChatInput() {
               size="icon"
               title="Send"
               aria-label="Send message"
-              className="rounded-full disabled:bg-white disabled:text-gray-600 disabled:border hover:bg-blue-600 bg-blue-500"
+              className="rounded-full"
             >
               <ArrowUp className="size-5" />
             </Button>
