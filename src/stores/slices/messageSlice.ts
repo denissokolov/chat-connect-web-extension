@@ -12,6 +12,15 @@ import { createAssistantMessage } from '@/utils/message'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
   messages: [],
+  waitingForReply: false,
+  messageAbortController: null,
+  stopMessage: () => {
+    const { messageAbortController } = get()
+    if (messageAbortController) {
+      messageAbortController.abort()
+    }
+    set({ messageAbortController: null, waitingForReply: false })
+  },
   sendMessage: async (text: string) => {
     const { assistant, model, messages, threadId } = get()
     if (!assistant || !model) {
@@ -108,14 +117,4 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       }))
     }
   },
-  stopMessage: () => {
-    const { messageAbortController } = get()
-    if (messageAbortController) {
-      messageAbortController.abort()
-      set({ messageAbortController: null, waitingForReply: false })
-    }
-  },
-  waitingForReply: false,
-  clearHistory: () => set({ messages: [] }),
-  messageAbortController: null,
 })

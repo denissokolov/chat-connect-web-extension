@@ -32,7 +32,6 @@ export type MessageSlice = {
   sendMessage: (text: string) => Promise<void>
   stopMessage: () => void
   waitingForReply: boolean
-  clearHistory: () => void
   messageAbortController: AbortController | null
 }
 

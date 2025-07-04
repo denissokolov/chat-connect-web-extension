@@ -63,50 +63,6 @@ describe('messageSlice', () => {
     vi.clearAllMocks()
   })
 
-  describe('clearHistory', () => {
-    it('should clear all messages', () => {
-      useChatStore.setState({
-        messages: [
-          {
-            id: '1',
-            role: MessageRole.User,
-            content: [{ type: MessageContentType.OutputText, text: 'Hello', id: '1' }],
-            createdAt: DateTime.now().toISO(),
-            threadId: 'test-thread-id',
-          },
-          {
-            id: '2',
-            role: MessageRole.Assistant,
-            content: [{ type: MessageContentType.OutputText, text: 'Hi there', id: '2' }],
-            createdAt: DateTime.now().toISO(),
-            threadId: 'test-thread-id',
-          },
-        ],
-      })
-
-      const { clearHistory } = useChatStore.getState()
-      clearHistory()
-
-      expect(useChatStore.getState().messages).toEqual([])
-    })
-
-    it('should clear messages without affecting other state', () => {
-      useChatStore.setState({
-        messages: [mockMessage],
-        waitingForReply: true,
-        assistant: mockAssistant,
-      })
-
-      const { clearHistory } = useChatStore.getState()
-      clearHistory()
-
-      const state = useChatStore.getState()
-      expect(state.messages).toEqual([])
-      expect(state.waitingForReply).toBe(true)
-      expect(state.assistant).toBe(mockAssistant)
-    })
-  })
-
   describe('sendMessage', () => {
     beforeEach(() => {
       useChatStore.setState({
