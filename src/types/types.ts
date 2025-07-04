@@ -100,3 +100,8 @@ export type Thread = {
   createdAt: string
   updatedAt: string
 }
+
+export enum ChatView {
+  Chat = 'chat',
+  History = 'history',
+}
