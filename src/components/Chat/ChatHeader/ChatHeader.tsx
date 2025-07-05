@@ -26,7 +26,7 @@ function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
   }, [setCurrentView])
 
   return (
-    <div className="flex justify-between gap-1 items-center p-1 border-b border-[#EDF2FA]">
+    <div className="flex justify-between gap-1 items-center p-1 border-b border-color-light">
       {currentView === 'history' && (
         <>
           <Button
