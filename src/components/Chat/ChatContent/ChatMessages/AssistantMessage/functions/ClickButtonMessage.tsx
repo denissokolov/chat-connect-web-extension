@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 
 import { FunctionStatus, type ClickButtonArguments, type FunctionCallResult } from '@/types/types'
 import browser from '@/services/browser'
@@ -13,6 +13,7 @@ interface ClickButtonMessageProps {
   status: FunctionStatus
   error: string | null | undefined
   saveResult: (messageId: string, callId: string, result: FunctionCallResult) => Promise<void>
+  autoExecute: boolean
 }
 
 function ClickButtonMessage({
@@ -22,6 +23,7 @@ function ClickButtonMessage({
   status,
   error,
   saveResult,
+  autoExecute,
 }: ClickButtonMessageProps) {
   const execute = useCallback(async () => {
     let result: FunctionCallResult
@@ -35,6 +37,12 @@ function ClickButtonMessage({
 
     saveResult(messageId, callId, result)
   }, [args, callId, messageId, saveResult])
+
+  useEffect(() => {
+    if (autoExecute && status === FunctionStatus.Idle) {
+      execute()
+    }
+  }, [autoExecute, execute, status])
 
   return (
     <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border border-gray-200">

@@ -18,9 +18,15 @@ interface AssistantMessageProps {
     callId: string,
     result: FunctionCallResult,
   ) => Promise<void>
+  autoExecuteTools: boolean
 }
 
-function AssistantMessage({ messageId, content, saveFunctionResult }: AssistantMessageProps) {
+function AssistantMessage({
+  messageId,
+  content,
+  saveFunctionResult,
+  autoExecuteTools,
+}: AssistantMessageProps) {
   return (
     <div className="max-w-full leading-1 mb-8">
       {content.map(item => {
@@ -39,6 +45,7 @@ function AssistantMessage({ messageId, content, saveFunctionResult }: AssistantM
                 status={item.status}
                 error={item.result?.error}
                 saveResult={saveFunctionResult}
+                autoExecute={autoExecuteTools}
               />
             )
           }
@@ -52,6 +59,7 @@ function AssistantMessage({ messageId, content, saveFunctionResult }: AssistantM
                 status={item.status}
                 error={item.result?.error}
                 saveResult={saveFunctionResult}
+                autoExecute={autoExecuteTools}
               />
             )
           }

@@ -8,6 +8,7 @@ import { MessageRole } from '@/types/types'
 export default function ChatMessages() {
   const messages = useChatStore(state => state.messages)
   const waitingForReply = useChatStore(state => state.waitingForReply)
+  const autoExecuteTools = useChatStore(state => state.autoExecuteTools)
 
   const saveFunctionResult = useChatStore(state => state.saveFunctionResult)
 
@@ -27,6 +28,7 @@ export default function ChatMessages() {
             messageId={message.id}
             content={message.content}
             saveFunctionResult={saveFunctionResult}
+            autoExecuteTools={autoExecuteTools}
           />
         ),
       )}

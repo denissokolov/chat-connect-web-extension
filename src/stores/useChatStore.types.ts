@@ -20,6 +20,8 @@ export type ModelSlice = {
   model: AIModel
   setModel: (model: AIModel) => void
   assistant: IAssistant | null
+  autoExecuteTools: boolean
+  setAutoExecuteTools: (autoExecuteTools: boolean) => void
 }
 
 export type ViewSlice = {
