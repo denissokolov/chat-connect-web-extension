@@ -89,5 +89,11 @@ export default tseslint.config(
       'no-restricted-globals': 'off',
     },
   },
+  {
+    files: ['src/utils/html/*.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
   storybook.configs['flat/recommended'],
 )

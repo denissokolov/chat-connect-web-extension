@@ -167,4 +167,17 @@ export class IndexedDBRepository implements IRepository {
       transaction.onerror = () => reject(transaction.error)
     })
   }
+
+  updateMessage(message: Message): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const transaction = this.getDB().transaction([this.messagesStore], 'readwrite')
+      const store = transaction.objectStore(this.messagesStore)
+
+      const request = store.put(message)
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+      transaction.onerror = () => reject(transaction.error)
+    })
+  }
 }

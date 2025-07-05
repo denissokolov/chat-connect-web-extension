@@ -67,4 +67,9 @@ export class MemoryDBRepository implements IRepository {
     this.messages.set(message.id, { ...message })
     return Promise.resolve()
   }
+
+  updateMessage(message: Message): Promise<void> {
+    this.messages.set(message.id, { ...message })
+    return Promise.resolve()
+  }
 }

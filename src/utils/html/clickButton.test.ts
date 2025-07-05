@@ -1,21 +1,11 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 
-import { logError } from '@/utils/log'
-
 import { clickButton } from './clickButton'
-
-// Mock the logError function
-vi.mock('@/utils/log', () => ({
-  logError: vi.fn(),
-}))
 
 describe('clickButton', () => {
   beforeEach(() => {
-    // Clear DOM
     document.body.innerHTML = ''
-    // Clear all mocks
     vi.clearAllMocks()
-    // Restore all mocks
     vi.restoreAllMocks()
   })
 
@@ -30,18 +20,17 @@ describe('clickButton', () => {
 
     const result = clickButton('#test-button')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns false when button does not exist', () => {
     const result = clickButton('#non-existent-button')
 
-    expect(result).toBe(false)
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button not found for selector: #non-existent-button',
-    )
+    expect(result).toEqual({
+      success: false,
+      error: 'Button not found',
+    })
   })
 
   it('returns false when element exists but is not a button', () => {
@@ -51,17 +40,19 @@ describe('clickButton', () => {
 
     const result = clickButton('#test-div')
 
-    expect(result).toBe(false)
-    expect(logError).toHaveBeenCalledWith('clickButton: Button not found for selector: #test-div')
+    expect(result).toEqual({
+      success: false,
+      error: 'Button not found',
+    })
   })
 
   it('returns false when element is null', () => {
     const result = clickButton('invalid-selector')
 
-    expect(result).toBe(false)
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button not found for selector: invalid-selector',
-    )
+    expect(result).toEqual({
+      success: false,
+      error: 'Button not found',
+    })
   })
 
   it('returns false and logs error when click throws an exception', () => {
@@ -77,11 +68,10 @@ describe('clickButton', () => {
 
     const result = clickButton('#error-button')
 
-    expect(result).toBe(false)
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Error clicking button for selector #error-button:',
-      clickError,
-    )
+    expect(result).toEqual({
+      success: false,
+      error: 'Click failed',
+    })
   })
 
   it('returns false and logs error when querySelector throws an exception', () => {
@@ -93,11 +83,10 @@ describe('clickButton', () => {
 
     const result = clickButton('#test-button')
 
-    expect(result).toBe(false)
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Error clicking button for selector #test-button:',
-      querySelectorError,
-    )
+    expect(result).toEqual({
+      success: false,
+      error: 'querySelector failed',
+    })
   })
 
   it('works with class selectors', () => {
@@ -110,9 +99,8 @@ describe('clickButton', () => {
 
     const result = clickButton('.btn-primary')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('works with attribute selectors', () => {
@@ -124,9 +112,8 @@ describe('clickButton', () => {
 
     const result = clickButton('[data-testid="submit-btn"]')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns true for input[type="button"] elements', () => {
@@ -140,9 +127,8 @@ describe('clickButton', () => {
 
     const result = clickButton('#input-button')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns false for disabled input[type="button"] elements', () => {
@@ -157,11 +143,11 @@ describe('clickButton', () => {
 
     const result = clickButton('#disabled-input-button')
 
-    expect(result).toBe(false)
+    expect(result).toEqual({
+      success: false,
+      error: 'Button is disabled',
+    })
     expect(clickSpy).not.toHaveBeenCalled()
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button is disabled for selector: #disabled-input-button',
-    )
   })
 
   it('returns false for input[type="text"] elements', () => {
@@ -173,8 +159,10 @@ describe('clickButton', () => {
 
     const result = clickButton('#text-input')
 
-    expect(result).toBe(false)
-    expect(logError).toHaveBeenCalledWith('clickButton: Button not found for selector: #text-input')
+    expect(result).toEqual({
+      success: false,
+      error: 'Button not found',
+    })
   })
 
   it('returns true for input[type="button"] with onclick handler', () => {
@@ -190,9 +178,8 @@ describe('clickButton', () => {
 
     const result = clickButton('#onclick-input-button')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clicked).toBe(true)
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns true for input[type="submit"] elements', () => {
@@ -206,9 +193,8 @@ describe('clickButton', () => {
 
     const result = clickButton('#submit-button')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns false for disabled input[type="submit"] elements', () => {
@@ -223,11 +209,11 @@ describe('clickButton', () => {
 
     const result = clickButton('#disabled-submit-button')
 
-    expect(result).toBe(false)
+    expect(result).toEqual({
+      success: false,
+      error: 'Button is disabled',
+    })
     expect(clickSpy).not.toHaveBeenCalled()
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button is disabled for selector: #disabled-submit-button',
-    )
   })
 
   it('returns true for input[type="submit"] with onclick handler', () => {
@@ -243,9 +229,8 @@ describe('clickButton', () => {
 
     const result = clickButton('#onclick-submit-button')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clicked).toBe(true)
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns false for disabled buttons', () => {
@@ -258,11 +243,11 @@ describe('clickButton', () => {
 
     const result = clickButton('#disabled-button')
 
-    expect(result).toBe(false)
+    expect(result).toEqual({
+      success: false,
+      error: 'Button is disabled',
+    })
     expect(clickSpy).not.toHaveBeenCalled()
-    expect(logError).toHaveBeenCalledWith(
-      'clickButton: Button is disabled for selector: #disabled-button',
-    )
   })
 
   it('handles nested button elements', () => {
@@ -278,9 +263,8 @@ describe('clickButton', () => {
 
     const result = clickButton('.nested-btn')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
-    expect(logError).not.toHaveBeenCalled()
   })
 
   it('works with button elements that have onclick handlers', () => {
@@ -294,8 +278,7 @@ describe('clickButton', () => {
 
     const result = clickButton('#onclick-button')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ success: true })
     expect(clicked).toBe(true)
-    expect(logError).not.toHaveBeenCalled()
   })
 })

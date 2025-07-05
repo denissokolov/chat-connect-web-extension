@@ -10,4 +10,9 @@ export interface IAssistant {
     history?: Message[]
     signal?: AbortSignal
   }) => Promise<ProviderMessageResponse>
+
+  sendFunctionCallResponse(params: {
+    model: AIModel
+    message: Message
+  }): Promise<ProviderMessageResponse>
 }

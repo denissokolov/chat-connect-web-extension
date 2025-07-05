@@ -13,8 +13,19 @@ export enum FunctionName {
   ClickButton = 'click_button',
 }
 
+export enum FunctionStatus {
+  Idle = 'idle',
+  Pending = 'pending',
+  Success = 'success',
+  Error = 'error',
+}
+
+export type FunctionCallResult = {
+  success: boolean
+  error?: string
+}
+
 export type FillInputArguments = {
-  id: string
   input_type: string
   input_value: string
   input_selector: string
@@ -22,7 +33,6 @@ export type FillInputArguments = {
 }
 
 export type ClickButtonArguments = {
-  id: string
   button_selector: string
   button_text: string
 }
@@ -36,12 +46,16 @@ export type MessageContent =
   | {
       id: string
       type: MessageContentType.FunctionCall
+      status: FunctionStatus
+      result?: FunctionCallResult
       name: FunctionName.FillInput
-      arguments: FillInputArguments[]
+      arguments: FillInputArguments
     }
   | {
       id: string
       type: MessageContentType.FunctionCall
+      status: FunctionStatus
+      result?: FunctionCallResult
       name: FunctionName.ClickButton
       arguments: ClickButtonArguments
     }
@@ -81,6 +95,7 @@ export enum AIModel {
 export type ProviderMessageResponse = {
   id: string
   content: MessageContent[]
+  hasTools: boolean
 }
 
 export interface PageContext {

@@ -1,5 +1,5 @@
 import type { IAssistant } from '@/services/assistant'
-import type { AIModel, ChatView, Message } from '@/types/types'
+import type { AIModel, ChatView, FunctionCallResult, Message } from '@/types/types'
 
 export type ThreadSlice = {
   threadId: string
@@ -20,6 +20,8 @@ export type ModelSlice = {
   model: AIModel
   setModel: (model: AIModel) => void
   assistant: IAssistant | null
+  autoExecuteTools: boolean
+  setAutoExecuteTools: (autoExecuteTools: boolean) => void
 }
 
 export type ViewSlice = {
@@ -32,7 +34,14 @@ export type MessageSlice = {
   sendMessage: (text: string) => Promise<void>
   stopMessage: () => void
   waitingForReply: boolean
+  waitingForTools: boolean
   messageAbortController: AbortController | null
+  saveFunctionResult: (
+    messageId: string,
+    callId: string,
+    result: FunctionCallResult,
+  ) => Promise<void>
+  handleMessageError: (messageId: string, threadId: string, error: unknown) => void
 }
 
 export type ChatStore = ThreadSlice & ProviderSlice & ModelSlice & ViewSlice & MessageSlice

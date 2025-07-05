@@ -1,4 +1,4 @@
-import type { PageContext } from '@/types/types'
+import type { FunctionCallResult, PageContext } from '@/types/types'
 
 export interface IBrowser {
   openExtensionSettings(): void
@@ -10,6 +10,6 @@ export interface IBrowser {
 
   getPageContext: () => Promise<PageContext | null>
 
-  setFieldValue(selector: string, value: string): Promise<boolean>
-  clickButton(selector: string): Promise<boolean>
+  setFieldValue(selector: string, value: string): Promise<FunctionCallResult>
+  clickButton(selector: string): Promise<FunctionCallResult>
 }

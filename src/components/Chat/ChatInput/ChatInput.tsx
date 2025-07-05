@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import ContextDisplay from '@/components/Chat/ContextDisplay/ContextDisplay'
 import useChatStore from '@/stores/useChatStore'
 import ModelSelect from '@/components/Chat/ModelSelect/ModelSelect'
+import AutoExecute from './AutoExecute/AutoExecute'
 
 function ChatInput() {
   const [input, setInput] = useState('')
@@ -15,11 +16,12 @@ function ChatInput() {
   const sendMessage = useChatStore(state => state.sendMessage)
   const stopMessage = useChatStore(state => state.stopMessage)
   const waitingForReply = useChatStore(state => state.waitingForReply)
+  const waitingForTools = useChatStore(state => state.waitingForTools)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (waitingForReply || !input.trim()) {
+    if (waitingForReply || waitingForTools || !input.trim()) {
       return
     }
 
@@ -54,16 +56,17 @@ function ChatInput() {
           className="text-sm border-none bg-transparent outline-none focus-visible:ring-0 resize-none shadow-none pt-2 pb-3"
         />
 
-        <div className="flex justify-between items-center m-2">
+        <div className="flex items-center m-2 gap-4">
           <ModelSelect />
-          {waitingForReply ? (
+          <AutoExecute />
+          {waitingForReply || waitingForTools ? (
             <Button
               type="button"
               onClick={handleStop}
               size="icon"
               title="Stop"
               aria-label="Stop generating response"
-              className="rounded-full"
+              className="rounded-full ml-auto"
             >
               <X className="size-5" />
             </Button>
@@ -74,7 +77,7 @@ function ChatInput() {
               size="icon"
               title="Send"
               aria-label="Send message"
-              className="rounded-full"
+              className="rounded-full ml-auto"
             >
               <ArrowUp className="size-5" />
             </Button>

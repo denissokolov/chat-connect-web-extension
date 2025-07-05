@@ -1,6 +1,6 @@
-import { logError } from '@/utils/log'
+import type { FunctionCallResult } from '@/types/types'
 
-export function clickButton(selector: string): boolean {
+export function clickButton(selector: string): FunctionCallResult {
   try {
     const button = document.querySelector(selector)
     if (
@@ -10,17 +10,21 @@ export function clickButton(selector: string): boolean {
           (button.type === 'button' || button.type === 'submit')))
     ) {
       if (button.disabled) {
-        logError(`clickButton: Button is disabled for selector: ${selector}`)
-        return false
+        console.error(`Button is disabled for selector: ${selector}`)
+        return { success: false, error: 'Button is disabled' }
       }
       button.click()
-      return true
+      return { success: true }
     }
 
-    logError(`clickButton: Button not found for selector: ${selector}`)
-    return false
+    console.error(`Button not found for selector: ${selector}`)
+    return { success: false, error: 'Button not found' }
   } catch (error) {
-    logError(`clickButton: Error clicking button for selector ${selector}:`, error)
-    return false
+    console.error(`Error clicking button for selector ${selector}`)
+    console.error(error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : (error?.toString() ?? 'Unknown error'),
+    }
   }
 }

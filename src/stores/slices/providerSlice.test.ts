@@ -28,6 +28,7 @@ describe('providerSlice', () => {
       const existingAssistant = {
         getProvider: vi.fn().mockReturnValue(AIProvider.Mock),
         sendMessage: vi.fn(),
+        sendFunctionCallResponse: vi.fn(),
       }
 
       useChatStore.setState({ assistant: existingAssistant })
