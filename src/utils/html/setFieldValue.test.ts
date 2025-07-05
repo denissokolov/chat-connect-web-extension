@@ -1,13 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { logError } from '@/utils/log'
-
 import { setFieldValue } from './setFieldValue'
-
-// Mock the logError function
-vi.mock('@/utils/log', () => ({
-  logError: vi.fn(),
-}))
 
 describe('html setFieldValue', () => {
   beforeEach(() => {
@@ -27,7 +20,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'Hello World')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('Hello World')
       })
 
@@ -37,7 +30,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', '')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('')
       })
     })
@@ -49,7 +42,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', '42')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('42')
       })
 
@@ -59,7 +52,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', '3.14')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('3.14')
       })
 
@@ -68,10 +61,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'not-a-number')
 
-        expect(result).toBe(false)
-        expect(logError).toHaveBeenCalledWith(
-          'setFieldValue: Invalid numeric value "not-a-number" for number input',
-        )
+        expect(result).toEqual({
+          success: false,
+          error: 'Invalid numeric value',
+        })
       })
     })
 
@@ -82,7 +75,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', '75')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('75')
       })
 
@@ -91,10 +84,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'invalid')
 
-        expect(result).toBe(false)
-        expect(logError).toHaveBeenCalledWith(
-          'setFieldValue: Invalid numeric value "invalid" for range input',
-        )
+        expect(result).toEqual({
+          success: false,
+          error: 'Invalid numeric value',
+        })
       })
     })
 
@@ -105,7 +98,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'test@example.com')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('test@example.com')
       })
 
@@ -115,7 +108,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', '')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('')
       })
 
@@ -124,8 +117,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'invalid-email')
 
-        expect(result).toBe(false)
-        expect(logError).toHaveBeenCalledWith('setFieldValue: Invalid email format "invalid-email"')
+        expect(result).toEqual({
+          success: false,
+          error: 'Invalid email format',
+        })
       })
 
       it('should reject email that is too long', () => {
@@ -134,8 +129,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', longEmail)
 
-        expect(result).toBe(false)
-        expect(logError).toHaveBeenCalledWith(`setFieldValue: Invalid email format "${longEmail}"`)
+        expect(result).toEqual({
+          success: false,
+          error: 'Invalid email format',
+        })
       })
     })
 
@@ -146,7 +143,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'https://example.com')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('https://example.com')
       })
 
@@ -156,7 +153,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', '')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(input.value).toBe('')
       })
 
@@ -165,8 +162,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'not-a-url')
 
-        expect(result).toBe(false)
-        expect(logError).toHaveBeenCalledWith('setFieldValue: Invalid URL format "not-a-url"')
+        expect(result).toEqual({
+          success: false,
+          error: 'Invalid URL format',
+        })
       })
     })
 
@@ -180,7 +179,7 @@ describe('html setFieldValue', () => {
         for (const value of truthyValues) {
           input.checked = false
           const result = setFieldValue('#test-input', value)
-          expect(result).toBe(true)
+          expect(result).toEqual({ success: true })
           expect(input.checked).toBe(true)
         }
       })
@@ -194,7 +193,7 @@ describe('html setFieldValue', () => {
         for (const value of falsyValues) {
           input.checked = true
           const result = setFieldValue('#test-input', value)
-          expect(result).toBe(true)
+          expect(result).toEqual({ success: true })
           expect(input.checked).toBe(false)
         }
       })
@@ -214,7 +213,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#radio2', 'option2')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(radio1.checked).toBe(false)
         expect(radio2.checked).toBe(true)
         expect(radio3.checked).toBe(false)
@@ -231,7 +230,7 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('input[name="test-radio"]', 'option2')
 
-        expect(result).toBe(true)
+        expect(result).toEqual({ success: true })
         expect(radio1.checked).toBe(false)
         expect(radio2.checked).toBe(true)
       })
@@ -241,7 +240,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#radio1', 'option2')
 
-        expect(result).toBe(false)
+        expect(result).toEqual({
+          success: false,
+          error: 'Radio button not found',
+        })
       })
     })
 
@@ -251,10 +253,10 @@ describe('html setFieldValue', () => {
 
         const result = setFieldValue('#test-input', 'file.txt')
 
-        expect(result).toBe(false)
-        expect(logError).toHaveBeenCalledWith(
-          'setFieldValue: Cannot set value for file input elements',
-        )
+        expect(result).toEqual({
+          success: false,
+          error: 'Cannot set value for file input elements',
+        })
       })
     })
   })
@@ -266,7 +268,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-textarea', 'Multi-line\ntext content')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(textarea.value).toBe('Multi-line\ntext content')
     })
 
@@ -276,7 +278,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-textarea', '')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(textarea.value).toBe('')
     })
   })
@@ -294,7 +296,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-select', 'option2')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(select.value).toBe('option2')
     })
 
@@ -309,7 +311,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-select', '')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(select.value).toBe('')
     })
 
@@ -324,7 +326,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-select', 'option1')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(select.value).toBe('Option1')
     })
 
@@ -338,10 +340,10 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-select', 'nonexistent')
 
-      expect(result).toBe(false)
-      expect(logError).toHaveBeenCalledWith(
-        'setFieldValue: Option "nonexistent" not found in select element',
-      )
+      expect(result).toEqual({
+        success: false,
+        error: 'Option not found',
+      })
     })
   })
 
@@ -360,7 +362,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-input', 'test value')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(inputSpy).toHaveBeenCalledTimes(1)
       expect(changeSpy).toHaveBeenCalledTimes(1)
       expect(blurSpy).toHaveBeenCalledTimes(1)
@@ -375,7 +377,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-input', 'test')
 
-      expect(result).toBe(false)
+      expect(result).toEqual({ success: false, error: 'Cannot set value for file input elements' })
       expect(inputSpy).not.toHaveBeenCalled()
     })
   })
@@ -384,10 +386,10 @@ describe('html setFieldValue', () => {
     it('should return false when element is not found', () => {
       const result = setFieldValue('#nonexistent', 'value')
 
-      expect(result).toBe(false)
-      expect(logError).toHaveBeenCalledWith(
-        'setFieldValue: Element not found for selector: #nonexistent',
-      )
+      expect(result).toEqual({
+        success: false,
+        error: 'Element not found',
+      })
     })
 
     it('should return false for unsupported element type', () => {
@@ -395,10 +397,10 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-div', 'value')
 
-      expect(result).toBe(false)
-      expect(logError).toHaveBeenCalledWith(
-        'setFieldValue: Unsupported element type for selector: #test-div',
-      )
+      expect(result).toEqual({
+        success: false,
+        error: 'Unsupported element type',
+      })
     })
 
     it('should handle and log unexpected errors', () => {
@@ -410,11 +412,10 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test', 'value')
 
-      expect(result).toBe(false)
-      expect(logError).toHaveBeenCalledWith(
-        'setFieldValue: Error setting value for selector #test:',
-        expect.any(Error),
-      )
+      expect(result).toEqual({
+        success: false,
+        error: 'Unexpected error',
+      })
 
       // Restore original method
       document.querySelector = originalQuerySelector
@@ -428,7 +429,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('[id="test-input[0]"]', 'test value')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(input.value).toBe('test value')
     })
 
@@ -438,7 +439,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-input', '🚀 Unicode test 中文')
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(input.value).toBe('🚀 Unicode test 中文')
     })
 
@@ -449,7 +450,7 @@ describe('html setFieldValue', () => {
 
       const result = setFieldValue('#test-textarea', longValue)
 
-      expect(result).toBe(true)
+      expect(result).toEqual({ success: true })
       expect(textarea.value).toBe(longValue)
     })
   })

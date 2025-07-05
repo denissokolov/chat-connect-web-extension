@@ -6,20 +6,28 @@ import browser from '@/services/browser'
 import repository from '@/services/repository'
 import { logError } from '@/utils/log'
 import { getStringError } from '@/utils/error'
-import { MessageRole, MessageContentType, type Message, type PageContext } from '@/types/types'
+import {
+  MessageRole,
+  MessageContentType,
+  type Message,
+  type PageContext,
+  type FunctionCallResult,
+  FunctionStatus,
+} from '@/types/types'
 import { getBasicInstructions } from '@/utils/instructions'
 import { createAssistantMessage } from '@/utils/message'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
   messages: [],
   waitingForReply: false,
+  waitingForTools: false,
   messageAbortController: null,
   stopMessage: () => {
     const { messageAbortController } = get()
     if (messageAbortController) {
       messageAbortController.abort()
     }
-    set({ messageAbortController: null, waitingForReply: false })
+    set({ messageAbortController: null, waitingForReply: false, waitingForTools: false })
   },
   sendMessage: async (text: string) => {
     const { assistant, model, messages, threadId } = get()
@@ -94,27 +102,109 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       set(state => ({
         messages: [...state.messages, responseMessage],
         waitingForReply: false,
+        waitingForTools: response.hasTools,
         currentAbortController: null,
       }))
       await repository.createMessage(responseMessage)
     } catch (error) {
-      logError('Error sending message', error)
+      get().handleMessageError(newMessage.id, threadId, error)
+    }
+  },
+  saveFunctionResult: async (messageId: string, callId: string, result: FunctionCallResult) => {
+    const { assistant, model, threadId, messages } = get()
+    if (!assistant || !model) {
+      throw new Error('Assistant not initialized')
+    }
+
+    const status = result.success ? FunctionStatus.Success : FunctionStatus.Error
+
+    let completed = true
+    let message: Message | undefined = undefined
+
+    const updatedMessages = messages.map(msg => {
+      if (msg.id === messageId) {
+        const content = msg.content.map(i => {
+          if (i.id === callId) {
+            return { ...i, status, result }
+          }
+
+          if (
+            i.type === MessageContentType.FunctionCall &&
+            (i.status === FunctionStatus.Idle || i.status === FunctionStatus.Pending)
+          ) {
+            completed = false
+          }
+
+          return i
+        })
+        message = {
+          ...msg,
+          content,
+        }
+        return message
+      }
+      return msg
+    })
+
+    if (!message) {
+      return
+    }
+
+    if (!completed) {
+      set({ messages: updatedMessages })
+      return
+    }
+
+    const abortController = new AbortController()
+    set({
+      messages: updatedMessages,
+      waitingForReply: true,
+      waitingForTools: false,
+      messageAbortController: abortController,
+    })
+
+    await repository.updateMessage(message)
+
+    try {
+      const response = await assistant.sendFunctionCallResponse({
+        model: model,
+        message,
+      })
+
       if (get().threadId !== threadId) {
         return
       }
 
-      const isAborted =
-        error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))
-
+      const responseMessage = createAssistantMessage(response, threadId)
       set(state => ({
-        messages: isAborted
-          ? state.messages // Don't show error for cancelled requests
-          : state.messages.map((msg, index) =>
-              index === state.messages.length - 1 ? { ...msg, error: getStringError(error) } : msg,
-            ),
+        messages: [...state.messages, responseMessage],
         waitingForReply: false,
+        waitingForTools: response.hasTools,
         currentAbortController: null,
       }))
+      await repository.createMessage(responseMessage)
+    } catch (error) {
+      get().handleMessageError(messageId, threadId, error)
     }
+  },
+  handleMessageError: (messageId: string, threadId: string, error: unknown) => {
+    logError('Error sending message', error)
+    if (get().threadId !== threadId) {
+      return
+    }
+
+    const isAborted =
+      error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))
+
+    set(state => ({
+      messages: isAborted
+        ? state.messages // Don't show error for cancelled requests
+        : state.messages.map(msg =>
+            msg.id === messageId ? { ...msg, error: getStringError(error) } : msg,
+          ),
+      waitingForReply: false,
+      waitingForTools: false,
+      messageAbortController: null,
+    }))
   },
 })

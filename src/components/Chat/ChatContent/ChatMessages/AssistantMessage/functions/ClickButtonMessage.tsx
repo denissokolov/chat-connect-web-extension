@@ -1,27 +1,45 @@
 import { memo, useCallback } from 'react'
 
-import { type ClickButtonArguments } from '@/types/types'
-import ExecuteFunction from './ExecuteFunction'
+import { FunctionStatus, type ClickButtonArguments, type FunctionCallResult } from '@/types/types'
 import browser from '@/services/browser'
 import { sanitizeSelector } from '@/utils/html/sanitizeSelector'
 
+import ExecuteButton from './ExecuteButton'
+
 interface ClickButtonMessageProps {
   args: ClickButtonArguments
+  messageId: string
+  callId: string
+  status: FunctionStatus
+  error: string | null | undefined
+  saveResult: (messageId: string, callId: string, result: FunctionCallResult) => Promise<void>
 }
 
-function ClickButtonMessage({ args }: ClickButtonMessageProps) {
-  const execute = useCallback((): Promise<boolean> => {
+function ClickButtonMessage({
+  args,
+  messageId,
+  callId,
+  status,
+  error,
+  saveResult,
+}: ClickButtonMessageProps) {
+  const execute = useCallback(async () => {
+    let result: FunctionCallResult
+
     const sanitizedSelector = sanitizeSelector(args.button_selector)
     if (!sanitizedSelector) {
-      return Promise.resolve(false)
+      result = { success: false, error: 'Invalid selector' }
+    } else {
+      result = await browser.clickButton(sanitizedSelector)
     }
-    return browser.clickButton(sanitizedSelector)
-  }, [args.button_selector])
+
+    saveResult(messageId, callId, result)
+  }, [args, callId, messageId, saveResult])
 
   return (
     <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border border-gray-200">
       <div>{'Click the button'}</div>
-      <ExecuteFunction execute={execute} label={args.button_text} />
+      <ExecuteButton label={args.button_text} status={status} error={error} onClick={execute} />
     </div>
   )
 }

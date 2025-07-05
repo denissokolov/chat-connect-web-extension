@@ -406,4 +406,189 @@ describe('MemoryDBRepository', () => {
       expect(oldMessages).toHaveLength(0)
     })
   })
+
+  describe('updateMessage', () => {
+    it('should update an existing message successfully', async () => {
+      await repository.createMessage(mockMessage1)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [{ id: '999', type: MessageContentType.OutputText, text: 'Updated content' }],
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages).toHaveLength(1)
+      expect(messages[0]).toEqual(updatedMessage)
+      const firstContent = messages[0].content[0]
+      if (firstContent.type === MessageContentType.OutputText) {
+        expect(firstContent.text).toBe('Updated content')
+      }
+    })
+
+    it('should store updated message as a copy', async () => {
+      await repository.createMessage(mockMessage1)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [{ id: '999', type: MessageContentType.OutputText, text: 'Updated content' }],
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      // Modify the original message object to test shallow copy behavior
+      updatedMessage.role = MessageRole.Assistant
+
+      const messages = await repository.getMessages('thread-1')
+      // The stored message should have the original role (User), not the modified one (Assistant)
+      expect(messages[0].role).toBe(MessageRole.User)
+      const storedContent = messages[0].content[0]
+      if (storedContent.type === MessageContentType.OutputText) {
+        expect(storedContent.text).toBe('Updated content')
+      }
+    })
+
+    it('should update message role', async () => {
+      await repository.createMessage(mockMessage1)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        role: MessageRole.Assistant,
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages[0].role).toBe(MessageRole.Assistant)
+    })
+
+    it('should update message error field', async () => {
+      await repository.createMessage(mockMessage1)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        error: 'Something went wrong',
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages[0].error).toBe('Something went wrong')
+    })
+
+    it('should clear error field when updating', async () => {
+      const messageWithError: Message = {
+        ...mockMessage1,
+        error: 'Original error',
+      }
+
+      await repository.createMessage(messageWithError)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [{ id: '999', type: MessageContentType.OutputText, text: 'Fixed content' }],
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages[0].error).toBeUndefined()
+      const firstContent = messages[0].content[0]
+      if (firstContent.type === MessageContentType.OutputText) {
+        expect(firstContent.text).toBe('Fixed content')
+      }
+    })
+
+    it('should handle updating non-existent message', async () => {
+      const nonExistentMessage: Message = {
+        id: 'non-existent-message',
+        role: MessageRole.User,
+        content: [{ id: '999', type: MessageContentType.OutputText, text: 'New message' }],
+        createdAt: '2024-01-01T15:00:00Z',
+        threadId: 'thread-1',
+      }
+
+      await repository.updateMessage(nonExistentMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages).toHaveLength(1)
+      expect(messages[0]).toEqual(nonExistentMessage)
+    })
+
+    it('should preserve other messages in the same thread', async () => {
+      await repository.createMessage(mockMessage1)
+      await repository.createMessage(mockMessage2)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [
+          { id: '999', type: MessageContentType.OutputText, text: 'Updated first message' },
+        ],
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages).toHaveLength(2)
+      expect(messages[0]).toEqual(updatedMessage)
+      expect(messages[1]).toEqual(mockMessage2)
+    })
+
+    it('should preserve messages in other threads', async () => {
+      await repository.createMessage(mockMessage1)
+      await repository.createMessage(mockMessage3)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [{ id: '999', type: MessageContentType.OutputText, text: 'Updated message' }],
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages1 = await repository.getMessages('thread-1')
+      const messages2 = await repository.getMessages('thread-2')
+
+      expect(messages1).toHaveLength(1)
+      expect(messages1[0]).toEqual(updatedMessage)
+      expect(messages2).toHaveLength(1)
+      expect(messages2[0]).toEqual(mockMessage3)
+    })
+
+    it('should handle updating message with multiple content parts', async () => {
+      await repository.createMessage(mockMessage1)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [
+          { id: '1', type: MessageContentType.OutputText, text: 'First part' },
+          { id: '2', type: MessageContentType.OutputText, text: 'Second part' },
+        ],
+      }
+
+      await repository.updateMessage(updatedMessage)
+
+      const messages = await repository.getMessages('thread-1')
+      expect(messages[0].content).toHaveLength(2)
+      const firstContent = messages[0].content[0]
+      const secondContent = messages[0].content[1]
+      if (firstContent.type === MessageContentType.OutputText) {
+        expect(firstContent.text).toBe('First part')
+      }
+      if (secondContent.type === MessageContentType.OutputText) {
+        expect(secondContent.text).toBe('Second part')
+      }
+    })
+
+    it('should resolve successfully', async () => {
+      await repository.createMessage(mockMessage1)
+
+      const updatedMessage: Message = {
+        ...mockMessage1,
+        content: [{ id: '999', type: MessageContentType.OutputText, text: 'Updated content' }],
+      }
+
+      await expect(repository.updateMessage(updatedMessage)).resolves.toBeUndefined()
+    })
+  })
 })

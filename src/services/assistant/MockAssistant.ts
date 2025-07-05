@@ -38,6 +38,7 @@ export class MockAssistant implements IAssistant {
 
     return {
       id: 'mock-message-id',
+      hasTools: false,
       content: [
         {
           id: '1',
@@ -46,5 +47,19 @@ export class MockAssistant implements IAssistant {
         },
       ],
     }
+  }
+
+  sendFunctionCallResponse(): Promise<ProviderMessageResponse> {
+    return Promise.resolve({
+      id: 'mock-message-id',
+      hasTools: false,
+      content: [
+        {
+          id: '2',
+          type: MessageContentType.OutputText,
+          text: 'Completed',
+        },
+      ],
+    })
   }
 }

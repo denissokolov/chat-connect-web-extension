@@ -15,11 +15,12 @@ function ChatInput() {
   const sendMessage = useChatStore(state => state.sendMessage)
   const stopMessage = useChatStore(state => state.stopMessage)
   const waitingForReply = useChatStore(state => state.waitingForReply)
+  const waitingForTools = useChatStore(state => state.waitingForTools)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (waitingForReply || !input.trim()) {
+    if (waitingForReply || waitingForTools || !input.trim()) {
       return
     }
 
@@ -56,7 +57,7 @@ function ChatInput() {
 
         <div className="flex justify-between items-center m-2">
           <ModelSelect />
-          {waitingForReply ? (
+          {waitingForReply || waitingForTools ? (
             <Button
               type="button"
               onClick={handleStop}

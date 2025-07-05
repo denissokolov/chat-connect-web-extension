@@ -4,7 +4,13 @@ import { DateTime } from 'luxon'
 
 import Chat from './Chat'
 import useChatStore from '@/stores/useChatStore'
-import { FunctionName, type Message, MessageContentType, MessageRole } from '@/types/types'
+import {
+  FunctionName,
+  FunctionStatus,
+  type Message,
+  MessageContentType,
+  MessageRole,
+} from '@/types/types'
 import { useEffect } from 'react'
 import { MockAssistant } from '@/services/assistant'
 
@@ -138,6 +144,26 @@ export const Empty: Story = {
   },
 }
 
+export const Typing: Story = {
+  decorators: [
+    Story => {
+      useEffect(() => {
+        useChatStore.setState({
+          messages: [],
+          waitingForReply: false,
+        })
+      }, [])
+
+      return <Story />
+    },
+  ],
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByRole('textbox')
+    await userEvent.type(input, 'Hello, world!')
+    await expect(canvas.getByText('Hello, world!')).toBeInTheDocument()
+  },
+}
+
 export const WriteMessage: Story = {
   decorators: [
     Story => {
@@ -238,58 +264,86 @@ export const WithFunctionCall: Story = {
                 {
                   id: 'answer_2',
                   type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
                   name: FunctionName.FillInput,
-                  arguments: [
-                    {
-                      id: 'call_1',
-                      input_type: 'radio',
-                      input_value: 'personal',
-                      input_selector: '#typeofclient',
-                      label_value: 'Particulier',
-                    },
-                    {
-                      id: 'call_2',
-                      input_type: 'radio',
-                      input_value: 'company',
-                      input_selector: '#typeofclient',
-                      label_value: 'Bedrijf',
-                    },
-                    {
-                      id: 'call_3',
-                      input_type: 'input',
-                      input_value: 'Jan',
-                      input_selector: '#firstname',
-                      label_value: 'Naam',
-                    },
-                    {
-                      id: 'call_4',
-                      input_type: 'input',
-                      input_value: 'Jansen',
-                      input_selector: '#lastname',
-                      label_value: 'Achternaam',
-                    },
-                    {
-                      id: 'call_5',
-                      input_type: 'input',
-                      input_value: '14A',
-                      input_selector: '#streetnumber',
-                      label_value: 'Huisnummer',
-                    },
-                    {
-                      id: 'call_6',
-                      input_type: 'input',
-                      input_value: '1234',
-                      input_selector: '#postalcode',
-                      label_value: 'Postcode',
-                    },
-                    {
-                      id: 'call_6',
-                      input_type: 'input',
-                      input_value: 'AB',
-                      input_selector: '#postalcode_letters',
-                      label_value: 'Postcode letters',
-                    },
-                  ],
+                  arguments: {
+                    input_type: 'radio',
+                    input_value: 'personal',
+                    input_selector: '#typeofclient',
+                    label_value: 'Particulier',
+                  },
+                },
+                {
+                  id: 'answer_3',
+                  type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
+                  name: FunctionName.FillInput,
+                  arguments: {
+                    input_type: 'radio',
+                    input_value: 'company',
+                    input_selector: '#typeofclient',
+                    label_value: 'Bedrijf',
+                  },
+                },
+                {
+                  id: 'answer_4',
+                  type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
+                  name: FunctionName.FillInput,
+                  arguments: {
+                    input_type: 'input',
+                    input_value: 'Jan',
+                    input_selector: '#firstname',
+                    label_value: 'Naam',
+                  },
+                },
+                {
+                  id: 'answer_5',
+                  type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
+                  name: FunctionName.FillInput,
+                  arguments: {
+                    input_type: 'input',
+                    input_value: 'Jansen',
+                    input_selector: '#lastname',
+                    label_value: 'Achternaam',
+                  },
+                },
+                {
+                  id: 'answer_6',
+                  type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
+                  name: FunctionName.FillInput,
+                  arguments: {
+                    input_type: 'input',
+                    input_value: '14A',
+                    input_selector: '#streetnumber',
+                    label_value: 'Huisnummer',
+                  },
+                },
+                {
+                  id: 'answer_7',
+                  type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
+                  name: FunctionName.FillInput,
+                  arguments: {
+                    input_type: 'input',
+                    input_value: '1234',
+                    input_selector: '#postalcode',
+                    label_value: 'Postcode',
+                  },
+                },
+                {
+                  id: 'answer_8',
+                  type: MessageContentType.FunctionCall,
+                  status: FunctionStatus.Idle,
+                  name: FunctionName.FillInput,
+                  arguments: {
+                    input_type: 'input',
+                    input_value: 'AB',
+                    input_selector: '#postalcode_letters',
+                    label_value: 'Postcode letters',
+                  },
                 },
               ],
               role: MessageRole.Assistant,

@@ -1,18 +1,18 @@
-import { logError } from '@/utils/log'
+import type { FunctionCallResult } from '@/types/types'
 
-export function setFieldValue(selector: string, value: string): boolean {
+export function setFieldValue(selector: string, value: string): FunctionCallResult {
   const parseBooleanValue = (): boolean => {
     const normalizedValue = value.toLowerCase().trim()
     return ['true', '1', 'yes', 'on', 'checked'].includes(normalizedValue)
   }
 
-  const handleInputElement = (input: HTMLInputElement): boolean => {
+  const handleInputElement = (input: HTMLInputElement): FunctionCallResult => {
     switch (input.type.toLowerCase()) {
       case 'radio':
         // For radio buttons, only check if the value matches the input's value attribute
         if (input.value === value) {
           input.checked = true
-          return true
+          return { success: true }
         }
         // Also try to find and uncheck other radio buttons with the same name
         if (input.name) {
@@ -22,21 +22,21 @@ export function setFieldValue(selector: string, value: string): boolean {
               radio.checked = radio.value === value
             }
           })
-          return true
+          return { success: true }
         }
-        return false
+        return { success: false, error: 'Radio button not found' }
 
       case 'checkbox': {
         // For checkboxes, interpret the value as a boolean-like value
         const booleanValue = parseBooleanValue()
         input.checked = booleanValue
-        return true
+        return { success: true }
       }
 
       case 'file':
         // File inputs cannot be programmatically set for security reasons
-        logError('setFieldValue: Cannot set value for file input elements')
-        return false
+        console.error('Cannot set value for file input elements')
+        return { success: false, error: 'Cannot set value for file input elements' }
 
       case 'number':
       case 'range': {
@@ -44,49 +44,49 @@ export function setFieldValue(selector: string, value: string): boolean {
         const numericValue = parseFloat(value)
         if (!isNaN(numericValue)) {
           input.value = value
-          return true
+          return { success: true }
         }
-        logError(`setFieldValue: Invalid numeric value "${value}" for ${input.type} input`)
-        return false
+        console.error(`Invalid numeric value "${value}" for ${input.type} input`)
+        return { success: false, error: 'Invalid numeric value' }
       }
 
       case 'email':
         // Basic email validation
         if (value === '' || isValidEmail(value)) {
           input.value = value
-          return true
+          return { success: true }
         }
-        logError(`setFieldValue: Invalid email format "${value}"`)
-        return false
+        console.error(`Invalid email format "${value}"`)
+        return { success: false, error: 'Invalid email format' }
 
       case 'url':
         // Basic URL validation
         if (value === '' || isValidUrl(value)) {
           input.value = value
-          return true
+          return { success: true }
         }
-        logError(`setFieldValue: Invalid URL format "${value}"`)
-        return false
+        console.error(`Invalid URL format "${value}"`)
+        return { success: false, error: 'Invalid URL format' }
 
       default:
         // Handle text, password, tel, search, and other text-based inputs
         input.value = value
-        return true
+        return { success: true }
     }
   }
 
-  const handleTextAreaElement = (textarea: HTMLTextAreaElement): boolean => {
+  const handleTextAreaElement = (textarea: HTMLTextAreaElement): FunctionCallResult => {
     textarea.value = value
-    return true
+    return { success: true }
   }
 
-  const handleSelectElement = (select: HTMLSelectElement): boolean => {
+  const handleSelectElement = (select: HTMLSelectElement): FunctionCallResult => {
     // Check if the option exists before setting the value
     const optionExists = Array.from(select.options).some(option => option.value === value)
 
     if (optionExists || value === '') {
       select.value = value
-      return true
+      return { success: true }
     }
 
     // If exact match not found, try case-insensitive match
@@ -96,11 +96,11 @@ export function setFieldValue(selector: string, value: string): boolean {
 
     if (caseInsensitiveMatch) {
       select.value = caseInsensitiveMatch.value
-      return true
+      return { success: true }
     }
 
-    logError(`setFieldValue: Option "${value}" not found in select element`)
-    return false
+    console.error(`Option "${value}" not found in select element`)
+    return { success: false, error: 'Option not found' }
   }
 
   const isValidEmail = (email: string): boolean => {
@@ -133,29 +133,34 @@ export function setFieldValue(selector: string, value: string): boolean {
   try {
     const field = document.querySelector(selector)
     if (!field) {
-      logError(`setFieldValue: Element not found for selector: ${selector}`)
-      return false
+      console.error(`Element not found for selector: ${selector}`)
+      return { success: false, error: 'Element not found' }
     }
 
-    let success = false
+    let result: FunctionCallResult
     if (field instanceof HTMLInputElement) {
-      success = handleInputElement(field)
+      result = handleInputElement(field)
     } else if (field instanceof HTMLTextAreaElement) {
-      success = handleTextAreaElement(field)
+      result = handleTextAreaElement(field)
     } else if (field instanceof HTMLSelectElement) {
-      success = handleSelectElement(field)
+      result = handleSelectElement(field)
     } else {
-      logError(`setFieldValue: Unsupported element type for selector: ${selector}`)
+      console.error(`Unsupported element type for selector: ${selector}`)
+      result = { success: false, error: 'Unsupported element type' }
     }
 
-    if (success) {
+    if (result.success) {
       // Dispatch events to notify any listeners that the field value changed
       dispatchFieldEvents(field)
-      return true
     }
-  } catch (error) {
-    logError(`setFieldValue: Error setting value for selector ${selector}:`, error)
-  }
 
-  return false
+    return result
+  } catch (error) {
+    console.error(`Error setting value for selector ${selector}`)
+    console.error(error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : (error?.toString() ?? 'Unknown error'),
+    } as FunctionCallResult
+  }
 }

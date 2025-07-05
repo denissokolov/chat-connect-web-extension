@@ -2,7 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
 import AssistantMessage from './AssistantMessage'
-import { FunctionName, MessageContentType, type MessageContent } from '@/types/types'
+import {
+  FunctionName,
+  FunctionStatus,
+  MessageContentType,
+  type MessageContent,
+} from '@/types/types'
 
 const meta: Meta<typeof AssistantMessage> = {
   title: 'Chat / Assistant Message',
@@ -11,10 +16,6 @@ const meta: Meta<typeof AssistantMessage> = {
     layout: 'padded',
   },
   argTypes: {
-    progress: {
-      control: 'boolean',
-      description: 'Shows loading animation when true',
-    },
     content: {
       control: 'object',
       description: 'Array of message content items',
@@ -126,25 +127,6 @@ export const MultipleContentItems: Story = {
   },
 }
 
-export const LoadingState: Story = {
-  args: {
-    progress: true,
-  },
-  play: ({ canvasElement }) => {
-    // Check that loading animation is present
-    const loadingDots = canvasElement.querySelectorAll('.animate-bounce')
-    expect(loadingDots).toHaveLength(3)
-  },
-}
-
-export const EmptyState: Story = {
-  args: {},
-  play: ({ canvasElement }) => {
-    // Component should render but be essentially empty
-    expect(canvasElement.children).toHaveLength(1)
-  },
-}
-
 export const CodeSnippet: Story = {
   args: {
     content: [
@@ -208,15 +190,13 @@ export const WithOneFunctionCall: Story = {
         id: '7',
         type: MessageContentType.FunctionCall,
         name: FunctionName.FillInput,
-        arguments: [
-          {
-            id: 'call_1',
-            input_type: 'input',
-            input_value: '1234',
-            input_selector: '#postalcode',
-            label_value: 'Postcode',
-          },
-        ],
+        status: FunctionStatus.Idle,
+        arguments: {
+          input_type: 'input',
+          input_value: '1234',
+          input_selector: '#postalcode',
+          label_value: 'Postcode',
+        },
       },
     ],
   },
@@ -235,22 +215,25 @@ export const WithMultipleFunctionCalls: Story = {
         id: '7',
         type: MessageContentType.FunctionCall,
         name: FunctionName.FillInput,
-        arguments: [
-          {
-            id: 'call_1',
-            input_type: 'input',
-            input_value: '1234',
-            input_selector: '#postalcode',
-            label_value: 'Postcode',
-          },
-          {
-            id: 'call_2',
-            input_type: 'input',
-            input_value: 'AB',
-            input_selector: '#postalcode_letters',
-            label_value: 'Postcode letters',
-          },
-        ],
+        status: FunctionStatus.Idle,
+        arguments: {
+          input_type: 'input',
+          input_value: '1234',
+          input_selector: '#postalcode',
+          label_value: 'Postcode',
+        },
+      },
+      {
+        id: '8',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.FillInput,
+        status: FunctionStatus.Idle,
+        arguments: {
+          input_type: 'input',
+          input_value: 'AB',
+          input_selector: '#postalcode_letters',
+          label_value: 'Postcode letters',
+        },
       },
     ],
   },
@@ -260,7 +243,7 @@ export const WithMultipleFunctionCalls: Story = {
     expect(canvas.getByText('1234')).toBeInTheDocument()
     expect(canvas.getByText('Postcode letters')).toBeInTheDocument()
     expect(canvas.getByText('AB')).toBeInTheDocument()
-    expect(canvas.getByText('Fill the fields')).toBeInTheDocument()
+    expect(canvas.queryAllByText('Fill the field')).toHaveLength(2)
   },
 }
 
@@ -276,22 +259,25 @@ export const WithMultipleFunctionCallsAndText: Story = {
         id: '7',
         type: MessageContentType.FunctionCall,
         name: FunctionName.FillInput,
-        arguments: [
-          {
-            id: 'call_1',
-            input_type: 'input',
-            input_value: '1234',
-            input_selector: '#postalcode',
-            label_value: 'Postcode',
-          },
-          {
-            id: 'call_2',
-            input_type: 'input',
-            input_value: 'AB',
-            input_selector: '#postalcode_letters',
-            label_value: 'Postcode letters',
-          },
-        ],
+        status: FunctionStatus.Idle,
+        arguments: {
+          input_type: 'input',
+          input_value: '1234',
+          input_selector: '#postalcode',
+          label_value: 'Postcode',
+        },
+      },
+      {
+        id: '77',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.FillInput,
+        status: FunctionStatus.Idle,
+        arguments: {
+          input_type: 'input',
+          input_value: 'AB',
+          input_selector: '#postalcode_letters',
+          label_value: 'Postcode letters',
+        },
       },
       {
         id: '8',
@@ -302,22 +288,20 @@ export const WithMultipleFunctionCallsAndText: Story = {
         id: '88',
         type: MessageContentType.FunctionCall,
         name: FunctionName.FillInput,
-        arguments: [
-          {
-            id: 'call_3',
-            input_type: 'input',
-            input_value: 'AB',
-            input_selector: '#postalcode_letters',
-            label_value: 'Postcode letters',
-          },
-        ],
+        status: FunctionStatus.Idle,
+        arguments: {
+          input_type: 'input',
+          input_value: 'AB',
+          input_selector: '#postalcode_letters',
+          label_value: 'Postcode letters',
+        },
       },
       {
         id: '11',
         type: MessageContentType.FunctionCall,
         name: FunctionName.ClickButton,
+        status: FunctionStatus.Idle,
         arguments: {
-          id: 'call_5',
           button_selector: '#submit',
           button_text: 'Bestellen',
         },
@@ -331,6 +315,34 @@ export const WithMultipleFunctionCallsAndText: Story = {
   },
 }
 
+export const WithFunctionCallSuccess: Story = {
+  args: {
+    content: [
+      {
+        id: '777',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.FillInput,
+        status: FunctionStatus.Success,
+        result: {
+          success: true,
+        },
+        arguments: {
+          input_type: 'input',
+          input_value: '1234',
+          input_selector: '#postalcode',
+          label_value: 'Postcode',
+        },
+      },
+    ],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Postcode')).toBeInTheDocument()
+    expect(canvas.getByText('1234')).toBeInTheDocument()
+    expect(canvas.getByText('Success!')).toBeInTheDocument()
+  },
+}
+
 export const WithFunctionCallError: Story = {
   args: {
     content: [
@@ -338,27 +350,48 @@ export const WithFunctionCallError: Story = {
         id: '7',
         type: MessageContentType.FunctionCall,
         name: FunctionName.FillInput,
-        arguments: [
-          {
-            id: 'call_1',
-            input_type: 'input',
-            input_value: '1234',
-            // eslint-disable-next-line sonarjs/code-eval
-            input_selector: 'javascript:alert("test")',
-            label_value: 'Postcode',
-          },
-        ],
+        status: FunctionStatus.Error,
+        result: {
+          success: false,
+          error: 'Invalid selector',
+        },
+        arguments: {
+          input_type: 'input',
+          input_value: '1234',
+          // eslint-disable-next-line sonarjs/code-eval
+          input_selector: 'javascript:alert("test")',
+          label_value: 'Postcode',
+        },
       },
     ],
   },
-  play: async ({ canvasElement, userEvent }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = canvas.getByText('Fill the field')
-    expect(button).toBeInTheDocument()
-    await userEvent.click(button)
     expect(await canvas.findByText('Error!')).toBeInTheDocument()
-    expect(
-      await canvas.findByText('Failed to execute action. See console for details.'),
-    ).toBeInTheDocument()
+  },
+}
+
+export const WithFunctionInProgress: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.FillInput,
+        status: FunctionStatus.Pending,
+        arguments: {
+          input_type: 'input',
+          input_value: '1234',
+          input_selector: '#postalcode',
+          label_value: 'Postcode',
+        },
+      },
+    ],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Postcode')).toBeInTheDocument()
+    expect(canvas.getByText('1234')).toBeInTheDocument()
+    expect(canvas.getByTitle('Executing...')).toBeInTheDocument()
   },
 }

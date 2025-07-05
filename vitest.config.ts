@@ -13,6 +13,7 @@ export default defineConfig({
     },
   },
   test: {
+    silent: true,
     environment: 'jsdom',
     globals: true,
     projects: [

@@ -1,4 +1,4 @@
-import type { PageContext } from '@/types/types'
+import type { FunctionCallResult, PageContext } from '@/types/types'
 import type { IBrowser } from './IBrowser'
 
 export class MockBrowser implements IBrowser {
@@ -49,11 +49,11 @@ export class MockBrowser implements IBrowser {
     })
   }
 
-  setFieldValue(_selector: string, _value: string): Promise<boolean> {
-    return Promise.resolve(true)
+  setFieldValue(_selector: string, _value: string): Promise<FunctionCallResult> {
+    return Promise.resolve({ success: true })
   }
 
-  clickButton(_selector: string): Promise<boolean> {
-    return Promise.resolve(true)
+  clickButton(_selector: string): Promise<FunctionCallResult> {
+    return Promise.resolve({ success: true })
   }
 }

@@ -9,6 +9,7 @@ import {
   type MessageContent,
   type ProviderMessageResponse,
   FunctionName,
+  FunctionStatus,
 } from '@/types/types'
 import type { IAssistant } from '@/services/assistant'
 import { logDebug } from '@/utils/log'
@@ -50,96 +51,90 @@ export class OpenAIAssistant implements IAssistant {
 
     logDebug('OpenAIAssistant.sendMessage.response', response)
 
-    const functionCallResponse = await this.sendFunctionCallResponse(params.model, response)
-
-    return this.parseResponse(response, functionCallResponse)
+    return this.parseResponse(response)
   }
 
-  private async sendFunctionCallResponse(
-    model: AIModel,
-    response: Response,
-  ): Promise<Response | null> {
-    const functionCalls = response.output
-      .filter(output => output.type === 'function_call')
-      .map<ResponseInputItem.FunctionCallOutput>(output => ({
-        type: 'function_call_output',
-        call_id: output.call_id,
-        output: 'success',
-      }))
+  public async sendFunctionCallResponse(params: {
+    model: AIModel
+    message: Message
+  }): Promise<ProviderMessageResponse> {
+    const input = params.message.content.reduce((acc, content) => {
+      if (content.type === MessageContentType.FunctionCall) {
+        acc.push({
+          type: 'function_call_output',
+          call_id: content.id,
+          output: JSON.stringify(content.result),
+        })
+      }
+      return acc
+    }, [] as ResponseInputItem.FunctionCallOutput[])
 
-    if (functionCalls.length > 0) {
-      const functionCallResponse = await this.client.responses.create({
-        model,
-        input: functionCalls,
-        previous_response_id: response.id,
-        store: true,
-        tools: [this.getFillInputTool(), this.getClickButtonTool()],
-        instructions:
-          "Important: Don't say anything about the result of the function call. We don't know has the user clicked the button or filled the input.",
-      })
-      logDebug('OpenAIAssistant.sendMessage.functionCallResponse', functionCallResponse)
-      return functionCallResponse
-    }
-    return null
+    const response = await this.client.responses.create({
+      model: params.model,
+      input,
+      previous_response_id: params.message.id,
+      store: true,
+      tools: [this.getFillInputTool(), this.getClickButtonTool()],
+    })
+
+    logDebug('OpenAIAssistant.sendMessage.functionCallResponse', response)
+
+    return this.parseResponse(response)
   }
 
   private getPreviousResponseId(history?: Message[]): string | undefined {
     return history && history.length > 0 ? history[history.length - 1]?.id : undefined
   }
 
-  public parseResponse(
-    response: Response,
-    functionCallResponse?: Response | null,
-  ): ProviderMessageResponse {
-    const combinedOutput = functionCallResponse
-      ? [...response.output, ...functionCallResponse.output]
-      : response.output
-
-    return {
-      id: functionCallResponse?.id || response.id,
-      content: combinedOutput.reduce((acc, output) => {
-        if (output.type === 'message') {
-          output.content.forEach((content, index) => {
-            if (content.type === 'output_text') {
-              acc.push({
-                id: `${output.id}-${index}`,
-                type: MessageContentType.OutputText,
-                text: content.text,
-              })
-            }
-          })
-        } else if (output.type === 'function_call') {
-          const args = JSON.parse(output.arguments)
-          if (output.name === FunctionName.FillInput) {
+  public parseResponse(response: Response): ProviderMessageResponse {
+    let hasTools = false
+    const result = response.output.reduce((acc, output) => {
+      if (output.type === 'message') {
+        output.content.forEach((content, index) => {
+          if (content.type === 'output_text') {
             acc.push({
-              id: output.call_id,
-              type: MessageContentType.FunctionCall,
-              name: FunctionName.FillInput,
-              arguments: [
-                {
-                  id: output.call_id,
-                  input_type: args.input_type,
-                  input_value: args.input_value,
-                  input_selector: args.input_selector,
-                  label_value: args.label_value,
-                },
-              ],
-            })
-          } else if (output.name === FunctionName.ClickButton) {
-            acc.push({
-              id: output.id || output.call_id,
-              type: MessageContentType.FunctionCall,
-              name: FunctionName.ClickButton,
-              arguments: {
-                id: output.call_id,
-                button_selector: args.button_selector,
-                button_text: args.button_text,
-              },
+              id: `${output.id}-${index}`,
+              type: MessageContentType.OutputText,
+              text: content.text,
             })
           }
+        })
+      } else if (output.type === 'function_call') {
+        hasTools = true
+        const args = JSON.parse(output.arguments)
+        if (output.name === FunctionName.FillInput) {
+          acc.push({
+            id: output.call_id,
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Idle,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: args.input_type,
+              input_value: args.input_value,
+              input_selector: args.input_selector,
+              label_value: args.label_value,
+            },
+          })
+        } else if (output.name === FunctionName.ClickButton) {
+          acc.push({
+            id: output.call_id,
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Idle,
+            name: FunctionName.ClickButton,
+            arguments: {
+              button_selector: args.button_selector,
+              button_text: args.button_text,
+            },
+          })
         }
-        return acc
-      }, [] as MessageContent[]),
+      }
+      return acc
+    }, [] as MessageContent[])
+
+    return {
+      id: response.id,
+      content: result,
+      hasTools,
     }
   }
 
@@ -147,8 +142,7 @@ export class OpenAIAssistant implements IAssistant {
     return {
       type: 'function',
       name: 'fill_input',
-      description:
-        "Fill the given value into the input field on the page. This function will be called by user manually, you don't need to know the result.",
+      description: 'Fill the given value into the input field on the page.',
       strict: true,
       parameters: {
         type: 'object',
@@ -183,8 +177,7 @@ export class OpenAIAssistant implements IAssistant {
     return {
       type: 'function',
       name: 'click_button',
-      description:
-        "Click the button on the page. This function will be called by user manually, you don't need to know the result.",
+      description: 'Click the button on the page.',
       strict: true,
       parameters: {
         type: 'object',
@@ -197,7 +190,7 @@ export class OpenAIAssistant implements IAssistant {
           button_text: {
             type: 'string',
             description:
-              'The text of the button to click. Provide any relevant details if there is no text, e.g. the button la.',
+              'The text of the button to click. Provide any relevant details if there is no text, e.g. the button label.',
           },
         },
         required: ['button_selector', 'button_text'],

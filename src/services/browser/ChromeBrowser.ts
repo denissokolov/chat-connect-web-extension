@@ -1,6 +1,6 @@
 import { logError } from '@/utils/log'
 import type { IBrowser } from './IBrowser'
-import type { PageContext } from '@/types/types'
+import type { FunctionCallResult, PageContext } from '@/types/types'
 import { cleanHtmlContent } from '@/utils/html/cleanHtmlContent'
 import { clickButton } from '@/utils/html/clickButton'
 import { setFieldValue } from '@/utils/html/setFieldValue'
@@ -83,10 +83,10 @@ export class ChromeBrowser implements IBrowser {
     }
   }
 
-  async setFieldValue(selector: string, value: string): Promise<boolean> {
+  async setFieldValue(selector: string, value: string): Promise<FunctionCallResult> {
     const tabId = await this.getCurrentTabId()
     if (!tabId) {
-      return false
+      return { success: false, error: 'Failed to get current tab' }
     }
 
     const result = await chrome.scripting.executeScript({
@@ -98,10 +98,10 @@ export class ChromeBrowser implements IBrowser {
     return result[0].result
   }
 
-  async clickButton(selector: string): Promise<boolean> {
+  async clickButton(selector: string): Promise<FunctionCallResult> {
     const tabId = await this.getCurrentTabId()
     if (!tabId) {
-      return false
+      return { success: false, error: 'Failed to get current tab' }
     }
 
     const result = await chrome.scripting.executeScript({
