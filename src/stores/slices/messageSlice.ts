@@ -65,7 +65,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     set(state => ({
       messages: [...state.messages, newMessage],
       waitingForReply: !pageContextError,
-      currentAbortController: abortController,
+      messageAbortController: abortController,
     }))
 
     await repository.createMessage(newMessage)
@@ -103,7 +103,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         messages: [...state.messages, responseMessage],
         waitingForReply: false,
         waitingForTools: response.hasTools,
-        currentAbortController: null,
+        messageAbortController: null,
       }))
       await repository.createMessage(responseMessage)
     } catch (error) {
@@ -180,7 +180,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         messages: [...state.messages, responseMessage],
         waitingForReply: false,
         waitingForTools: response.hasTools,
-        currentAbortController: null,
+        messageAbortController: null,
       }))
       await repository.createMessage(responseMessage)
     } catch (error) {
