@@ -10,18 +10,21 @@ export enum MessageContentType {
 
 export enum FunctionName {
   FillInput = 'fill_input',
+  ClickButton = 'click_button',
 }
 
-export type SingleFunctionCall = {
+export type FillInputArguments = {
   id: string
-  name: FunctionName.FillInput
-  arguments: {
-    input_type: string
-    input_value: string
-    input_name?: string | null
-    input_id?: string | null
-    label_value: string
-  }
+  input_type: string
+  input_value: string
+  input_selector: string
+  label_value: string
+}
+
+export type ClickButtonArguments = {
+  id: string
+  button_selector: string
+  button_text: string
 }
 
 export type MessageContent =
@@ -33,7 +36,14 @@ export type MessageContent =
   | {
       id: string
       type: MessageContentType.FunctionCall
-      batch: SingleFunctionCall[]
+      name: FunctionName.FillInput
+      arguments: FillInputArguments[]
+    }
+  | {
+      id: string
+      type: MessageContentType.FunctionCall
+      name: FunctionName.ClickButton
+      arguments: ClickButtonArguments
     }
 
 export type MessageContext = {
@@ -68,6 +78,11 @@ export enum AIModel {
   OpenAI_ChatGPT_4o = 'chatgpt-4o-latest',
 }
 
+export type ProviderMessageResponse = {
+  id: string
+  content: MessageContent[]
+}
+
 export interface PageContext {
   title: string
   url: string
@@ -84,4 +99,9 @@ export type Thread = {
   id: string
   createdAt: string
   updatedAt: string
+}
+
+export enum ChatView {
+  Chat = 'chat',
+  History = 'history',
 }

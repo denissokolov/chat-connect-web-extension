@@ -3,10 +3,11 @@ import { memo, useCallback } from 'react'
 
 import { Button } from '@/components/ui/button'
 import useChatStore from '@/stores/useChatStore'
+import { ChatView } from '@/types/types'
 
 interface ChatHeaderProps {
-  currentView: 'chat' | 'history'
-  setCurrentView: (view: 'chat' | 'history') => void
+  currentView: ChatView
+  setCurrentView: (view: ChatView) => void
 }
 
 function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
@@ -17,11 +18,11 @@ function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
   }, [startNewThread])
 
   const handleShowHistory = useCallback(() => {
-    setCurrentView('history')
+    setCurrentView(ChatView.History)
   }, [setCurrentView])
 
   const handleBackToChat = useCallback(() => {
-    setCurrentView('chat')
+    setCurrentView(ChatView.Chat)
   }, [setCurrentView])
 
   return (

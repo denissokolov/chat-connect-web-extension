@@ -1,6 +1,10 @@
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
 import { DateTime } from 'luxon'
-import { describe, it, expect, beforeEach, vi, type Mock, type MockedFunction } from 'vitest'
 
+import useChatStore from '@/stores/useChatStore'
+import { type IAssistant } from '@/services/assistant'
+import browser from '@/services/browser'
+import repository from '@/services/repository'
 import {
   AIModel,
   AIProvider,
@@ -9,11 +13,6 @@ import {
   type Message,
   type PageContext,
 } from '@/types/types'
-import { MockAssistant, type IAssistant } from '@/services/assistant'
-import browser from '@/services/browser'
-import repository from '@/services/repository'
-
-import useChatStore from './useChatStore'
 
 vi.mock('@/services/assistant', () => ({
   MockAssistant: vi.fn(),
@@ -36,19 +35,17 @@ vi.mock('@/services/repository', () => ({
   },
 }))
 
-describe('useChatStore', () => {
+describe('messageSlice', () => {
   const mockAssistant: IAssistant = {
     getProvider: vi.fn().mockReturnValue(AIProvider.Mock),
     sendMessage: vi.fn(),
   }
-
   const mockPageContext: PageContext = {
     title: 'Test Page',
     url: 'https://example.com',
     html: '<html><body>Test content</body></html>',
     favicon: 'test-favicon.ico',
   }
-
   const mockMessage: Message = {
     threadId: 'test-thread-id',
     id: 'test-message-id',
@@ -59,107 +56,11 @@ describe('useChatStore', () => {
 
   beforeEach(() => {
     useChatStore.setState({
-      messages: [],
-      waitingForReply: false,
-      assistant: null,
-      model: AIModel.OpenAI_ChatGPT_4o,
-      provider: {
-        ready: false,
-        loading: false,
-        configured: undefined,
-        error: null,
-      },
+      ...useChatStore.getInitialState(),
       threadId: 'test-thread-id',
     })
 
     vi.clearAllMocks()
-
-    // Clear repository mocks
-    ;(repository.createMessage as Mock).mockClear()
-    ;(repository.createThread as Mock).mockClear()
-    ;(repository.updateThread as Mock).mockClear()
-  })
-
-  describe('initial state', () => {
-    it('should have correct initial state', () => {
-      const state = useChatStore.getState()
-
-      expect(state.messages).toEqual([])
-      expect(state.waitingForReply).toBe(false)
-      expect(state.assistant).toBeNull()
-      expect(state.model).toBe(AIModel.OpenAI_ChatGPT_4o)
-      expect(state.provider).toEqual({
-        ready: false,
-        loading: false,
-        configured: undefined,
-        error: null,
-      })
-      expect(state.threadId).toBe('test-thread-id')
-    })
-  })
-
-  describe('setModel', () => {
-    it('should update the model', () => {
-      const { setModel } = useChatStore.getState()
-
-      setModel(AIModel.OpenAI_GPT_4o)
-
-      expect(useChatStore.getState().model).toBe(AIModel.OpenAI_GPT_4o)
-    })
-
-    it('should update the model to different AI models', () => {
-      const { setModel } = useChatStore.getState()
-
-      setModel(AIModel.OpenAI_o3_mini)
-      expect(useChatStore.getState().model).toBe(AIModel.OpenAI_o3_mini)
-
-      setModel(AIModel.OpenAI_GPT_4_1)
-      expect(useChatStore.getState().model).toBe(AIModel.OpenAI_GPT_4_1)
-    })
-  })
-
-  describe('clearHistory', () => {
-    it('should clear all messages', () => {
-      useChatStore.setState({
-        messages: [
-          {
-            id: '1',
-            role: MessageRole.User,
-            content: [{ type: MessageContentType.OutputText, text: 'Hello', id: '1' }],
-            createdAt: DateTime.now().toISO(),
-            threadId: 'test-thread-id',
-          },
-          {
-            id: '2',
-            role: MessageRole.Assistant,
-            content: [{ type: MessageContentType.OutputText, text: 'Hi there', id: '2' }],
-            createdAt: DateTime.now().toISO(),
-            threadId: 'test-thread-id',
-          },
-        ],
-      })
-
-      const { clearHistory } = useChatStore.getState()
-      clearHistory()
-
-      expect(useChatStore.getState().messages).toEqual([])
-    })
-
-    it('should clear messages without affecting other state', () => {
-      useChatStore.setState({
-        messages: [mockMessage],
-        waitingForReply: true,
-        assistant: mockAssistant,
-      })
-
-      const { clearHistory } = useChatStore.getState()
-      clearHistory()
-
-      const state = useChatStore.getState()
-      expect(state.messages).toEqual([])
-      expect(state.waitingForReply).toBe(true)
-      expect(state.assistant).toBe(mockAssistant)
-    })
   })
 
   describe('sendMessage', () => {
@@ -209,11 +110,16 @@ describe('useChatStore', () => {
         threadId: 'test-thread-id',
         context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
       })
-      expect(state.messages[1]).toEqual(mockMessage)
+      expect(state.messages[1]).toEqual({
+        id: expect.any(String),
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
+        createdAt: mockDate.toISO(),
+        threadId: 'test-thread-id',
+      })
 
       expect(state.waitingForReply).toBe(false)
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        threadId: 'test-thread-id',
         model: AIModel.OpenAI_ChatGPT_4o,
         instructions: expect.stringContaining('Test Page'),
         text: 'Hello',
@@ -235,7 +141,6 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: 'Hello',
         history: [],
-        threadId: 'test-thread-id',
         signal: expect.any(AbortSignal),
       })
     })
@@ -264,7 +169,6 @@ describe('useChatStore', () => {
         instructions: undefined,
         text: 'Hello',
         history: existingMessages,
-        threadId: 'test-thread-id',
         signal: expect.any(AbortSignal),
       })
     })
@@ -317,7 +221,6 @@ describe('useChatStore', () => {
       await sendMessage('')
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        threadId: 'test-thread-id',
         model: AIModel.OpenAI_ChatGPT_4o,
         instructions: undefined,
         text: '',
@@ -349,7 +252,13 @@ describe('useChatStore', () => {
 
       await sendMessage('Hello')
 
-      expect(repository.createMessage).toHaveBeenCalledWith(mockMessage)
+      expect(repository.createMessage).toHaveBeenCalledWith({
+        id: expect.any(String),
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
+        createdAt: expect.any(String),
+        threadId: 'test-thread-id',
+      })
     })
 
     it('should create thread in repository for first message', async () => {
@@ -398,125 +307,6 @@ describe('useChatStore', () => {
         updatedAt: mockDate.toISO(),
       })
       expect(repository.createThread).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('setupProvider', () => {
-    beforeEach(() => {
-      vi.clearAllMocks()
-    })
-
-    it('should skip setup if assistant already has the same provider', async () => {
-      const existingAssistant = {
-        getProvider: vi.fn().mockReturnValue(AIProvider.Mock),
-        sendMessage: vi.fn(),
-      }
-
-      useChatStore.setState({ assistant: existingAssistant })
-
-      const { setupProvider } = useChatStore.getState()
-
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
-
-      expect(browser.getSecureValue).not.toHaveBeenCalled()
-      expect(useChatStore.getState().assistant).toBe(existingAssistant)
-    })
-
-    it('should set provider as not configured when API key is missing', async () => {
-      ;(browser.getSecureValue as Mock).mockResolvedValue(null)
-
-      const { setupProvider } = useChatStore.getState()
-
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
-
-      const state = useChatStore.getState()
-      expect(state.provider).toEqual({
-        ready: false,
-        loading: false,
-        configured: false,
-        error: 'No API key found',
-      })
-      expect(browser.getSecureValue).toHaveBeenCalledWith('token_mock')
-    })
-
-    it('should setup mock assistant successfully', async () => {
-      ;(browser.getSecureValue as Mock).mockResolvedValue('test-api-key')
-
-      const { setupProvider } = useChatStore.getState()
-
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
-
-      const state = useChatStore.getState()
-      expect(state.provider.configured).toBe(true)
-      expect(state.provider.ready).toBe(true)
-      expect(state.provider.loading).toBe(false)
-      expect(state.provider.error).toBeNull()
-      expect(state.model).toBe(AIModel.OpenAI_ChatGPT_4o)
-      expect(MockAssistant).toHaveBeenCalledWith('test-api-key')
-      expect(state.assistant).toBeTruthy()
-    })
-
-    it('should handle setup errors', async () => {
-      const error = new Error('Setup failed')
-      ;(browser.getSecureValue as Mock).mockResolvedValue('test-api-key')
-      ;(MockAssistant as unknown as MockedFunction<() => unknown>).mockImplementation(() => {
-        throw error
-      })
-
-      const { setupProvider } = useChatStore.getState()
-
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
-
-      const state = useChatStore.getState()
-      expect(state.provider).toEqual({
-        ready: false,
-        loading: false,
-        configured: false,
-        error: 'Setup failed',
-      })
-    })
-
-    it('should set loading state during setup', async () => {
-      let resolvePromise: (value: string | null) => void
-      const promise = new Promise<string | null>(resolve => {
-        resolvePromise = resolve
-      })
-
-      ;(browser.getSecureValue as Mock).mockReturnValue(promise)
-
-      const { setupProvider } = useChatStore.getState()
-
-      const setupPromise = setupProvider(AIModel.OpenAI_ChatGPT_4o)
-
-      expect(useChatStore.getState().provider.loading).toBe(true)
-      expect(useChatStore.getState().provider.ready).toBe(false)
-
-      resolvePromise!('test-api-key')
-      await setupPromise
-
-      expect(useChatStore.getState().provider.loading).toBe(false)
-    })
-
-    it('should handle browser.getSecureValue error', async () => {
-      ;(browser.getSecureValue as Mock).mockImplementationOnce(() => {
-        throw new Error('Browser error')
-      })
-
-      const { setupProvider } = useChatStore.getState()
-
-      try {
-        await setupProvider(AIModel.OpenAI_ChatGPT_4o)
-      } catch (error) {
-        expect(error).toBeNull()
-      }
-
-      const state = useChatStore.getState()
-      expect(state.provider).toEqual({
-        ready: false,
-        loading: false,
-        configured: false,
-        error: 'Browser error',
-      })
     })
   })
 })

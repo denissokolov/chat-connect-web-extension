@@ -11,6 +11,7 @@
     "tsc:node": "tsc -p ./tsconfig.node.json --noEmit  --incremental false",
     "tsc": "npm run tsc:app && npm run tsc:node",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:unit": "vitest --project=unit run",

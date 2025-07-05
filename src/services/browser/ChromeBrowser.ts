@@ -1,7 +1,9 @@
 import { logError } from '@/utils/log'
 import type { IBrowser } from './IBrowser'
 import type { PageContext } from '@/types/types'
-import { cleanHtmlContent } from '@/utils/html'
+import { cleanHtmlContent } from '@/utils/html/cleanHtmlContent'
+import { clickButton } from '@/utils/html/clickButton'
+import { setFieldValue } from '@/utils/html/setFieldValue'
 
 export class ChromeBrowser implements IBrowser {
   openExtensionSettings() {
@@ -79,5 +81,45 @@ export class ChromeBrowser implements IBrowser {
       favicon: tab.favIconUrl || null,
       html: cleanHtmlContent(html[0].result),
     }
+  }
+
+  async setFieldValue(selector: string, value: string): Promise<boolean> {
+    const tabId = await this.getCurrentTabId()
+    if (!tabId) {
+      return false
+    }
+
+    const result = await chrome.scripting.executeScript({
+      target: { tabId },
+      args: [selector, value],
+      func: setFieldValue as unknown as () => void,
+    })
+
+    return result[0].result
+  }
+
+  async clickButton(selector: string): Promise<boolean> {
+    const tabId = await this.getCurrentTabId()
+    if (!tabId) {
+      return false
+    }
+
+    const result = await chrome.scripting.executeScript({
+      target: { tabId },
+      args: [selector],
+      func: clickButton as unknown as () => void,
+    })
+
+    return result[0].result
+  }
+
+  private async getCurrentTabId(): Promise<number | null> {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab?.id) {
+      logError('Failed to get current tab id')
+      return null
+    }
+
+    return tab.id
   }
 }
