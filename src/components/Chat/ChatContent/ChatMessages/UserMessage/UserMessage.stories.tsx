@@ -139,7 +139,7 @@ export const WithError: Story = {
     expect(canvas.getByText(/Failed to send message/)).toBeInTheDocument()
 
     // Check that error icon is present
-    const errorIcon = canvasElement.querySelector('.text-red-500')
+    const errorIcon = canvasElement.querySelector('.text-destructive')
     expect(errorIcon).toBeInTheDocument()
   },
 }

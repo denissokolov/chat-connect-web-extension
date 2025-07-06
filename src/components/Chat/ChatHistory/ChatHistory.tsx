@@ -42,7 +42,7 @@ function ChatHistory({
 
   return (
     <div className="h-full flex-1 flex flex-col">
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b">
         <h2 className="text-lg font-semibold text-foreground">{'Chat History'}</h2>
       </div>
       <div className="flex-1 overflow-y-auto">

@@ -48,7 +48,7 @@ function ExecuteButton({ label, status, error, onClick }: ExecuteFunctionProps) 
           </>
         )}
       </Button>
-      {error && <p className="text-red-600">{error}</p>}
+      {error && <p className="text-destructive">{error}</p>}
     </>
   )
 }

@@ -45,8 +45,8 @@ function FillInputMessage({
   }, [autoExecute, execute, status])
 
   return (
-    <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border border-gray-200">
-      <div className="text-gray-600">{args.label_value}</div>
+    <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border">
+      <div className="text-muted-foreground">{args.label_value}</div>
       <div>{args.input_value}</div>
       <ExecuteButton label={`Fill the field`} status={status} error={error} onClick={execute} />
     </div>
