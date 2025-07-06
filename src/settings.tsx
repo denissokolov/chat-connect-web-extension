@@ -6,10 +6,16 @@ import ThemeProvider from '@/components/providers/ThemeProvider'
 
 import '@/global.css'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeProvider>
-      <SettingsPage />
-    </ThemeProvider>
-  </StrictMode>,
-)
+export const Settings = () => {
+  return (
+    <StrictMode>
+      <ThemeProvider>
+        <SettingsPage />
+      </ThemeProvider>
+    </StrictMode>
+  )
+}
+const root = document.getElementById('root')
+if (root) {
+  createRoot(root).render(<Settings />)
+}

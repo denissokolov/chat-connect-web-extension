@@ -16,6 +16,22 @@ export default defineConfig({
     silent: true,
     environment: 'jsdom',
     globals: true,
+    coverage: {
+      enabled: true,
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'json', 'html'],
+      reportOnFailure: true,
+      exclude: [
+        '**/*.d.ts',
+        '**/*.stories.tsx',
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        'src/background.ts',
+        'src/utils/env.ts',
+        'src/utils/log.ts',
+      ],
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+    },
     projects: [
       {
         extends: true,

@@ -6,10 +6,17 @@ import ThemeProvider from './components/providers/ThemeProvider'
 
 import '@/global.css'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeProvider>
-      <Chat />
-    </ThemeProvider>
-  </StrictMode>,
-)
+export const Panel = () => {
+  return (
+    <StrictMode>
+      <ThemeProvider>
+        <Chat />
+      </ThemeProvider>
+    </StrictMode>
+  )
+}
+
+const root = document.getElementById('root')
+if (root) {
+  createRoot(root).render(<Panel />)
+}

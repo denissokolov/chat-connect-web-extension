@@ -6,6 +6,10 @@ type ThemeProviderProps = {
 
 function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return
+    }
+
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
     const handleChange = () => {

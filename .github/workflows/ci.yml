@@ -7,9 +7,6 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  contents: read
-
 jobs:
   check:
     name: Check & build
@@ -18,6 +15,10 @@ jobs:
 
     container:
       image: mcr.microsoft.com/playwright:v1.53.1-noble
+
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -42,7 +43,11 @@ jobs:
         run: npm run knip
 
       - name: Run tests
-        run: npm run test -- --coverage
+        run: npm run test:coverage
+
+      - name: Report Coverage
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
 
       - name: Build project
         run: npm run build
