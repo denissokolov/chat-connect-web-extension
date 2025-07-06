@@ -4,6 +4,10 @@
 [![License](https://img.shields.io/github/license/denissokolov/chat-connect-web-extension.svg)](https://github.com/denissokolov/chat-connect-web-extension/blob/main/LICENSE)
 [![Storybook](https://raw.githubusercontent.com/storybooks/brand/master/badge/badge-storybook.svg)](https://denissokolov.github.io/chat-connect-web-extension/)
 
+## 🔗 Download Build
+
+[Download latest build (ZIP)](https://github.com/denissokolov/chat-connect-web-extension/releases/latest/download/chat-connect.zip)
+
 ## Prerequisites
 
 - Node.js (version 18 or higher)
@@ -69,16 +73,13 @@ https://lucide.dev/icons/ - icon library
    ```
 
 3. **Open Chrome Extensions page**
-
    - Open Google Chrome
    - Navigate to `chrome://extensions/` or go to Chrome menu → More tools → Extensions
 
 4. **Enable Developer mode**
-
    - Toggle the "Developer mode" switch in the top-right corner of the extensions page
 
 5. **Load the extension**
-
    - Click "Load unpacked" button
    - Navigate to your project folder and select the `dist` folder (or the build output folder)
    - Click "Select Folder"
