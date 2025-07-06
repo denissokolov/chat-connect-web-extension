@@ -74,7 +74,7 @@ jobs:
           path: dist
 
       - name: Compress build
-        run: zip -r chat-connect.zip dist
+        run: cd dist && zip -r ../chat-connect.zip .
 
       - name: Create release
         uses: softprops/action-gh-release@v2
