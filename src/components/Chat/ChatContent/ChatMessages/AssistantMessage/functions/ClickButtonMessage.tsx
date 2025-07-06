@@ -45,7 +45,7 @@ function ClickButtonMessage({
   }, [autoExecute, execute, status])
 
   return (
-    <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border border-gray-200">
+    <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border ">
       <div>{'Click the button'}</div>
       <ExecuteButton label={args.button_text} status={status} error={error} onClick={execute} />
     </div>
