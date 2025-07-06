@@ -1,4 +1,4 @@
-name: Publish Storybook
+name: 'Chromatic'
 
 on:
   workflow_run:
@@ -9,15 +9,10 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  deploy:
-    name: Deploy Storybook
-    environment:
-      name: github-pages
-      url: ${{ steps.build-publish.outputs.page_url }}
+  chromatic:
+    name: Run Chromatic
 
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -33,8 +28,10 @@ jobs:
         with:
           node-version: '22'
 
-      - id: build-publish
-        uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Chromatic
+        uses: chromaui/action@latest
         with:
-          path: storybook-static
-          checkout: false
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

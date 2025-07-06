@@ -26,3 +26,5 @@ coverage
 
 *storybook.log
 storybook-static
+
+test-results
