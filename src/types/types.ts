@@ -11,6 +11,7 @@ export enum MessageContentType {
 export enum FunctionName {
   FillInput = 'fill_input',
   ClickButton = 'click_button',
+  FileSearch = 'file_search',
 }
 
 export enum FunctionStatus {
@@ -37,11 +38,30 @@ export type ClickButtonArguments = {
   button_text: string
 }
 
+export type FileSearchArguments = {
+  query: string
+}
+
+export type Annotation = {
+  type: 'file_citation' | 'file_path'
+  text: string
+  file_citation?: {
+    file_id: string
+    quote?: string
+  }
+  file_path?: {
+    file_id: string
+  }
+  start_index: number
+  end_index: number
+}
+
 export type MessageContent =
   | {
       id: string
       type: MessageContentType.OutputText
       text: string
+      annotations?: Annotation[]
     }
   | {
       id: string
@@ -58,6 +78,14 @@ export type MessageContent =
       result?: FunctionCallResult
       name: FunctionName.ClickButton
       arguments: ClickButtonArguments
+    }
+  | {
+      id: string
+      type: MessageContentType.FunctionCall
+      status: FunctionStatus
+      result?: FunctionCallResult
+      name: FunctionName.FileSearch
+      arguments: FileSearchArguments
     }
 
 export type MessageContext = {
@@ -119,4 +147,17 @@ export type Thread = {
 export enum ChatView {
   Chat = 'chat',
   History = 'history',
+}
+
+export type VectorStore = {
+  id: string
+  name: string
+  url: string
+  fileId?: string
+}
+
+export type AssistantThread = {
+  id: string
+  assistantId: string
+  vectorStoreId?: string
 }

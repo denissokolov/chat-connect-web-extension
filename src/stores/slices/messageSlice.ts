@@ -12,9 +12,10 @@ import {
   type Message,
   type PageContext,
   type FunctionCallResult,
+  type ProviderMessageResponse,
   FunctionStatus,
 } from '@/types/types'
-import { getBasicInstructions } from '@/utils/instructions'
+import { getBasicInstructions, getFileSearchInstructions } from '@/utils/instructions'
 import { createAssistantMessage } from '@/utils/message'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
@@ -87,13 +88,28 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }
 
     try {
-      const response = await assistant.sendMessage({
-        model: model,
-        instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
-        text: text,
-        history: messages,
-        signal: abortController.signal,
-      })
+      let response: ProviderMessageResponse
+
+      // Use file search if page context is available and assistant supports it
+      if (pageContext && assistant.sendMessageWithPageContext) {
+        response = await assistant.sendMessageWithPageContext({
+          model: model,
+          instructions: getFileSearchInstructions(pageContext),
+          text: text,
+          pageContext: pageContext,
+          history: messages,
+          signal: abortController.signal,
+        })
+      } else {
+        // Fallback to regular message sending
+        response = await assistant.sendMessage({
+          model: model,
+          instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
+          text: text,
+          history: messages,
+          signal: abortController.signal,
+        })
+      }
       if (get().threadId !== threadId) {
         return
       }
