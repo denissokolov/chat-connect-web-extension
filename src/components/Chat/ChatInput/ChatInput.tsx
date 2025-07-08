@@ -54,6 +54,7 @@ function ChatInput() {
           onKeyDown={handleKeyDown}
           placeholder="Ask about page..."
           className="text-sm border-none bg-transparent outline-none focus-visible:ring-0 resize-none shadow-none pt-2 pb-3"
+          autoFocus={true}
         />
 
         <div className="flex items-center m-2 gap-4">

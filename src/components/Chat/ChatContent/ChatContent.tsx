@@ -12,32 +12,36 @@ interface ChatContentProps {
 }
 
 function ChatContent({ retryInitialization }: ChatContentProps) {
-  const { loading, error, ready, configured } = useChatStore(state => state.provider)
-  const hasMessages = useChatStore(state => state.messages.length > 0)
+  const provider = useChatStore(state => state.provider)
+  const messages = useChatStore(state => state.messages)
 
   const centerClassName = 'flex-1 flex flex-col items-center justify-center text-center'
-  if (loading) {
+  if (provider.loading || messages.loading) {
     return (
       <div className={centerClassName}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-sm text-muted-foreground">{'Initializing chat...'}</p>
+        <p className="text-sm text-muted-foreground">
+          {messages.loading ? 'Loading messages...' : 'Initializing chat...'}
+        </p>
       </div>
     )
   }
 
-  if (error) {
+  if (messages.error || provider.error) {
     return (
       <div className={centerClassName}>
         <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
-        <p className="text-sm text-destructive mb-4">{error}</p>
-        <Button onClick={retryInitialization} size="sm">
-          {'Retry'}
-        </Button>
+        <p className="text-sm text-destructive mb-4">{messages.error || provider.error}</p>
+        {provider.error && (
+          <Button onClick={retryInitialization} size="sm">
+            {'Retry'}
+          </Button>
+        )}
       </div>
     )
   }
 
-  if (configured === false) {
+  if (provider.configured === false) {
     return (
       <div className={centerClassName}>
         <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
@@ -49,11 +53,11 @@ function ChatContent({ retryInitialization }: ChatContentProps) {
     )
   }
 
-  if (!ready) {
+  if (!provider.ready || !messages.ready) {
     return null
   }
 
-  if (!hasMessages) {
+  if (messages.list.length === 0) {
     return (
       <div className={centerClassName}>
         <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50 text-muted-foreground" />

@@ -107,8 +107,8 @@ describe('messageSlice', () => {
       await sendMessage('Hello')
 
       const state = useChatStore.getState()
-      expect(state.messages).toHaveLength(2)
-      expect(state.messages[0]).toEqual({
+      expect(state.messages.list).toHaveLength(2)
+      expect(state.messages.list[0]).toEqual({
         id: expect.any(String),
         role: MessageRole.User,
         content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
@@ -116,7 +116,7 @@ describe('messageSlice', () => {
         threadId: 'test-thread-id',
         context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
       })
-      expect(state.messages[1]).toEqual({
+      expect(state.messages.list[1]).toEqual({
         id: expect.any(String),
         role: MessageRole.Assistant,
         content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
@@ -162,7 +162,9 @@ describe('messageSlice', () => {
         },
       ]
 
-      useChatStore.setState({ messages: existingMessages })
+      useChatStore.setState({
+        messages: { list: existingMessages, loading: false, error: null, ready: true },
+      })
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
@@ -189,8 +191,8 @@ describe('messageSlice', () => {
       await sendMessage('Hello')
 
       const state = useChatStore.getState()
-      expect(state.messages).toHaveLength(1)
-      expect(state.messages[0].error).toBe('Network error')
+      expect(state.messages.list).toHaveLength(1)
+      expect(state.messages.list[0].error).toBe('Network error')
       expect(state.waitingForReply).toBe(false)
     })
 
@@ -245,8 +247,8 @@ describe('messageSlice', () => {
       await sendMessage('Hello')
 
       const state = useChatStore.getState()
-      expect(state.messages).toHaveLength(1)
-      expect(state.messages[0].error).toBe('Page context error')
+      expect(state.messages.list).toHaveLength(1)
+      expect(state.messages.list[0].error).toBe('Page context error')
       expect(state.waitingForReply).toBe(false)
     })
 
@@ -271,7 +273,9 @@ describe('messageSlice', () => {
       const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
       vi.setSystemTime(mockDate.toJSDate())
 
-      useChatStore.setState({ messages: [] }) // Ensure empty messages
+      useChatStore.setState({
+        messages: { list: [], loading: false, error: null, ready: true },
+      }) // Ensure empty messages
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
@@ -281,6 +285,7 @@ describe('messageSlice', () => {
 
       expect(repository.createThread).toHaveBeenCalledWith({
         id: 'test-thread-id',
+        title: 'Hello',
         createdAt: mockDate.toISO(),
         updatedAt: mockDate.toISO(),
       })
@@ -300,7 +305,9 @@ describe('messageSlice', () => {
         },
       ]
 
-      useChatStore.setState({ messages: existingMessages })
+      useChatStore.setState({
+        messages: { list: existingMessages, loading: false, error: null, ready: true },
+      })
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
       ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
@@ -394,7 +401,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithMultipleCalls],
+        messages: { list: [messageWithMultipleCalls], loading: false, error: null, ready: true },
       })
 
       const { saveFunctionResult } = useChatStore.getState()
@@ -402,11 +409,11 @@ describe('messageSlice', () => {
       await saveFunctionResult('test-message-id', 'call-1', { success: true })
 
       const state = useChatStore.getState()
-      const functionCall0 = state.messages[0].content[0] as {
+      const functionCall0 = state.messages.list[0].content[0] as {
         status: FunctionStatus
         result: FunctionCallResult
       }
-      const functionCall1 = state.messages[0].content[1] as { status: FunctionStatus }
+      const functionCall1 = state.messages.list[0].content[1] as { status: FunctionStatus }
       expect(functionCall0.status).toBe(FunctionStatus.Success)
       expect(functionCall0.result).toEqual({ success: true })
       expect(functionCall1.status).toBe(FunctionStatus.Idle)
@@ -446,7 +453,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithSingleCall],
+        messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue({
         ...mockResponse,
@@ -458,14 +465,14 @@ describe('messageSlice', () => {
       await saveFunctionResult('test-message-id', 'call-1', { success: true })
 
       const state = useChatStore.getState()
-      expect(state.messages).toHaveLength(2)
-      const functionCall = state.messages[0].content[0] as {
+      expect(state.messages.list).toHaveLength(2)
+      const functionCall = state.messages.list[0].content[0] as {
         status: FunctionStatus
         result: FunctionCallResult
       }
       expect(functionCall.status).toBe(FunctionStatus.Success)
       expect(functionCall.result).toEqual({ success: true })
-      expect(state.messages[1]).toEqual({
+      expect(state.messages.list[1]).toEqual({
         id: expect.any(String),
         threadId: 'test-thread-id',
         role: MessageRole.Assistant,
@@ -520,7 +527,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithSingleCall],
+        messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue(mockResponse)
 
@@ -529,7 +536,7 @@ describe('messageSlice', () => {
       await saveFunctionResult('test-message-id', 'call-1', { success: false, error: 'Test error' })
 
       const state = useChatStore.getState()
-      const functionCall = state.messages[0].content[0] as {
+      const functionCall = state.messages.list[0].content[0] as {
         status: FunctionStatus
         result: FunctionCallResult
       }
@@ -539,7 +546,7 @@ describe('messageSlice', () => {
 
     it('should return early when message with given ID is not found', async () => {
       useChatStore.setState({
-        messages: [],
+        messages: { list: [], loading: false, error: null, ready: true },
       })
 
       const { saveFunctionResult } = useChatStore.getState()
@@ -575,7 +582,7 @@ describe('messageSlice', () => {
       const error = new Error('Assistant error')
 
       useChatStore.setState({
-        messages: [messageWithSingleCall],
+        messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockRejectedValue(error)
 
@@ -584,7 +591,7 @@ describe('messageSlice', () => {
       await saveFunctionResult('test-message-id', 'call-1', { success: true })
 
       const state = useChatStore.getState()
-      expect(state.messages[0].error).toBe('Assistant error')
+      expect(state.messages.list[0].error).toBe('Assistant error')
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
       expect(state.messageAbortController).toBe(null)
@@ -621,7 +628,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithSingleCall],
+        messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue({
         ...mockResponse,
@@ -667,7 +674,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithSingleCall],
+        messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
         threadId: 'test-thread-id',
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(() => {
@@ -681,7 +688,7 @@ describe('messageSlice', () => {
       await saveFunctionResult('test-message-id', 'call-1', { success: true })
 
       const state = useChatStore.getState()
-      expect(state.messages).toHaveLength(1) // Should not add response message
+      expect(state.messages.list).toHaveLength(1) // Should not add response message
     })
 
     it('should update message in repository when all calls are completed', async () => {
@@ -715,7 +722,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithSingleCall],
+        messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue(mockResponse)
 
@@ -792,7 +799,7 @@ describe('messageSlice', () => {
       }
 
       useChatStore.setState({
-        messages: [messageWithMultipleCalls],
+        messages: { list: [messageWithMultipleCalls], loading: false, error: null, ready: true },
       })
       ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue(mockResponse)
 
@@ -801,8 +808,8 @@ describe('messageSlice', () => {
       await saveFunctionResult('test-message-id', 'call-2', { success: true })
 
       const state = useChatStore.getState()
-      expect(state.messages).toHaveLength(2)
-      const functionCall = state.messages[0].content[1] as {
+      expect(state.messages.list).toHaveLength(2)
+      const functionCall = state.messages.list[0].content[1] as {
         status: FunctionStatus
         result: FunctionCallResult
       }

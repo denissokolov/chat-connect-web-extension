@@ -111,7 +111,12 @@ export const Default: Story = {
     Story => {
       useEffect(() => {
         useChatStore.setState({
-          messages,
+          messages: {
+            list: messages,
+            loading: false,
+            error: null,
+            ready: true,
+          },
           waitingForReply: true,
         })
       }, [])
@@ -130,7 +135,12 @@ export const Empty: Story = {
     Story => {
       useEffect(() => {
         useChatStore.setState({
-          messages: [],
+          messages: {
+            list: [],
+            loading: false,
+            error: null,
+            ready: true,
+          },
           waitingForReply: false,
         })
       }, [])
@@ -149,7 +159,12 @@ export const Typing: Story = {
     Story => {
       useEffect(() => {
         useChatStore.setState({
-          messages: [],
+          messages: {
+            list: [],
+            loading: false,
+            error: null,
+            ready: true,
+          },
           waitingForReply: false,
         })
       }, [])
@@ -170,7 +185,12 @@ export const WriteMessage: Story = {
       useEffect(() => {
         const mockAssistant = new MockAssistant('mock-api-key')
         useChatStore.setState({
-          messages: [],
+          messages: {
+            list: [],
+            loading: false,
+            error: null,
+            ready: true,
+          },
           waitingForReply: false,
           assistant: mockAssistant,
           provider: {
@@ -204,17 +224,22 @@ export const WithError: Story = {
     Story => {
       useEffect(() => {
         useChatStore.setState({
-          messages: [
-            {
-              id: '1',
-              content: [{ type: MessageContentType.OutputText, text: 'Hello, world!', id: '1' }],
-              role: MessageRole.User,
-              createdAt: DateTime.now().toISO(),
-              error:
-                '401 Incorrect API key provided: 123. You can find your API key at https://platform.openai.com/account/api-keys.',
-              threadId: '1',
-            },
-          ],
+          messages: {
+            list: [
+              {
+                id: '1',
+                content: [{ type: MessageContentType.OutputText, text: 'Hello, world!', id: '1' }],
+                role: MessageRole.User,
+                createdAt: DateTime.now().toISO(),
+                error:
+                  '401 Incorrect API key provided: 123. You can find your API key at https://platform.openai.com/account/api-keys.',
+                threadId: '1',
+              },
+            ],
+            loading: false,
+            error: null,
+            ready: true,
+          },
         })
       }, [])
 
@@ -237,124 +262,193 @@ export const WithFunctionCall: Story = {
             configured: true,
             error: null,
           },
-          messages: [
-            {
-              id: '1',
-              content: [
-                { type: MessageContentType.OutputText, text: 'Please order sushi', id: '1' },
-              ],
-              role: MessageRole.User,
-              createdAt: DateTime.now().toISO(),
-              threadId: '1',
-              context: {
-                title: 'Amsterdam Sushi',
-                url: 'https://example.com',
-                favicon:
-                  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABeUlEQVR4nGJZbsDCAAOr5pbC2XObVsDZPtu3wNl1KwPhbMtrt+DsQ5cmw9mn0j3gbCYGGoOhbwFLm5UunLOaTw7Oznd0h7PvbCuAsxXEdeDsHZeN4ewHhy3hbFZ3hJlDP4hoHwc8zGfgHMEVaXC2lm01nL27VwLO/ta/Cc7++e4rnK3vtQbO9n60Ds4e+kFEcwsYxdd8hHOuzUCUOe8a7sHZ9z9MgbNvlO2Gs3Mmn4Cz//jIwNkbr2+As4d+ENE+DsqyOeAcnvPNcPYT1i9w9t3IJ3B249IEOFuTBaE39hIif3zMmgVnD/0gon0cfJJKgnN083jg7NcMLXB2/9QGOLuEvQKhuW8vnN387Tmc/djkJ5w99IOI9vWB1Zv5cA7b56twtl5HJ5zdVI4Ia5e1UnD2z3sz4WyxAwfh7KsvTOHsoR9EtM8HTUGJcI5u1Fk4+17+Zjh7aq8WnL0+8Byc3fNPGc4+7bMfzj5q/B7OHvpBRHMLAAEAAP//zHllDdnL2AgAAAAASUVORK5CYII=',
+          messages: {
+            list: [
+              {
+                id: '1',
+                content: [
+                  { type: MessageContentType.OutputText, text: 'Please order sushi', id: '1' },
+                ],
+                role: MessageRole.User,
+                createdAt: DateTime.now().toISO(),
+                threadId: '1',
+                context: {
+                  title: 'Amsterdam Sushi',
+                  url: 'https://example.com',
+                  favicon:
+                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABeUlEQVR4nGJZbsDCAAOr5pbC2XObVsDZPtu3wNl1KwPhbMtrt+DsQ5cmw9mn0j3gbCYGGoOhbwFLm5UunLOaTw7Oznd0h7PvbCuAsxXEdeDsHZeN4ewHhy3hbFZ3hJlDP4hoHwc8zGfgHMEVaXC2lm01nL27VwLO/ta/Cc7++e4rnK3vtQbO9n60Ds4e+kFEcwsYxdd8hHOuzUCUOe8a7sHZ9z9MgbNvlO2Gs3Mmn4Cz//jIwNkbr2+As4d+ENE+DsqyOeAcnvPNcPYT1i9w9t3IJ3B249IEOFuTBaE39hIif3zMmgVnD/0gon0cfJJKgnN083jg7NcMLXB2/9QGOLuEvQKhuW8vnN387Tmc/djkJ5w99IOI9vWB1Zv5cA7b56twtl5HJ5zdVI4Ia5e1UnD2z3sz4WyxAwfh7KsvTOHsoR9EtM8HTUGJcI5u1Fk4+17+Zjh7aq8WnL0+8Byc3fNPGc4+7bMfzj5q/B7OHvpBRHMLAAEAAP//zHllDdnL2AgAAAAASUVORK5CYII=',
+                },
               },
-            },
-            {
-              id: '2',
-              content: [
-                {
-                  type: MessageContentType.OutputText,
-                  text: 'Sure, I will fill the form for you',
-                  id: 'answer_1',
-                },
-                {
-                  id: 'answer_2',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'radio',
-                    input_value: 'personal',
-                    input_selector: '#typeofclient',
-                    label_value: 'Particulier',
+              {
+                id: '2',
+                content: [
+                  {
+                    type: MessageContentType.OutputText,
+                    text: 'Sure, I will fill the form for you',
+                    id: 'answer_1',
                   },
-                },
-                {
-                  id: 'answer_3',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'radio',
-                    input_value: 'company',
-                    input_selector: '#typeofclient',
-                    label_value: 'Bedrijf',
+                  {
+                    id: 'answer_2',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'radio',
+                      input_value: 'personal',
+                      input_selector: '#typeofclient',
+                      label_value: 'Particulier',
+                    },
                   },
-                },
-                {
-                  id: 'answer_4',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'input',
-                    input_value: 'Jan',
-                    input_selector: '#firstname',
-                    label_value: 'Naam',
+                  {
+                    id: 'answer_3',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'radio',
+                      input_value: 'company',
+                      input_selector: '#typeofclient',
+                      label_value: 'Bedrijf',
+                    },
                   },
-                },
-                {
-                  id: 'answer_5',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'input',
-                    input_value: 'Jansen',
-                    input_selector: '#lastname',
-                    label_value: 'Achternaam',
+                  {
+                    id: 'answer_4',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'input',
+                      input_value: 'Jan',
+                      input_selector: '#firstname',
+                      label_value: 'Naam',
+                    },
                   },
-                },
-                {
-                  id: 'answer_6',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'input',
-                    input_value: '14A',
-                    input_selector: '#streetnumber',
-                    label_value: 'Huisnummer',
+                  {
+                    id: 'answer_5',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'input',
+                      input_value: 'Jansen',
+                      input_selector: '#lastname',
+                      label_value: 'Achternaam',
+                    },
                   },
-                },
-                {
-                  id: 'answer_7',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'input',
-                    input_value: '1234',
-                    input_selector: '#postalcode',
-                    label_value: 'Postcode',
+                  {
+                    id: 'answer_6',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'input',
+                      input_value: '14A',
+                      input_selector: '#streetnumber',
+                      label_value: 'Huisnummer',
+                    },
                   },
-                },
-                {
-                  id: 'answer_8',
-                  type: MessageContentType.FunctionCall,
-                  status: FunctionStatus.Idle,
-                  name: FunctionName.FillInput,
-                  arguments: {
-                    input_type: 'input',
-                    input_value: 'AB',
-                    input_selector: '#postalcode_letters',
-                    label_value: 'Postcode letters',
+                  {
+                    id: 'answer_7',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'input',
+                      input_value: '1234',
+                      input_selector: '#postalcode',
+                      label_value: 'Postcode',
+                    },
                   },
-                },
-              ],
-              role: MessageRole.Assistant,
-              createdAt: DateTime.now().toISO(),
-              threadId: '1',
-            },
-          ],
+                  {
+                    id: 'answer_8',
+                    type: MessageContentType.FunctionCall,
+                    status: FunctionStatus.Idle,
+                    name: FunctionName.FillInput,
+                    arguments: {
+                      input_type: 'input',
+                      input_value: 'AB',
+                      input_selector: '#postalcode_letters',
+                      label_value: 'Postcode letters',
+                    },
+                  },
+                ],
+                role: MessageRole.Assistant,
+                createdAt: DateTime.now().toISO(),
+                threadId: '1',
+              },
+            ],
+            loading: false,
+            error: null,
+            ready: true,
+          },
         })
       }, [])
 
       return <Story />
     },
   ],
+}
+
+export const MessagesLoading: Story = {
+  decorators: [
+    Story => {
+      useEffect(() => {
+        const mockAssistant = new MockAssistant('mock-api-key')
+        useChatStore.setState({
+          waitingForReply: false,
+          assistant: mockAssistant,
+          provider: {
+            ready: true,
+            loading: false,
+            configured: true,
+            error: null,
+          },
+          messages: {
+            list: [],
+            loading: true,
+            error: null,
+            ready: false,
+          },
+        })
+      }, [])
+
+      return <Story />
+    },
+  ],
+  play: async ({ canvas }) => {
+    const loading = canvas.getByText('Loading messages...')
+    await expect(loading).toBeInTheDocument()
+  },
+}
+
+export const MessagesError: Story = {
+  decorators: [
+    Story => {
+      useEffect(() => {
+        const mockAssistant = new MockAssistant('mock-api-key')
+        useChatStore.setState({
+          waitingForReply: false,
+          assistant: mockAssistant,
+          provider: {
+            ready: true,
+            loading: false,
+            configured: true,
+            error: null,
+          },
+          messages: {
+            list: [],
+            loading: false,
+            error: 'Error loading messages',
+            ready: false,
+          },
+        })
+      }, [])
+
+      return <Story />
+    },
+  ],
+  play: async ({ canvas }) => {
+    const error = canvas.getByText('Error loading messages')
+    await expect(error).toBeInTheDocument()
+  },
 }

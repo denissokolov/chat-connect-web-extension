@@ -1,23 +1,39 @@
 import { memo } from 'react'
-import { MessageSquare } from 'lucide-react'
-import { DateTime } from 'luxon'
-import type { Thread, Message } from '@/types/types'
+import { AlertCircle, MessageSquare } from 'lucide-react'
 
-interface ChatHistoryProps {
-  threads?: Thread[]
-  getThreadMessages?: (threadId: string) => Message[]
-  onThreadSelect?: (threadId: string) => void
-  selectedThreadId?: string
-}
+import useChatStore from '@/stores/useChatStore'
+import { cn } from '@/utils/ui'
 
-function ChatHistory({
-  threads = [],
-  getThreadMessages,
-  onThreadSelect,
-  selectedThreadId,
-}: ChatHistoryProps) {
-  // Show empty state if no threads
-  if (threads.length === 0) {
+function ChatHistory() {
+  const threads = useChatStore(state => state.threads)
+  const selectedThreadId = useChatStore(state => state.threadId)
+  const onThreadSelect = useChatStore(state => state.selectThread)
+
+  if (threads.loading) {
+    return (
+      <div className="h-full flex-1 flex flex-col items-center justify-center p-8">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">{'Loading threads...'}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (threads.error) {
+    return (
+      <div className="h-full flex-1 flex flex-col items-center justify-center p-8">
+        <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-2" />
+        <p className="text-sm text-destructive">{threads.error}</p>
+      </div>
+    )
+  }
+
+  if (!threads.ready) {
+    return null
+  }
+
+  if (threads.list.length === 0) {
     return (
       <div className="h-full flex-1 flex flex-col items-center justify-center p-8">
         <div className="text-center space-y-4">
@@ -35,11 +51,6 @@ function ChatHistory({
     )
   }
 
-  // Sort threads by updatedAt (most recent first)
-  const sortedThreads = [...threads].sort(
-    (a, b) => DateTime.fromISO(b.updatedAt).toMillis() - DateTime.fromISO(a.updatedAt).toMillis(),
-  )
-
   return (
     <div className="h-full flex-1 flex flex-col">
       <div className="p-4 border-b">
@@ -47,27 +58,18 @@ function ChatHistory({
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-1 p-2">
-          {sortedThreads.map(thread => {
-            const messages = getThreadMessages?.(thread.id) || []
-            const firstUserMessage = messages.find(msg => msg.role === 'user')
-            const preview =
-              firstUserMessage?.content
-                .map(item => (item.type === 'output_text' ? item.text : ''))
-                .join(' ') || 'New conversation'
-            const isSelected = selectedThreadId === thread.id
-
-            return (
-              <button
-                key={thread.id}
-                onClick={() => onThreadSelect?.(thread.id)}
-                className={`w-full text-left p-3 rounded-lg transition-colors hover:bg-muted/50 ${
-                  isSelected ? 'bg-muted' : ''
-                }`}
-              >
-                <p className="text-sm font-medium text-foreground line-clamp-1">{preview}</p>
-              </button>
-            )
-          })}
+          {threads.list.map(thread => (
+            <button
+              key={thread.id}
+              onClick={() => onThreadSelect(thread.id)}
+              className={cn(
+                'w-full text-left p-3 rounded-lg transition-colors hover:bg-muted/50',
+                selectedThreadId === thread.id && 'bg-muted',
+              )}
+            >
+              <p className="text-sm font-medium text-foreground line-clamp-1">{thread.title}</p>
+            </button>
+          ))}
         </div>
       </div>
     </div>

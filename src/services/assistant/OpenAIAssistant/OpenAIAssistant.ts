@@ -32,7 +32,7 @@ export class OpenAIAssistant implements IAssistant {
     model: AIModel
     instructions?: string
     text: string
-    history?: Message[]
+    history?: ReadonlyArray<Message>
     signal?: AbortSignal
   }): Promise<ProviderMessageResponse> {
     const response = await this.client.responses.create(
@@ -82,7 +82,7 @@ export class OpenAIAssistant implements IAssistant {
     return this.parseResponse(response)
   }
 
-  private getPreviousResponseId(history?: Message[]): string | undefined {
+  private getPreviousResponseId(history?: ReadonlyArray<Message>): string | undefined {
     return history && history.length > 0 ? history[history.length - 1]?.id : undefined
   }
 

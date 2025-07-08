@@ -1,9 +1,17 @@
 import type { IAssistant } from '@/services/assistant'
-import type { AIModel, ChatView, FunctionCallResult, Message } from '@/types/types'
+import type { AIModel, ChatView, FunctionCallResult, Message, Thread } from '@/types/types'
 
 export type ThreadSlice = {
   threadId: string
   startNewThread: () => void
+  threads: {
+    list: ReadonlyArray<Thread>
+    loading: boolean
+    error: string | null
+    ready: boolean
+  }
+  loadThreads: () => Promise<void>
+  selectThread: (threadId: string) => Promise<void>
 }
 
 export type ProviderSlice = {
@@ -30,7 +38,12 @@ export type ViewSlice = {
 }
 
 export type MessageSlice = {
-  messages: Message[]
+  messages: {
+    list: ReadonlyArray<Message>
+    loading: boolean
+    error: string | null
+    ready: boolean
+  }
   sendMessage: (text: string) => Promise<void>
   stopMessage: () => void
   waitingForReply: boolean

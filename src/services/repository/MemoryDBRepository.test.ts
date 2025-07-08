@@ -15,12 +15,14 @@ describe('MemoryDBRepository', () => {
 
   const mockThread1: Thread = {
     id: 'thread-1',
+    title: 'Thread 1',
     createdAt: '2024-01-01T10:00:00Z',
     updatedAt: '2024-01-01T12:00:00Z',
   }
 
   const mockThread2: Thread = {
     id: 'thread-2',
+    title: 'Thread 2',
     createdAt: '2024-01-01T11:00:00Z',
     updatedAt: '2024-01-01T13:00:00Z',
   }
@@ -356,6 +358,7 @@ describe('MemoryDBRepository', () => {
 
       const replacementThread: Thread = {
         id: 'thread-1',
+        title: 'Updated thread',
         createdAt: '2024-01-02T10:00:00Z',
         updatedAt: '2024-01-02T12:00:00Z',
       }

@@ -7,7 +7,7 @@ export interface IAssistant {
     model: AIModel
     instructions?: string
     text: string
-    history?: Message[]
+    history?: ReadonlyArray<Message>
     signal?: AbortSignal
   }) => Promise<ProviderMessageResponse>
 

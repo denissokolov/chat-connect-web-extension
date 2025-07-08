@@ -14,7 +14,7 @@ export default function ChatMessages() {
 
   return (
     <div className="flex-1 py-4 px-4 space-y-4 overflow-y-auto" tabIndex={0}>
-      {messages.map(message =>
+      {messages.list.map(message =>
         message.role === MessageRole.User ? (
           <UserMessage
             key={message.id}

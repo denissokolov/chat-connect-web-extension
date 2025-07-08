@@ -24,13 +24,19 @@ export class MemoryDBRepository implements IRepository {
     return Promise.resolve()
   }
 
-  updateThread(thread: Omit<Thread, 'createdAt'>): Promise<void> {
-    const existingThread = this.threads.get(thread.id)
-    if (!existingThread) {
-      return Promise.reject(new Error(`Thread with id ${thread.id} not found`))
+  updateThread(thread: Partial<Thread>): Promise<void> {
+    const threadId = thread.id
+    if (!threadId) {
+      return Promise.reject(new Error('Thread id is required'))
     }
 
-    this.threads.set(thread.id, {
+    const existingThread = this.threads.get(threadId)
+    if (!existingThread) {
+      return Promise.reject(new Error(`Thread with id ${threadId} not found`))
+    }
+
+    this.threads.set(threadId, {
+      ...existingThread,
       ...thread,
       createdAt: existingThread.createdAt,
     })

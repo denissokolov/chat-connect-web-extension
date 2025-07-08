@@ -15,10 +15,16 @@ import {
   FunctionStatus,
 } from '@/types/types'
 import { getBasicInstructions } from '@/utils/instructions'
-import { createAssistantMessage } from '@/utils/message'
+import { createAssistantMessage, getFirstTextLine } from '@/utils/message'
+import { emptyMessages } from '@/utils/empty'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
-  messages: [],
+  messages: {
+    list: emptyMessages,
+    loading: false,
+    error: null,
+    ready: true,
+  },
   waitingForReply: false,
   waitingForTools: false,
   messageAbortController: null,
@@ -63,22 +69,28 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     const abortController = new AbortController()
 
     set(state => ({
-      messages: [...state.messages, newMessage],
+      messages: {
+        ...state.messages,
+        list: [...state.messages.list, newMessage],
+      },
       waitingForReply: !pageContextError,
       messageAbortController: abortController,
     }))
 
     await repository.createMessage(newMessage)
-    if (messages.length === 0) {
+    if (messages.list.length === 0) {
+      const title =
+        getFirstTextLine(newMessage, 150) || DateTime.now().toLocaleString(DateTime.DATETIME_MED)
       await repository.createThread({
         id: threadId,
-        createdAt: DateTime.now().toISO(),
-        updatedAt: DateTime.now().toISO(),
+        title,
+        createdAt: newMessage.createdAt,
+        updatedAt: newMessage.createdAt,
       })
     } else {
       await repository.updateThread({
         id: threadId,
-        updatedAt: DateTime.now().toISO(),
+        updatedAt: newMessage.createdAt,
       })
     }
 
@@ -91,7 +103,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         model: model,
         instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
         text: text,
-        history: messages,
+        history: messages.list,
         signal: abortController.signal,
       })
       if (get().threadId !== threadId) {
@@ -100,7 +112,10 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
 
       const responseMessage = createAssistantMessage(response, threadId)
       set(state => ({
-        messages: [...state.messages, responseMessage],
+        messages: {
+          ...state.messages,
+          list: [...state.messages.list, responseMessage],
+        },
         waitingForReply: false,
         waitingForTools: response.hasTools,
         messageAbortController: null,
@@ -121,7 +136,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     let completed = true
     let message: Message | undefined = undefined
 
-    const updatedMessages = messages.map(msg => {
+    const updatedMessages = messages.list.map(msg => {
       if (msg.id === messageId) {
         const content = msg.content.map(i => {
           if (i.id === callId) {
@@ -151,13 +166,13 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }
 
     if (!completed) {
-      set({ messages: updatedMessages })
+      set({ messages: { ...messages, list: updatedMessages } })
       return
     }
 
     const abortController = new AbortController()
     set({
-      messages: updatedMessages,
+      messages: { ...messages, list: updatedMessages },
       waitingForReply: true,
       waitingForTools: false,
       messageAbortController: abortController,
@@ -177,7 +192,10 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
 
       const responseMessage = createAssistantMessage(response, threadId)
       set(state => ({
-        messages: [...state.messages, responseMessage],
+        messages: {
+          ...state.messages,
+          list: [...state.messages.list, responseMessage],
+        },
         waitingForReply: false,
         waitingForTools: response.hasTools,
         messageAbortController: null,
@@ -199,9 +217,12 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     set(state => ({
       messages: isAborted
         ? state.messages // Don't show error for cancelled requests
-        : state.messages.map(msg =>
-            msg.id === messageId ? { ...msg, error: getStringError(error) } : msg,
-          ),
+        : {
+            ...state.messages,
+            list: state.messages.list.map(msg =>
+              msg.id === messageId ? { ...msg, error: getStringError(error) } : msg,
+            ),
+          },
       waitingForReply: false,
       waitingForTools: false,
       messageAbortController: null,

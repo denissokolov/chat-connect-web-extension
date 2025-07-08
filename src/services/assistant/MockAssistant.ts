@@ -21,7 +21,7 @@ export class MockAssistant implements IAssistant {
     model: AIModel
     instructions?: string
     text: string
-    history?: Message[]
+    history?: ReadonlyArray<Message>
     signal?: AbortSignal
   }): Promise<ProviderMessageResponse> {
     // Simulate API delay

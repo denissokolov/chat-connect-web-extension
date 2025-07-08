@@ -112,6 +112,7 @@ export enum Platform {
 
 export type Thread = {
   id: string
+  title: string
   createdAt: string
   updatedAt: string
 }

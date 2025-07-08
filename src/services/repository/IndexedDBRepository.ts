@@ -79,12 +79,17 @@ export class IndexedDBRepository implements IRepository {
     })
   }
 
-  updateThread(thread: Omit<Thread, 'createdAt'>): Promise<void> {
+  updateThread(thread: Partial<Thread>): Promise<void> {
+    const threadId = thread.id
+    if (!threadId) {
+      return Promise.reject(new Error('Thread id is required'))
+    }
+
     return new Promise((resolve, reject) => {
       const transaction = this.getDB().transaction([this.threadsStore], 'readwrite')
       const store = transaction.objectStore(this.threadsStore)
 
-      const getRequest = store.get(thread.id)
+      const getRequest = store.get(threadId)
 
       getRequest.onsuccess = () => {
         const existingThread = getRequest.result
@@ -95,6 +100,7 @@ export class IndexedDBRepository implements IRepository {
 
         const updatedThread = {
           id: thread.id,
+          title: existingThread.title,
           createdAt: existingThread.createdAt,
           updatedAt: thread.updatedAt,
         }
