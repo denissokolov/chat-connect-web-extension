@@ -65,7 +65,6 @@ describe('threadSlice', () => {
         threadId: 'old-thread-id',
         messages: { list: mockMessages, loading: false, error: null, ready: true },
         waitingForReply: true,
-        messageAbortController: new AbortController(),
         currentView: ChatView.History,
       })
 
@@ -82,7 +81,6 @@ describe('threadSlice', () => {
         ready: true,
       })
       expect(state.waitingForReply).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(state.currentView).toBe(ChatView.Chat)
     })
   })
@@ -174,7 +172,6 @@ describe('threadSlice', () => {
         ready: true,
       })
       expect(state.waitingForReply).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(state.currentView).toBe(ChatView.Chat)
     })
 
@@ -199,7 +196,6 @@ describe('threadSlice', () => {
         ready: false,
       })
       expect(loadingState.waitingForReply).toBe(false)
-      expect(loadingState.messageAbortController).toBe(null)
       expect(loadingState.currentView).toBe(ChatView.Chat)
 
       // Resolve the promise
@@ -244,7 +240,6 @@ describe('threadSlice', () => {
       useChatStore.setState({
         messages: { list: mockMessages, loading: false, error: null, ready: true },
         waitingForReply: true,
-        messageAbortController: new AbortController(),
       })
 
       const { selectThread } = useChatStore.getState()
@@ -259,7 +254,6 @@ describe('threadSlice', () => {
         ready: false,
       })
       expect(state.waitingForReply).toBe(false)
-      expect(state.messageAbortController).toBe(null)
     })
   })
 

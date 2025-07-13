@@ -20,6 +20,7 @@ import { getLastAssistantMessageId, getMessageText } from '@/utils/message'
 export class OpenAIAssistant implements IAssistant {
   private client: OpenAI
   private responseId: string | undefined
+  private progress: boolean = false
 
   constructor(apiKey: string) {
     this.client = new OpenAI({
@@ -40,6 +41,8 @@ export class OpenAIAssistant implements IAssistant {
     signal?: AbortSignal
     eventHandler: (event: ProviderMessageEvent) => void
   }): Promise<void> {
+    this.progress = true
+
     const stream = await this.client.responses.create({
       model: params.model,
       instructions: params.instructions,
@@ -63,6 +66,8 @@ export class OpenAIAssistant implements IAssistant {
     message: Message
     eventHandler: (event: ProviderMessageEvent) => void
   }): Promise<void> {
+    this.progress = true
+
     const input = params.message.content.reduce((acc, content) => {
       if (content.type === MessageContentType.FunctionCall) {
         acc.push({
@@ -98,6 +103,10 @@ export class OpenAIAssistant implements IAssistant {
     return this.responseId
   }
 
+  cancelActiveRequest(): void {
+    this.progress = false
+  }
+
   private async handleResponseStream(
     stream: AsyncIterable<OpenAI.Responses.ResponseStreamEvent>,
     eventHandler: (event: ProviderMessageEvent) => void,
@@ -105,6 +114,11 @@ export class OpenAIAssistant implements IAssistant {
     userMessageId: string,
   ): Promise<void> {
     for await (const event of stream) {
+      if (!this.progress) {
+        // request is cancelled
+        return
+      }
+
       switch (event.type) {
         case 'response.created': {
           logDebug('OpenAIAssistant.sendMessage.response.created', event)

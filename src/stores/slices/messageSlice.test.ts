@@ -45,6 +45,7 @@ describe('messageSlice', () => {
     getProvider: vi.fn().mockReturnValue(AIProvider.Mock),
     sendMessage: vi.fn().mockResolvedValue(undefined),
     sendFunctionCallResponse: vi.fn().mockResolvedValue(undefined),
+    cancelActiveRequest: vi.fn(),
   }
   const mockPageContext: PageContext = {
     title: 'Test Page',
@@ -847,7 +848,6 @@ describe('messageSlice', () => {
       expect(state.messages.list[0].error).toBe('Assistant error')
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
     })
 
     it('should set waitingForTools to true when response has tools', async () => {
@@ -1241,7 +1241,6 @@ describe('messageSlice', () => {
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
         message: mockMessage,
@@ -1302,13 +1301,11 @@ describe('messageSlice', () => {
       // Check that waiting states are set correctly
       expect(useChatStore.getState().waitingForReply).toBe(true)
       expect(useChatStore.getState().waitingForTools).toBe(false)
-      expect(useChatStore.getState().messageAbortController).not.toBe(null)
 
       resolvePromise!()
       await sendPromise
 
       expect(useChatStore.getState().waitingForReply).toBe(false)
-      expect(useChatStore.getState().messageAbortController).toBe(null)
     })
 
     it('should handle sendFunctionCallResponse error', async () => {
@@ -1352,30 +1349,14 @@ describe('messageSlice', () => {
   })
 
   describe('stopMessage', () => {
-    it('should abort message when abortController exists', () => {
-      const abortController = new AbortController()
-      const abortSpy = vi.spyOn(abortController, 'abort')
-
+    beforeEach(() => {
       useChatStore.setState({
-        messageAbortController: abortController,
-        waitingForReply: true,
-        waitingForTools: true,
+        assistant: mockAssistant,
       })
-
-      const { stopMessage } = useChatStore.getState()
-
-      stopMessage()
-
-      expect(abortSpy).toHaveBeenCalled()
-      const state = useChatStore.getState()
-      expect(state.messageAbortController).toBe(null)
-      expect(state.waitingForReply).toBe(false)
-      expect(state.waitingForTools).toBe(false)
     })
 
-    it('should reset waiting states when no abortController exists', () => {
+    it('should reset waiting states and cancel active request', () => {
       useChatStore.setState({
-        messageAbortController: null,
         waitingForReply: true,
         waitingForTools: true,
       })
@@ -1385,26 +1366,10 @@ describe('messageSlice', () => {
       stopMessage()
 
       const state = useChatStore.getState()
-      expect(state.messageAbortController).toBe(null)
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-    })
 
-    it('should handle undefined abortController gracefully', () => {
-      useChatStore.setState({
-        messageAbortController: undefined as unknown as AbortController,
-        waitingForReply: true,
-        waitingForTools: true,
-      })
-
-      const { stopMessage } = useChatStore.getState()
-
-      expect(() => stopMessage()).not.toThrow()
-
-      const state = useChatStore.getState()
-      expect(state.messageAbortController).toBe(null)
-      expect(state.waitingForReply).toBe(false)
-      expect(state.waitingForTools).toBe(false)
+      expect(mockAssistant.cancelActiveRequest).toHaveBeenCalled()
     })
   })
 
@@ -1424,7 +1389,6 @@ describe('messageSlice', () => {
         messages: { list: [mockMessage], loading: false, error: null, ready: true },
         waitingForReply: true,
         waitingForTools: true,
-        messageAbortController: new AbortController(),
       })
     })
 
@@ -1438,7 +1402,6 @@ describe('messageSlice', () => {
       expect(state.messages.list[0].error).toBe('Test error')
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
     })
 
     it('should handle error with assistant message ID', () => {
@@ -1469,7 +1432,6 @@ describe('messageSlice', () => {
       expect(state.messages.list[1].error).toBe('Assistant error')
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
     })
 
     it('should return early if threadId does not match', () => {
@@ -1482,7 +1444,6 @@ describe('messageSlice', () => {
       expect(state.messages.list[0].error).toBeUndefined()
       expect(state.waitingForReply).toBe(true)
       expect(state.waitingForTools).toBe(true)
-      expect(state.messageAbortController).not.toBe(null)
     })
 
     it('should handle string error', () => {
@@ -1495,7 +1456,6 @@ describe('messageSlice', () => {
       expect(state.messages.list[0].error).toBe('String error message')
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
     })
 
     it('should handle unknown error types', () => {
@@ -1508,7 +1468,6 @@ describe('messageSlice', () => {
       expect(state.messages.list[0].error).toBe('Unknown error')
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
     })
   })
 
@@ -1519,7 +1478,6 @@ describe('messageSlice', () => {
         messages: { list: [], loading: false, error: null, ready: true },
         waitingForReply: false,
         waitingForTools: false,
-        messageAbortController: null,
       })
     })
 
@@ -1655,7 +1613,6 @@ describe('messageSlice', () => {
       useChatStore.setState({
         messages: { list: [existingMessage], loading: false, error: null, ready: true },
         waitingForReply: true,
-        messageAbortController: new AbortController(),
       })
 
       const { handleMessageEvent } = useChatStore.getState()
@@ -1672,7 +1629,6 @@ describe('messageSlice', () => {
 
       const state = useChatStore.getState()
       expect(state.waitingForReply).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
     })
 
@@ -1706,7 +1662,6 @@ describe('messageSlice', () => {
       useChatStore.setState({
         messages: { list: [existingMessage], loading: false, error: null, ready: true },
         waitingForReply: true,
-        messageAbortController: new AbortController(),
         assistant: mockAssistant,
         model: AIModel.OpenAI_ChatGPT_4o,
       })
@@ -1740,7 +1695,6 @@ describe('messageSlice', () => {
 
       const state = useChatStore.getState()
       expect(state.waitingForReply).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
@@ -1753,7 +1707,6 @@ describe('messageSlice', () => {
       useChatStore.setState({
         messages: { list: [], loading: false, error: null, ready: true },
         waitingForReply: true,
-        messageAbortController: new AbortController(),
       })
 
       const { handleMessageEvent } = useChatStore.getState()
@@ -1767,7 +1720,6 @@ describe('messageSlice', () => {
 
       const state = useChatStore.getState()
       expect(state.waitingForReply).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(repository.createMessage).not.toHaveBeenCalled()
     })
 
@@ -1829,7 +1781,6 @@ describe('messageSlice', () => {
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(state.messageAbortController).toBe(null)
       expect(repository.createMessage).toHaveBeenCalledWith(state.messages.list[0])
     })
 
@@ -1865,7 +1816,6 @@ describe('messageSlice', () => {
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(true)
-      expect(state.messageAbortController).toBe(null)
       expect(repository.createMessage).toHaveBeenCalledWith(state.messages.list[0])
     })
   })

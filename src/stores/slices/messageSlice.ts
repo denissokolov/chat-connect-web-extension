@@ -34,13 +34,12 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
   },
   waitingForReply: false,
   waitingForTools: false,
-  messageAbortController: null,
   stopMessage: () => {
-    const { messageAbortController } = get()
-    if (messageAbortController) {
-      messageAbortController.abort()
+    const { assistant } = get()
+    if (assistant) {
+      assistant.cancelActiveRequest()
     }
-    set({ messageAbortController: null, waitingForReply: false, waitingForTools: false })
+    set({ waitingForReply: false, waitingForTools: false })
   },
   sendMessage: async (text: string) => {
     const { assistant, model, messages, threadId, handleMessageEvent } = get()
@@ -59,12 +58,9 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
 
     const newMessage = createUserMessage(threadId, text, pageContext, pageContextError)
 
-    const abortController = new AbortController()
-
     set(state => ({
       messages: addMessage(state.messages, newMessage),
       waitingForReply: !pageContextError,
-      messageAbortController: pageContextError ? null : abortController,
     }))
 
     if (pageContextError) {
@@ -108,12 +104,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       throw new Error('Assistant not initialized')
     }
 
-    const abortController = new AbortController()
-    set({
-      waitingForReply: true,
-      waitingForTools: false,
-      messageAbortController: abortController,
-    })
+    set({ waitingForReply: true, waitingForTools: false })
 
     try {
       await assistant.sendFunctionCallResponse({
@@ -140,7 +131,6 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       messages: setMessageError(state.messages, error, userMessageId, assistantMessageId),
       waitingForReply: false,
       waitingForTools: false,
-      messageAbortController: null,
     }))
   },
   handleMessageEvent: (event: ProviderMessageEvent) => {
@@ -181,7 +171,6 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         set(state => ({
           messages: setMessageComplete(state.messages, event.messageId),
           waitingForReply: false,
-          messageAbortController: null,
         }))
 
         const message = messages.list.find(msg => msg.id === event.messageId)
@@ -209,7 +198,6 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
           messages: addMessage(state.messages, responseMessage),
           waitingForReply: false,
           waitingForTools: event.hasTools,
-          messageAbortController: null,
         }))
         saveMessageToRepository(responseMessage)
         break

@@ -17,4 +17,6 @@ export interface IAssistant {
     message: Message
     eventHandler: (event: ProviderMessageEvent) => void
   }): Promise<void>
+
+  cancelActiveRequest: () => void
 }

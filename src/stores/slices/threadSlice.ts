@@ -6,16 +6,22 @@ import repository from '@/services/repository'
 import { getStringError } from '@/utils/error'
 import { emptyMessages, emptyThreads } from '@/utils/empty'
 
-export const createThreadSlice: StateCreator<ChatStore, [], [], ThreadSlice> = set => ({
+export const createThreadSlice: StateCreator<ChatStore, [], [], ThreadSlice> = (set, get) => ({
   threadId: crypto.randomUUID(),
-  startNewThread: () =>
+  startNewThread: () => {
+    const { assistant } = get()
+    if (assistant) {
+      assistant.cancelActiveRequest()
+    }
+
     set({
       threadId: crypto.randomUUID(),
       messages: { list: emptyMessages, loading: false, error: null, ready: true },
       waitingForReply: false,
-      messageAbortController: null,
+      waitingForTools: false,
       currentView: ChatView.Chat,
-    }),
+    })
+  },
   threads: {
     list: emptyThreads,
     loading: false,
@@ -34,11 +40,16 @@ export const createThreadSlice: StateCreator<ChatStore, [], [], ThreadSlice> = s
     }
   },
   selectThread: async (threadId: string) => {
+    const { assistant } = get()
+    if (assistant) {
+      assistant.cancelActiveRequest()
+    }
+
     set({
       threadId,
       messages: { list: emptyMessages, loading: true, error: null, ready: false },
       waitingForReply: false,
-      messageAbortController: null,
+      waitingForTools: false,
       currentView: ChatView.Chat,
     })
 

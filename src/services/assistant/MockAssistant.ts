@@ -10,6 +10,8 @@ import type { IAssistant } from './IAssistant'
 export class MockAssistant implements IAssistant {
   constructor(_apiKey: string) {}
 
+  private progress: boolean = false
+
   getProvider(): AIProvider {
     return AIProvider.Mock
   }
@@ -21,6 +23,8 @@ export class MockAssistant implements IAssistant {
     message: Message
     eventHandler: (event: ProviderMessageEvent) => void
   }): Promise<void> {
+    this.progress = true
+
     eventHandler({
       type: ProviderMessageEventType.Created,
       messageId: 'mock-message-id',
@@ -31,6 +35,10 @@ export class MockAssistant implements IAssistant {
     await new Promise(resolve => {
       setTimeout(resolve, 200)
     })
+
+    if (!this.progress) {
+      return
+    }
 
     eventHandler({
       type: ProviderMessageEventType.OutputTextDelta,
@@ -46,6 +54,8 @@ export class MockAssistant implements IAssistant {
       threadId: message.threadId,
       userMessageId: message.id,
     })
+
+    this.progress = false
   }
 
   sendFunctionCallResponse({
@@ -71,5 +81,9 @@ export class MockAssistant implements IAssistant {
     })
 
     return Promise.resolve()
+  }
+
+  cancelActiveRequest(): void {
+    this.progress = false
   }
 }

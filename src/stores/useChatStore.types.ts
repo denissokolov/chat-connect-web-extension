@@ -51,7 +51,6 @@ export type MessageSlice = {
   stopMessage: () => void
   waitingForReply: boolean
   waitingForTools: boolean
-  messageAbortController: AbortController | null
   saveFunctionResult: (
     messageId: string,
     callId: string,

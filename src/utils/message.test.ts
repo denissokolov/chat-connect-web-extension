@@ -963,6 +963,210 @@ describe('message utils', () => {
       const result = getLastAssistantMessageId(history)
       expect(result).toBe('assistant-msg-2')
     })
+
+    it('should return undefined when all assistant messages are incomplete', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'First response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Second response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBeUndefined()
+    })
+
+    it('should skip incomplete assistant messages and return the most recent complete one', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'First response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Second response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-3',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-3', type: MessageContentType.OutputText, text: 'Third response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-1')
+    })
+
+    it('should return the most recent complete assistant message when mixed with incomplete ones', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'First response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Second response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-3',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-3', type: MessageContentType.OutputText, text: 'Third response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-4',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-4', type: MessageContentType.OutputText, text: 'Fourth response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-4')
+    })
+
+    it('should ignore incomplete assistant messages even when they are the most recent', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'Complete response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'user-msg-1',
+          role: MessageRole.User,
+          content: [{ id: 'content-2', type: MessageContentType.OutputText, text: 'User message' }],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-3', type: MessageContentType.OutputText, text: 'Incomplete response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-1')
+    })
+
+    it('should handle mixed message types with complete property filtering', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'user-msg-1',
+          role: MessageRole.User,
+          content: [{ id: 'content-1', type: MessageContentType.OutputText, text: 'User message' }],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Incomplete assistant' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-3', type: MessageContentType.OutputText, text: 'Complete assistant' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'user-msg-2',
+          role: MessageRole.User,
+          content: [{ id: 'content-4', type: MessageContentType.OutputText, text: 'Another user' }],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-3',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-5', type: MessageContentType.OutputText, text: 'Another incomplete' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-2')
+    })
   })
 
   describe('areMessageFunctionsComplete', () => {
