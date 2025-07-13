@@ -13,9 +13,11 @@ import {
 
 import {
   createAssistantMessage,
+  createEmptyAssistantMessage,
   getFirstTextLine,
   getMessageText,
   getLastAssistantMessageId,
+  areMessageFunctionsComplete,
 } from './message'
 
 describe('message utils', () => {
@@ -38,7 +40,7 @@ describe('message utils', () => {
         },
       ]
 
-      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent)
+      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent, true)
 
       expect(result).toEqual({
         id: mockResponseId,
@@ -46,6 +48,7 @@ describe('message utils', () => {
         content: mockContent,
         createdAt: mockDateTime.toISO(),
         threadId: mockThreadId,
+        complete: true,
       })
     })
 
@@ -70,7 +73,7 @@ describe('message utils', () => {
         },
       ]
 
-      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent)
+      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent, true)
 
       expect(result.content).toHaveLength(2)
       expect(result.content[0]).toEqual({
@@ -88,7 +91,7 @@ describe('message utils', () => {
     })
 
     it('should handle empty content array', () => {
-      const result = createAssistantMessage(mockResponseId, mockThreadId, [])
+      const result = createAssistantMessage(mockResponseId, mockThreadId, [], true)
 
       expect(result.content).toEqual([])
       expect(result.id).toBe(mockResponseId)
@@ -109,7 +112,7 @@ describe('message utils', () => {
         },
       ]
 
-      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent)
+      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent, true)
 
       expect(result.createdAt).toBe(customDateTime.toISO())
     })
@@ -183,7 +186,7 @@ describe('message utils', () => {
         },
       ]
 
-      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent)
+      const result = createAssistantMessage(mockResponseId, mockThreadId, mockContent, true)
 
       expect(result.content).toHaveLength(6)
 
@@ -255,6 +258,28 @@ describe('message utils', () => {
     })
   })
 
+  describe('createEmptyAssistantMessage', () => {
+    it('should create an empty message with correct structure', () => {
+      const mockResponseId = 'test-response-id'
+      const mockThreadId = 'test-thread-id'
+      const mockDateTime = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDateTime.toJSDate())
+
+      const result = createEmptyAssistantMessage(mockResponseId, mockThreadId)
+
+      expect(result).toEqual({
+        id: mockResponseId,
+        role: MessageRole.Assistant,
+        content: [],
+        createdAt: mockDateTime.toISO(),
+        threadId: mockThreadId,
+        complete: false,
+      })
+
+      vi.useRealTimers()
+    })
+  })
+
   describe('getFirstTextLine', () => {
     const mockThreadId = 'test-thread-id'
     const mockMessageId = 'test-message-id'
@@ -266,6 +291,7 @@ describe('message utils', () => {
       content,
       createdAt: mockDateTime.toISO()!,
       threadId: mockThreadId,
+      complete: true,
     })
 
     it('should return first line of text when it fits within max length', () => {
@@ -503,6 +529,7 @@ describe('message utils', () => {
       content,
       createdAt: DateTime.fromISO('2024-01-01T12:00:00Z').toISO()!,
       threadId: 'test-thread-id',
+      complete: true,
     })
 
     it('should return text content from single OutputText message', () => {
@@ -755,13 +782,14 @@ describe('message utils', () => {
     })
 
     it('should return undefined when history contains no assistant messages', () => {
-      const history = [
+      const history: ReadonlyArray<Message> = [
         {
           id: 'user-msg-1',
           role: MessageRole.User,
           content: [{ id: 'content-1', type: MessageContentType.OutputText, text: 'Hello' }],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'user-msg-2',
@@ -769,8 +797,9 @@ describe('message utils', () => {
           content: [{ id: 'content-2', type: MessageContentType.OutputText, text: 'World' }],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
-      ] as readonly Message[]
+      ]
 
       const result = getLastAssistantMessageId(history)
       expect(result).toBeUndefined()
@@ -784,6 +813,7 @@ describe('message utils', () => {
           content: [{ id: 'content-1', type: MessageContentType.OutputText, text: 'Hello' }],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'assistant-msg-1',
@@ -791,6 +821,7 @@ describe('message utils', () => {
           content: [{ id: 'content-2', type: MessageContentType.OutputText, text: 'Hi there!' }],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
       ]
 
@@ -808,6 +839,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'user-msg-1',
@@ -815,6 +847,7 @@ describe('message utils', () => {
           content: [{ id: 'content-2', type: MessageContentType.OutputText, text: 'Follow up' }],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'assistant-msg-2',
@@ -824,6 +857,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
       ]
 
@@ -841,6 +875,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'user-msg-1',
@@ -848,6 +883,7 @@ describe('message utils', () => {
           content: [{ id: 'content-2', type: MessageContentType.OutputText, text: 'User message' }],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
       ]
 
@@ -865,6 +901,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'assistant-msg-1',
@@ -878,6 +915,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'user-msg-2',
@@ -887,6 +925,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'assistant-msg-2',
@@ -907,6 +946,7 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
         {
           id: 'user-msg-3',
@@ -916,11 +956,353 @@ describe('message utils', () => {
           ],
           createdAt: new Date().toISOString(),
           threadId: 'thread-1',
+          complete: true,
         },
       ]
 
       const result = getLastAssistantMessageId(history)
       expect(result).toBe('assistant-msg-2')
+    })
+  })
+
+  describe('areMessageFunctionsComplete', () => {
+    const createMockMessage = (content: MessageContent[]): Message => ({
+      id: 'test-message-id',
+      role: MessageRole.Assistant,
+      content,
+      createdAt: new Date().toISOString(),
+      threadId: 'test-thread-id',
+      complete: true,
+    })
+
+    it('should return false when message has no function calls', () => {
+      const message = createMockMessage([
+        {
+          id: 'text-1',
+          type: MessageContentType.OutputText,
+          text: 'Hello world',
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
+    })
+
+    it('should return false when message has empty content', () => {
+      const message = createMockMessage([])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
+    })
+
+    it('should return true when all function calls have Success status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(true)
+    })
+
+    it('should return true when all function calls have Error status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Error,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Error,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(true)
+    })
+
+    it('should return true when function calls have mixed Success and Error statuses', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Error,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(true)
+    })
+
+    it('should return false when any function call has Idle status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Idle,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
+    })
+
+    it('should return false when any function call has Pending status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Pending,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
+    })
+
+    it('should return false when single function call has Idle status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Idle,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
+    })
+
+    it('should return false when single function call has Pending status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Pending,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
+    })
+
+    it('should return true when single function call has Success status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(true)
+    })
+
+    it('should return true when single function call has Error status', () => {
+      const message = createMockMessage([
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Error,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(true)
+    })
+
+    it('should return true when message has mixed content with completed functions', () => {
+      const message = createMockMessage([
+        {
+          id: 'text-1',
+          type: MessageContentType.OutputText,
+          text: 'Processing your request...',
+        },
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'text-2',
+          type: MessageContentType.OutputText,
+          text: 'Task completed successfully',
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Error,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(true)
+    })
+
+    it('should return false when message has mixed content with incomplete functions', () => {
+      const message = createMockMessage([
+        {
+          id: 'text-1',
+          type: MessageContentType.OutputText,
+          text: 'Processing your request...',
+        },
+        {
+          id: 'func-1',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Success,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'text',
+            input_value: 'test',
+            input_selector: '#test',
+            label_value: 'Test',
+          },
+        },
+        {
+          id: 'text-2',
+          type: MessageContentType.OutputText,
+          text: 'Still processing...',
+        },
+        {
+          id: 'func-2',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Pending,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Submit',
+          },
+        },
+      ])
+
+      const result = areMessageFunctionsComplete(message)
+      expect(result).toBe(false)
     })
   })
 })

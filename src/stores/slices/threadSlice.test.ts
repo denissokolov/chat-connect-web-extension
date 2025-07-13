@@ -38,6 +38,7 @@ describe('threadSlice', () => {
       role: MessageRole.User,
       content: [{ type: MessageContentType.OutputText, text: 'Hello', id: '1' }],
       createdAt: '2024-01-01T12:00:00Z',
+      complete: true,
     },
     {
       id: 'message-2',
@@ -45,6 +46,7 @@ describe('threadSlice', () => {
       role: MessageRole.Assistant,
       content: [{ type: MessageContentType.OutputText, text: 'Hi there!', id: '2' }],
       createdAt: '2024-01-01T12:01:00Z',
+      complete: true,
     },
   ]
 

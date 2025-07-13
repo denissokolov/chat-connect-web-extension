@@ -10,6 +10,7 @@ import {
   addMessageContent,
   appendMessageTextContent,
   setMessageError,
+  setMessageComplete,
   updateMessageFunctionResult,
   saveMessageToRepository,
   updateMessageInRepository,
@@ -35,6 +36,7 @@ describe('messageSlice.utils', () => {
     content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
     createdAt: mockDate,
     threadId: 'test-thread-id',
+    complete: true,
   }
 
   const mockAssistantMessage: Message = {
@@ -43,6 +45,7 @@ describe('messageSlice.utils', () => {
     content: [{ type: MessageContentType.OutputText, text: 'Hi there', id: 'content-2' }],
     createdAt: mockDate,
     threadId: 'test-thread-id',
+    complete: true,
   }
 
   const mockMessages: StoreMessages = {
@@ -228,6 +231,7 @@ describe('messageSlice.utils', () => {
         ],
         createdAt: mockDate,
         threadId: 'test-thread-id',
+        complete: true,
       }
 
       const messagesWithFunction: StoreMessages = {
@@ -423,6 +427,7 @@ describe('messageSlice.utils', () => {
       ],
       createdAt: mockDate,
       threadId: 'test-thread-id',
+      complete: true,
     }
 
     const mockMessagesWithFunctionCall: StoreMessages = {
@@ -619,6 +624,7 @@ describe('messageSlice.utils', () => {
         ],
         createdAt: mockDate,
         threadId: 'test-thread-id',
+        complete: true,
       }
 
       const messagesWithMultipleFunctionCalls: StoreMessages = {
@@ -682,6 +688,117 @@ describe('messageSlice.utils', () => {
       expect(result.list[0]).not.toBe(mockMessageWithFunctionCall)
       expect(result.list[0].content).not.toBe(mockMessageWithFunctionCall.content)
       expect(result.list[0].content[0]).not.toBe(mockMessageWithFunctionCall.content[0])
+    })
+  })
+
+  describe('setMessageComplete', () => {
+    it('should set message complete to true for existing message', () => {
+      const incompleteMessage: Message = {
+        ...mockMessage,
+        complete: false,
+      }
+
+      const messagesWithIncompleteMessage: StoreMessages = {
+        list: [incompleteMessage],
+        loading: false,
+        error: null,
+        ready: true,
+      }
+
+      const result = setMessageComplete(messagesWithIncompleteMessage, 'test-message-id')
+
+      expect(result.list[0].complete).toBe(true)
+      expect(result.list[0]).toEqual({
+        ...incompleteMessage,
+        complete: true,
+      })
+    })
+
+    it('should handle non-existent message ID', () => {
+      const result = setMessageComplete(mockMessages, 'non-existent-id')
+
+      expect(result.list[0].complete).toBe(true)
+      expect(result.list[0]).toEqual(mockMessage)
+    })
+
+    it('should not modify other messages', () => {
+      const incompleteMessage: Message = {
+        ...mockMessage,
+        id: 'incomplete-message-id',
+        complete: false,
+      }
+
+      const messagesWithMultiple: StoreMessages = {
+        list: [mockMessage, incompleteMessage],
+        loading: false,
+        error: null,
+        ready: true,
+      }
+
+      const result = setMessageComplete(messagesWithMultiple, 'incomplete-message-id')
+
+      expect(result.list[0].complete).toBe(true)
+      expect(result.list[0]).toBe(mockMessage)
+      expect(result.list[1].complete).toBe(true)
+      expect(result.list[1]).toEqual({
+        ...incompleteMessage,
+        complete: true,
+      })
+    })
+
+    it('should work with messages that are already complete', () => {
+      const result = setMessageComplete(mockMessages, 'test-message-id')
+
+      expect(result.list[0].complete).toBe(true)
+      expect(result.list[0]).toEqual({
+        ...mockMessage,
+        complete: true,
+      })
+    })
+
+    it('should maintain immutability', () => {
+      const incompleteMessage: Message = {
+        ...mockMessage,
+        complete: false,
+      }
+
+      const messagesWithIncompleteMessage: StoreMessages = {
+        list: [incompleteMessage],
+        loading: false,
+        error: null,
+        ready: true,
+      }
+
+      const result = setMessageComplete(messagesWithIncompleteMessage, 'test-message-id')
+
+      expect(result).not.toBe(messagesWithIncompleteMessage)
+      expect(result.list).not.toBe(messagesWithIncompleteMessage.list)
+      expect(result.list[0]).not.toBe(incompleteMessage)
+    })
+
+    it('should preserve other message properties', () => {
+      const incompleteMessage: Message = {
+        ...mockMessage,
+        complete: false,
+        hasError: true,
+        error: 'Some error',
+      }
+
+      const messagesWithIncompleteMessage: StoreMessages = {
+        list: [incompleteMessage],
+        loading: false,
+        error: null,
+        ready: true,
+      }
+
+      const result = setMessageComplete(messagesWithIncompleteMessage, 'test-message-id')
+
+      expect(result.list[0]).toEqual({
+        ...incompleteMessage,
+        complete: true,
+      })
+      expect(result.list[0].hasError).toBe(true)
+      expect(result.list[0].error).toBe('Some error')
     })
   })
 

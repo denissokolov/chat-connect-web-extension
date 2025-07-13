@@ -78,6 +78,7 @@ export type Message = {
   hasError?: boolean
   threadId: string
   context?: MessageContext
+  complete: boolean
 }
 
 export interface PageContext {

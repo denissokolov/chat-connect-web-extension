@@ -64,6 +64,7 @@ export type MessageSlice = {
     assistantMessageId?: string | undefined,
   ) => void
   handleMessageEvent: (event: ProviderMessageEvent) => void
+  sendFunctionResults: (message: Message) => Promise<void>
 }
 
 export type ChatStore = ThreadSlice & ProviderSlice & ModelSlice & ViewSlice & MessageSlice

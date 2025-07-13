@@ -23,6 +23,7 @@ const messages: Message[] = [
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
   {
     id: '2',
@@ -36,6 +37,7 @@ const messages: Message[] = [
     role: MessageRole.Assistant,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
   {
     id: '3',
@@ -45,6 +47,7 @@ const messages: Message[] = [
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
   {
     id: '4',
@@ -58,6 +61,7 @@ const messages: Message[] = [
     role: MessageRole.Assistant,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
   {
     id: '5',
@@ -65,6 +69,7 @@ const messages: Message[] = [
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
   {
     id: '6',
@@ -72,6 +77,7 @@ const messages: Message[] = [
     role: MessageRole.Assistant,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
   {
     id: '7',
@@ -85,6 +91,7 @@ const messages: Message[] = [
     role: MessageRole.User,
     createdAt: DateTime.now().toISO(),
     threadId: '1',
+    complete: true,
   },
 ]
 
@@ -234,6 +241,7 @@ export const WithError: Story = {
                 error:
                   '401 Incorrect API key provided: 123. You can find your API key at https://platform.openai.com/account/api-keys.',
                 threadId: '1',
+                complete: true,
               },
             ],
             loading: false,
@@ -278,6 +286,7 @@ export const WithFunctionCall: Story = {
                   favicon:
                     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABeUlEQVR4nGJZbsDCAAOr5pbC2XObVsDZPtu3wNl1KwPhbMtrt+DsQ5cmw9mn0j3gbCYGGoOhbwFLm5UunLOaTw7Oznd0h7PvbCuAsxXEdeDsHZeN4ewHhy3hbFZ3hJlDP4hoHwc8zGfgHMEVaXC2lm01nL27VwLO/ta/Cc7++e4rnK3vtQbO9n60Ds4e+kFEcwsYxdd8hHOuzUCUOe8a7sHZ9z9MgbNvlO2Gs3Mmn4Cz//jIwNkbr2+As4d+ENE+DsqyOeAcnvPNcPYT1i9w9t3IJ3B249IEOFuTBaE39hIif3zMmgVnD/0gon0cfJJKgnN083jg7NcMLXB2/9QGOLuEvQKhuW8vnN387Tmc/djkJ5w99IOI9vWB1Zv5cA7b56twtl5HJ5zdVI4Ia5e1UnD2z3sz4WyxAwfh7KsvTOHsoR9EtM8HTUGJcI5u1Fk4+17+Zjh7aq8WnL0+8Byc3fNPGc4+7bMfzj5q/B7OHvpBRHMLAAEAAP//zHllDdnL2AgAAAAASUVORK5CYII=',
                 },
+                complete: true,
               },
               {
                 id: '2',
@@ -375,6 +384,7 @@ export const WithFunctionCall: Story = {
                 role: MessageRole.Assistant,
                 createdAt: DateTime.now().toISO(),
                 threadId: '1',
+                complete: true,
               },
             ],
             loading: false,

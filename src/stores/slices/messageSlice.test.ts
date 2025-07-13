@@ -130,6 +130,7 @@ describe('messageSlice', () => {
         createdAt: mockDate.toISO(),
         threadId: 'test-thread-id',
         context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
+        complete: true,
       })
       expect(state.messages.list[1]).toEqual({
         id: 'assistant-msg-id',
@@ -137,6 +138,7 @@ describe('messageSlice', () => {
         content: [{ type: MessageContentType.OutputText, text: 'Test response', id: 'content-1' }],
         createdAt: mockDate.toISO(),
         threadId: 'test-thread-id',
+        complete: true,
       })
 
       expect(state.waitingForReply).toBe(false)
@@ -196,6 +198,7 @@ describe('messageSlice', () => {
           content: [{ type: MessageContentType.OutputText, text: 'Previous message', id: '1' }],
           createdAt: DateTime.now().toISO(),
           threadId: 'test-thread-id',
+          complete: true,
         },
       ]
 
@@ -434,6 +437,7 @@ describe('messageSlice', () => {
           content: [{ type: MessageContentType.OutputText, text: 'Previous message', id: '1' }],
           createdAt: DateTime.now().toISO(),
           threadId: 'test-thread-id',
+          complete: true,
         },
       ]
 
@@ -499,27 +503,91 @@ describe('messageSlice', () => {
       })
     })
 
-    it('should throw error when assistant is not initialized', async () => {
+    it('should handle missing assistant gracefully when message is incomplete', async () => {
       useChatStore.setState({ assistant: null })
+
+      const messageWithIncompleteCall: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Pending,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: false,
+      }
+
+      useChatStore.setState({
+        messages: { list: [messageWithIncompleteCall], loading: false, error: null, ready: true },
+      })
 
       const { saveFunctionResult } = useChatStore.getState()
 
-      await expect(saveFunctionResult('message-id', 'call-id', { success: true })).rejects.toThrow(
-        'Assistant not initialized',
-      )
+      await saveFunctionResult('test-message-id', 'call-1', { success: true })
+
+      const state = useChatStore.getState()
+      const functionCall = state.messages.list[0].content[0] as {
+        status: FunctionStatus
+        result: FunctionCallResult
+      }
+      expect(functionCall.status).toBe(FunctionStatus.Success)
+      expect(functionCall.result).toEqual({ success: true })
     })
 
-    it('should throw error when model is not set', async () => {
+    it('should handle missing model gracefully when message is incomplete', async () => {
       useChatStore.setState({
         assistant: mockAssistant,
         model: null as unknown as AIModel,
       })
 
+      const messageWithIncompleteCall: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Pending,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: false,
+      }
+
+      useChatStore.setState({
+        messages: { list: [messageWithIncompleteCall], loading: false, error: null, ready: true },
+      })
+
       const { saveFunctionResult } = useChatStore.getState()
 
-      await expect(saveFunctionResult('message-id', 'call-id', { success: true })).rejects.toThrow(
-        'Assistant not initialized',
-      )
+      await saveFunctionResult('test-message-id', 'call-1', { success: true })
+
+      const state = useChatStore.getState()
+      const functionCall = state.messages.list[0].content[0] as {
+        status: FunctionStatus
+        result: FunctionCallResult
+      }
+      expect(functionCall.status).toBe(FunctionStatus.Success)
+      expect(functionCall.result).toEqual({ success: true })
     })
 
     it('should update function call result and not call assistant when other calls are pending', async () => {
@@ -552,6 +620,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -596,6 +665,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -644,6 +714,7 @@ describe('messageSlice', () => {
           { type: MessageContentType.OutputText, text: 'Function completed', id: 'content-1' },
         ],
         createdAt: expect.any(String),
+        complete: true,
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
@@ -683,6 +754,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -757,6 +829,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       const error = new Error('Assistant error')
@@ -797,6 +870,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -843,6 +917,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -897,6 +972,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -978,6 +1054,7 @@ describe('messageSlice', () => {
           },
         ],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -1019,6 +1096,258 @@ describe('messageSlice', () => {
       expect(functionCall.status).toBe(FunctionStatus.Success)
       expect(functionCall.result).toEqual({ success: true })
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalled()
+    })
+  })
+
+  describe('sendFunctionResults', () => {
+    beforeEach(() => {
+      useChatStore.setState({
+        assistant: mockAssistant,
+        model: AIModel.OpenAI_ChatGPT_4o,
+        threadId: 'test-thread-id',
+      })
+    })
+
+    it('should throw error when assistant is not initialized', async () => {
+      useChatStore.setState({ assistant: null })
+
+      const mockMessage: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Success,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+            result: { success: true },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: true,
+      }
+
+      const { sendFunctionResults } = useChatStore.getState()
+
+      await expect(sendFunctionResults(mockMessage)).rejects.toThrow('Assistant not initialized')
+    })
+
+    it('should throw error when model is not set', async () => {
+      useChatStore.setState({
+        assistant: mockAssistant,
+        model: null as unknown as AIModel,
+      })
+
+      const mockMessage: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Success,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+            result: { success: true },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: true,
+      }
+
+      const { sendFunctionResults } = useChatStore.getState()
+
+      await expect(sendFunctionResults(mockMessage)).rejects.toThrow('Assistant not initialized')
+    })
+
+    it('should send function results to assistant and handle response', async () => {
+      const mockMessage: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Success,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+            result: { success: true },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: true,
+      }
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.OutputTextDelta,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+          contentId: 'content-1',
+          textDelta: 'Function completed successfully',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+        })
+      })
+
+      const { sendFunctionResults } = useChatStore.getState()
+
+      await sendFunctionResults(mockMessage)
+
+      const state = useChatStore.getState()
+      expect(state.messages.list).toHaveLength(1)
+      expect(state.messages.list[0]).toEqual({
+        id: 'response-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            type: MessageContentType.OutputText,
+            text: 'Function completed successfully',
+            id: 'content-1',
+          },
+        ],
+        createdAt: expect.any(String),
+        complete: true,
+      })
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+      expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
+        model: AIModel.OpenAI_ChatGPT_4o,
+        message: mockMessage,
+        eventHandler: expect.any(Function),
+      })
+    })
+
+    it('should set waiting states correctly during function result sending', async () => {
+      let resolvePromise: () => void
+      const promise = new Promise<void>(resolve => {
+        resolvePromise = resolve
+      })
+
+      const mockMessage: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Success,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+            result: { success: true },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: true,
+      }
+
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(
+        async ({ eventHandler }) => {
+          await promise
+          eventHandler({
+            type: ProviderMessageEventType.Created,
+            messageId: 'response-id',
+            threadId: 'test-thread-id',
+          })
+          eventHandler({
+            type: ProviderMessageEventType.Completed,
+            messageId: 'response-id',
+            userMessageId: 'test-message-id',
+            threadId: 'test-thread-id',
+          })
+        },
+      )
+
+      const { sendFunctionResults } = useChatStore.getState()
+
+      const sendPromise = sendFunctionResults(mockMessage)
+
+      // Check that waiting states are set correctly
+      expect(useChatStore.getState().waitingForReply).toBe(true)
+      expect(useChatStore.getState().waitingForTools).toBe(false)
+      expect(useChatStore.getState().messageAbortController).not.toBe(null)
+
+      resolvePromise!()
+      await sendPromise
+
+      expect(useChatStore.getState().waitingForReply).toBe(false)
+      expect(useChatStore.getState().messageAbortController).toBe(null)
+    })
+
+    it('should handle sendFunctionCallResponse error', async () => {
+      const mockMessage: Message = {
+        id: 'test-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Success,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+            result: { success: true },
+          },
+        ],
+        createdAt: DateTime.now().toISO(),
+        complete: true,
+      }
+
+      const error = new Error('Function response error')
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockRejectedValue(error)
+
+      const { sendFunctionResults } = useChatStore.getState()
+
+      await sendFunctionResults(mockMessage)
+
+      // The error should be handled by handleMessageError
+      expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
+        model: AIModel.OpenAI_ChatGPT_4o,
+        message: mockMessage,
+        eventHandler: expect.any(Function),
+      })
     })
   })
 
@@ -1086,6 +1415,7 @@ describe('messageSlice', () => {
       role: MessageRole.User,
       content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
       createdAt: DateTime.now().toISO() || '',
+      complete: true,
     }
 
     beforeEach(() => {
@@ -1118,6 +1448,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: [{ type: MessageContentType.OutputText, text: 'Response', id: 'content-2' }],
         createdAt: DateTime.now().toISO(),
+        complete: true,
       }
 
       useChatStore.setState({
@@ -1225,6 +1556,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: [],
         createdAt: mockDate.toISO(),
+        complete: false,
       })
     })
 
@@ -1238,6 +1570,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
         createdAt: mockDate,
+        complete: true,
       }
 
       useChatStore.setState({
@@ -1272,6 +1605,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: [],
         createdAt: mockDate,
+        complete: true,
       }
 
       useChatStore.setState({
@@ -1315,6 +1649,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
         createdAt: mockDate,
+        complete: true,
       }
 
       useChatStore.setState({
@@ -1339,6 +1674,79 @@ describe('messageSlice', () => {
       expect(state.waitingForReply).toBe(false)
       expect(state.messageAbortController).toBe(null)
       expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
+    })
+
+    it('should handle Completed event and call sendFunctionResults when message has completed functions', async () => {
+      const mockDate = '2024-01-01T12:00:00Z'
+      vi.setSystemTime(new Date(mockDate))
+
+      const existingMessage: Message = {
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            type: MessageContentType.FunctionCall,
+            id: 'call-1',
+            name: FunctionName.FillInput,
+            status: FunctionStatus.Success,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#input',
+              label_value: 'Test Input',
+            },
+            result: { success: true },
+          },
+        ],
+        createdAt: mockDate,
+        complete: true,
+      }
+
+      useChatStore.setState({
+        messages: { list: [existingMessage], loading: false, error: null, ready: true },
+        waitingForReply: true,
+        messageAbortController: new AbortController(),
+        assistant: mockAssistant,
+        model: AIModel.OpenAI_ChatGPT_4o,
+      })
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'assistant-message-id',
+          threadId: 'test-thread-id',
+        })
+      })
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Completed,
+        messageId: 'assistant-message-id',
+        userMessageId: 'user-message-id',
+        threadId: 'test-thread-id',
+      })
+
+      // Wait for async operations to complete
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      const state = useChatStore.getState()
+      expect(state.waitingForReply).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+      expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
+      expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
+        model: AIModel.OpenAI_ChatGPT_4o,
+        message: existingMessage,
+        eventHandler: expect.any(Function),
+      })
     })
 
     it('should handle Completed event when message not found', () => {
@@ -1417,6 +1825,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: fallbackContent,
         createdAt: mockDate.toISO(),
+        complete: true,
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
@@ -1452,6 +1861,7 @@ describe('messageSlice', () => {
         role: MessageRole.Assistant,
         content: fallbackContent,
         createdAt: mockDate.toISO(),
+        complete: true,
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(true)

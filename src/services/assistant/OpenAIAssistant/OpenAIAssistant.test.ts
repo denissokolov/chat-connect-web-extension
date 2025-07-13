@@ -101,6 +101,7 @@ describe('OpenAIAssistant', () => {
             { id: 'test-content-id', type: MessageContentType.OutputText, text: 'Test message' },
           ],
           createdAt: new Date().toISOString(),
+          complete: true,
         },
         eventHandler,
       })
@@ -240,6 +241,7 @@ describe('OpenAIAssistant', () => {
             { id: 'test-content-id-2', type: MessageContentType.OutputText, text: 'Test message' },
           ],
           createdAt: new Date().toISOString(),
+          complete: true,
         },
         eventHandler,
       })
@@ -311,6 +313,7 @@ describe('OpenAIAssistant', () => {
             { id: 'test-content-id-3', type: MessageContentType.OutputText, text: 'Test message' },
           ],
           createdAt: new Date().toISOString(),
+          complete: true,
         },
         eventHandler,
       })

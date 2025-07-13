@@ -12,6 +12,7 @@ export function createAssistantMessage(
   messageId: string,
   threadId: string,
   content: MessageContent[],
+  complete: boolean,
 ): Message {
   return {
     id: messageId,
@@ -19,6 +20,7 @@ export function createAssistantMessage(
     content: content,
     createdAt: DateTime.now().toISO(),
     threadId,
+    complete,
   }
 }
 
@@ -29,6 +31,7 @@ export function createEmptyAssistantMessage(responseId: string, threadId: string
     content: [],
     createdAt: DateTime.now().toISO(),
     threadId,
+    complete: false,
   }
 }
 
@@ -52,6 +55,7 @@ export function createUserMessage(
           url: pageContext?.url || undefined,
         }
       : undefined,
+    complete: true,
   }
 }
 
@@ -86,11 +90,17 @@ export function getLastAssistantMessageId(messages: ReadonlyArray<Message>): str
   return undefined
 }
 
-export function isMessageFunctionsCompleted(message: Message): boolean {
-  return message.content.every(
-    content =>
-      content.type !== MessageContentType.FunctionCall ||
-      content.status === FunctionStatus.Success ||
-      content.status === FunctionStatus.Error,
-  )
+export function areMessageFunctionsComplete(message: Message): boolean {
+  let hasFunction = false
+
+  for (const content of message.content) {
+    if (content.type === MessageContentType.FunctionCall) {
+      hasFunction = true
+      if (content.status !== FunctionStatus.Success && content.status !== FunctionStatus.Error) {
+        return false
+      }
+    }
+  }
+
+  return hasFunction
 }

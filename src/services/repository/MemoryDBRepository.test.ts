@@ -33,6 +33,7 @@ describe('MemoryDBRepository', () => {
     content: [{ type: MessageContentType.OutputText, text: 'Hello world', id: '1' }],
     createdAt: '2024-01-01T10:30:00Z',
     threadId: 'thread-1',
+    complete: true,
   }
 
   const mockMessage2: Message = {
@@ -41,6 +42,7 @@ describe('MemoryDBRepository', () => {
     content: [{ type: MessageContentType.OutputText, text: 'Hello there!', id: '2' }],
     createdAt: '2024-01-01T10:31:00Z',
     threadId: 'thread-1',
+    complete: true,
   }
 
   const mockMessage3: Message = {
@@ -49,6 +51,7 @@ describe('MemoryDBRepository', () => {
     content: [{ type: MessageContentType.OutputText, text: 'How are you?', id: '3' }],
     createdAt: '2024-01-01T11:30:00Z',
     threadId: 'thread-2',
+    complete: true,
   }
 
   beforeEach(async () => {
@@ -379,6 +382,7 @@ describe('MemoryDBRepository', () => {
         content: [{ id: '555', type: MessageContentType.OutputText, text: 'Replacement content' }],
         createdAt: '2024-01-01T12:00:00Z',
         threadId: 'thread-1',
+        complete: true,
       }
 
       await repository.createMessage(replacementMessage)
@@ -510,6 +514,7 @@ describe('MemoryDBRepository', () => {
         content: [{ id: '999', type: MessageContentType.OutputText, text: 'New message' }],
         createdAt: '2024-01-01T15:00:00Z',
         threadId: 'thread-1',
+        complete: true,
       }
 
       await repository.updateMessage(nonExistentMessage)

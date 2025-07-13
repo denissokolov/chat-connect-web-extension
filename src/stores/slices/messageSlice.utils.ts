@@ -100,6 +100,13 @@ export function setMessageError(
   }
 }
 
+export function setMessageComplete(messages: StoreMessages, messageId: string): StoreMessages {
+  return {
+    ...messages,
+    list: messages.list.map(msg => (msg.id === messageId ? { ...msg, complete: true } : msg)),
+  }
+}
+
 export function updateMessageFunctionResult(
   messages: StoreMessages,
   messageId: string,

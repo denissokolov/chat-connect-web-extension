@@ -4,13 +4,13 @@ import type { MessageSlice, ChatStore } from '@/stores/useChatStore.types'
 import browser from '@/services/browser'
 import { logError } from '@/utils/log'
 import { getStringError } from '@/utils/error'
-import { type PageContext, type FunctionCallResult } from '@/types/types'
+import { type PageContext, type FunctionCallResult, type Message } from '@/types/types'
 import { getBasicInstructions } from '@/utils/instructions'
 import {
   createAssistantMessage,
   createEmptyAssistantMessage,
   createUserMessage,
-  isMessageFunctionsCompleted,
+  areMessageFunctionsComplete,
 } from '@/utils/message'
 import { emptyMessages } from '@/utils/empty'
 import { ProviderMessageEventType, type ProviderMessageEvent } from '@/types/provider.types'
@@ -19,6 +19,7 @@ import {
   addMessageContent,
   appendMessageTextContent,
   saveMessageToRepository,
+  setMessageComplete,
   setMessageError,
   updateMessageFunctionResult,
   updateMessageInRepository,
@@ -85,10 +86,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }
   },
   saveFunctionResult: async (messageId: string, callId: string, result: FunctionCallResult) => {
-    const { assistant, model, threadId, messages, handleMessageEvent } = get()
-    if (!assistant || !model) {
-      throw new Error('Assistant not initialized')
-    }
+    const { messages, sendFunctionResults } = get()
 
     const updatedMessages = updateMessageFunctionResult(messages, messageId, callId, result)
 
@@ -97,22 +95,25 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       return
     }
 
-    const completed = isMessageFunctionsCompleted(message)
+    set({ messages: updatedMessages })
 
-    if (!completed) {
-      set({ messages: updatedMessages })
-      return
+    if (message.complete && areMessageFunctionsComplete(message)) {
+      await updateMessageInRepository(message)
+      await sendFunctionResults(message)
+    }
+  },
+  sendFunctionResults: async (message: Message) => {
+    const { assistant, model, threadId, handleMessageEvent } = get()
+    if (!assistant || !model) {
+      throw new Error('Assistant not initialized')
     }
 
     const abortController = new AbortController()
     set({
-      messages: updatedMessages,
       waitingForReply: true,
       waitingForTools: false,
       messageAbortController: abortController,
     })
-
-    await updateMessageInRepository(message)
 
     try {
       await assistant.sendFunctionCallResponse({
@@ -121,7 +122,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         eventHandler: handleMessageEvent,
       })
     } catch (error) {
-      get().handleMessageError(threadId, error, messageId)
+      get().handleMessageError(threadId, error, message.id)
     }
   },
   handleMessageError: (
@@ -143,7 +144,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }))
   },
   handleMessageEvent: (event: ProviderMessageEvent) => {
-    const { threadId, messages, handleMessageError } = get()
+    const { threadId, messages, handleMessageError, sendFunctionResults } = get()
 
     if (event.threadId !== threadId) {
       return
@@ -177,13 +178,18 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         break
 
       case ProviderMessageEventType.Completed: {
-        set(() => ({
+        set(state => ({
+          messages: setMessageComplete(state.messages, event.messageId),
           waitingForReply: false,
           messageAbortController: null,
         }))
+
         const message = messages.list.find(msg => msg.id === event.messageId)
         if (message) {
           saveMessageToRepository(message)
+          if (areMessageFunctionsComplete(message)) {
+            sendFunctionResults(message)
+          }
         }
         break
       }
@@ -197,6 +203,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
           event.messageId,
           event.threadId,
           event.content,
+          true,
         )
         set(state => ({
           messages: addMessage(state.messages, responseMessage),
