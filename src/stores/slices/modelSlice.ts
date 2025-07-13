@@ -1,7 +1,7 @@
 import { type StateCreator } from 'zustand'
 
 import type { ModelSlice, ChatStore } from '@/stores/useChatStore.types'
-import { AIModel } from '@/types/types'
+import { AIModel } from '@/types/provider.types'
 
 export const createModelSlice: StateCreator<ChatStore, [], [], ModelSlice> = set => ({
   model: AIModel.OpenAI_GPT_4_1,

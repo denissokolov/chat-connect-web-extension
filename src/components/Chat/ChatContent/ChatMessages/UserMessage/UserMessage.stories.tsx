@@ -131,29 +131,38 @@ export const WithError: Story = {
   args: {
     content: sampleTextContent,
     error: 'Failed to send message. Please check your connection and try again.',
+    hasError: true,
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    // Check that error message is displayed
     expect(canvas.getByText(/Failed to send message/)).toBeInTheDocument()
-
-    // Check that error icon is present
-    const errorIcon = canvasElement.querySelector('.text-destructive')
-    expect(errorIcon).toBeInTheDocument()
+    expect(canvas.queryByTitle('Message error')).toBeInTheDocument()
   },
 }
 
 export const ErrorOnly: Story = {
   args: {
     error: 'Message could not be sent due to network issues. Please try again later.',
+    hasError: true,
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    // Check that only error is displayed (no content)
     expect(canvas.getByText(/Message could not be sent/)).toBeInTheDocument()
     expect(canvas.queryByText('Hello!')).not.toBeInTheDocument()
+    expect(canvas.queryByTitle('Message error')).not.toBeInTheDocument()
+  },
+}
+
+export const WithEmptyError: Story = {
+  args: {
+    content: sampleTextContent,
+    hasError: true,
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.queryByTitle('Message error')).toBeInTheDocument()
   },
 }
 

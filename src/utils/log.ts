@@ -12,6 +12,16 @@ export function logError(message: string, error?: unknown) {
   }
 }
 
+export function logWarning(message: string, data?: unknown) {
+  if (!isTestEnv()) {
+    if (data) {
+      console.warn(message, data)
+    } else {
+      console.warn(message)
+    }
+  }
+}
+
 export function logDebug(message: string, data?: unknown) {
   if (isDevEnv()) {
     if (data) {

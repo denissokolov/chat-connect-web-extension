@@ -395,3 +395,31 @@ export const WithFunctionInProgress: Story = {
     expect(canvas.getByTitle('Executing...')).toBeInTheDocument()
   },
 }
+
+export const WithError: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.OutputText,
+        text: 'Hello! I can help you with various tasks. What would you like to know?',
+      },
+    ],
+    error: 'Failed to get the response from the server. Please try again later.',
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText(/Failed to get the response/)).toBeInTheDocument()
+  },
+}
+
+export const ErrorOnly: Story = {
+  args: {
+    content: [],
+    error: 'Failed to get the response from the server. Please try again later.',
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText(/Failed to get the response/)).toBeInTheDocument()
+  },
+}

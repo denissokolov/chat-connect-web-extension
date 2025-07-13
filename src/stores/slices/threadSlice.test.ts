@@ -1,15 +1,9 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
 
 import useChatStore from '@/stores/useChatStore'
-import {
-  ChatView,
-  MessageRole,
-  MessageContentType,
-  type Thread,
-  type Message,
-  AIModel,
-} from '@/types/types'
+import { ChatView, MessageRole, MessageContentType, type Thread, type Message } from '@/types/types'
 import { emptyMessages, emptyThreads } from '@/utils/empty'
+import { AIModel } from '@/types/provider.types'
 
 vi.mock('@/services/repository', () => ({
   default: {

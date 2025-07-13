@@ -6,8 +6,6 @@ import { type IAssistant } from '@/services/assistant'
 import browser from '@/services/browser'
 import repository from '@/services/repository'
 import {
-  AIModel,
-  AIProvider,
   MessageContentType,
   MessageRole,
   FunctionStatus,
@@ -15,7 +13,10 @@ import {
   type Message,
   type PageContext,
   type FunctionCallResult,
+  type MessageContent,
+  type FunctionCallContent,
 } from '@/types/types'
+import { AIModel, AIProvider, ProviderMessageEventType } from '@/types/provider.types'
 
 vi.mock('@/services/assistant', () => ({
   MockAssistant: vi.fn(),
@@ -42,21 +43,14 @@ vi.mock('@/services/repository', () => ({
 describe('messageSlice', () => {
   const mockAssistant: IAssistant = {
     getProvider: vi.fn().mockReturnValue(AIProvider.Mock),
-    sendMessage: vi.fn(),
-    sendFunctionCallResponse: vi.fn(),
+    sendMessage: vi.fn().mockResolvedValue(undefined),
+    sendFunctionCallResponse: vi.fn().mockResolvedValue(undefined),
   }
   const mockPageContext: PageContext = {
     title: 'Test Page',
     url: 'https://example.com',
     html: '<html><body>Test content</body></html>',
     favicon: 'test-favicon.ico',
-  }
-  const mockMessage: Message = {
-    threadId: 'test-thread-id',
-    id: 'test-message-id',
-    role: MessageRole.Assistant,
-    content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
-    createdAt: '2024-01-01T12:00:00Z',
   }
 
   beforeEach(() => {
@@ -100,14 +94,35 @@ describe('messageSlice', () => {
       const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
       vi.setSystemTime(mockDate.toJSDate())
       ;(browser.getPageContext as Mock).mockResolvedValue(mockPageContext)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        // Simulate assistant response events
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.OutputTextDelta,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+          contentId: 'content-1',
+          textDelta: 'Test response',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
       await sendMessage('Hello')
 
       const state = useChatStore.getState()
-      expect(state.messages.list).toHaveLength(2)
       expect(state.messages.list[0]).toEqual({
         id: expect.any(String),
         role: MessageRole.User,
@@ -117,9 +132,9 @@ describe('messageSlice', () => {
         context: { title: 'Test Page', favicon: 'test-favicon.ico', url: 'https://example.com' },
       })
       expect(state.messages.list[1]).toEqual({
-        id: expect.any(String),
+        id: 'assistant-msg-id',
         role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
+        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: 'content-1' }],
         createdAt: mockDate.toISO(),
         threadId: 'test-thread-id',
       })
@@ -127,16 +142,34 @@ describe('messageSlice', () => {
       expect(state.waitingForReply).toBe(false)
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
+        message: expect.objectContaining({
+          role: MessageRole.User,
+          content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
+          threadId: 'test-thread-id',
+        }),
+        eventHandler: expect.any(Function),
         instructions: expect.stringContaining('Test Page'),
-        text: 'Hello',
         history: [],
-        signal: expect.any(AbortSignal),
       })
     })
 
     it('should send message without page context when getPageContext returns null', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
@@ -144,10 +177,14 @@ describe('messageSlice', () => {
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
+        message: expect.objectContaining({
+          role: MessageRole.User,
+          content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
+          threadId: 'test-thread-id',
+        }),
+        eventHandler: expect.any(Function),
         instructions: undefined,
-        text: 'Hello',
         history: [],
-        signal: expect.any(AbortSignal),
       })
     })
 
@@ -166,7 +203,21 @@ describe('messageSlice', () => {
         messages: { list: existingMessages, loading: false, error: null, ready: true },
       })
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
@@ -174,10 +225,14 @@ describe('messageSlice', () => {
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
+        message: expect.objectContaining({
+          role: MessageRole.User,
+          content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
+          threadId: 'test-thread-id',
+        }),
+        eventHandler: expect.any(Function),
         instructions: undefined,
-        text: 'Hello',
         history: existingMessages,
-        signal: expect.any(AbortSignal),
       })
     })
 
@@ -197,13 +252,26 @@ describe('messageSlice', () => {
     })
 
     it('should set waitingForReply to true during message sending', async () => {
-      let resolvePromise: (value: Message) => void
-      const promise = new Promise<Message>(resolve => {
+      let resolvePromise: () => void
+      const promise = new Promise<void>(resolve => {
         resolvePromise = resolve
       })
 
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockReturnValue(promise)
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(async ({ eventHandler }) => {
+        await promise
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
@@ -214,7 +282,7 @@ describe('messageSlice', () => {
 
       expect(useChatStore.getState().waitingForReply).toBe(true)
 
-      resolvePromise!(mockMessage)
+      resolvePromise!()
       await sendPromise
 
       expect(useChatStore.getState().waitingForReply).toBe(false)
@@ -222,7 +290,21 @@ describe('messageSlice', () => {
 
     it('should handle empty message string', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
@@ -230,17 +312,20 @@ describe('messageSlice', () => {
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
+        message: expect.objectContaining({
+          role: MessageRole.User,
+          content: [{ type: MessageContentType.OutputText, text: '', id: expect.any(String) }],
+          threadId: 'test-thread-id',
+        }),
+        eventHandler: expect.any(Function),
         instructions: undefined,
-        text: '',
         history: [],
-        signal: expect.any(AbortSignal),
       })
     })
 
     it('should handle browser.getPageContext error gracefully', async () => {
       const error = new Error('Page context error')
       ;(browser.getPageContext as Mock).mockRejectedValue(error)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
 
       const { sendMessage } = useChatStore.getState()
 
@@ -250,23 +335,56 @@ describe('messageSlice', () => {
       expect(state.messages.list).toHaveLength(1)
       expect(state.messages.list[0].error).toBe('Page context error')
       expect(state.waitingForReply).toBe(false)
+      expect(mockAssistant.sendMessage).not.toHaveBeenCalled()
     })
 
     it('should create message in repository after successful send', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.OutputTextDelta,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+          contentId: 'content-1',
+          textDelta: 'Test response',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
       await sendMessage('Hello')
 
-      expect(repository.createMessage).toHaveBeenCalledWith({
-        id: expect.any(String),
-        role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
-        createdAt: expect.any(String),
-        threadId: 'test-thread-id',
-      })
+      expect(repository.createMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: MessageRole.User,
+          content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
+          threadId: 'test-thread-id',
+        }),
+      )
+
+      expect(repository.createMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'assistant-msg-id',
+          role: MessageRole.Assistant,
+          content: [
+            { type: MessageContentType.OutputText, text: 'Test response', id: 'content-1' },
+          ],
+          threadId: 'test-thread-id',
+        }),
+      )
     })
 
     it('should create thread in repository for first message', async () => {
@@ -277,7 +395,21 @@ describe('messageSlice', () => {
         messages: { list: [], loading: false, error: null, ready: true },
       }) // Ensure empty messages
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
@@ -309,7 +441,21 @@ describe('messageSlice', () => {
         messages: { list: existingMessages, loading: false, error: null, ready: true },
       })
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue(mockMessage)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { sendMessage } = useChatStore.getState()
 
@@ -324,9 +470,17 @@ describe('messageSlice', () => {
 
     it('should set waitingForTools to true when response has tools', async () => {
       ;(browser.getPageContext as Mock).mockResolvedValue(null)
-      ;(mockAssistant.sendMessage as Mock).mockResolvedValue({
-        ...mockMessage,
-        hasTools: true,
+
+      // Mock assistant to simulate event flow with tools
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Fallback,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+          content: [{ type: MessageContentType.OutputText, text: 'Test response', id: '1' }],
+          hasTools: true,
+        })
       })
 
       const { sendMessage } = useChatStore.getState()
@@ -444,20 +598,30 @@ describe('messageSlice', () => {
         createdAt: DateTime.now().toISO(),
       }
 
-      const mockResponse: Message = {
-        id: 'response-id',
-        threadId: 'test-thread-id',
-        role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Function completed', id: '1' }],
-        createdAt: DateTime.now().toISO(),
-      }
-
       useChatStore.setState({
         messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
-      ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue({
-        ...mockResponse,
-        hasTools: false,
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.OutputTextDelta,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+          contentId: 'content-1',
+          textDelta: 'Function completed',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+        })
       })
 
       const { saveFunctionResult } = useChatStore.getState()
@@ -473,10 +637,12 @@ describe('messageSlice', () => {
       expect(functionCall.status).toBe(FunctionStatus.Success)
       expect(functionCall.result).toEqual({ success: true })
       expect(state.messages.list[1]).toEqual({
-        id: expect.any(String),
+        id: 'response-id',
         threadId: 'test-thread-id',
         role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Function completed', id: '1' }],
+        content: [
+          { type: MessageContentType.OutputText, text: 'Function completed', id: 'content-1' },
+        ],
         createdAt: expect.any(String),
       })
       expect(state.waitingForReply).toBe(false)
@@ -493,6 +659,7 @@ describe('messageSlice', () => {
             },
           ],
         },
+        eventHandler: expect.any(Function),
       })
     })
 
@@ -518,18 +685,31 @@ describe('messageSlice', () => {
         createdAt: DateTime.now().toISO(),
       }
 
-      const mockResponse: Message = {
-        id: 'response-id',
-        threadId: 'test-thread-id',
-        role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Function failed', id: '1' }],
-        createdAt: DateTime.now().toISO(),
-      }
-
       useChatStore.setState({
         messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
-      ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue(mockResponse)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.OutputTextDelta,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+          contentId: 'content-1',
+          textDelta: 'Function failed',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { saveFunctionResult } = useChatStore.getState()
 
@@ -619,20 +799,20 @@ describe('messageSlice', () => {
         createdAt: DateTime.now().toISO(),
       }
 
-      const mockResponse: Message = {
-        id: 'response-id',
-        threadId: 'test-thread-id',
-        role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Function completed', id: '1' }],
-        createdAt: DateTime.now().toISO(),
-      }
-
       useChatStore.setState({
         messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
-      ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue({
-        ...mockResponse,
-        hasTools: true,
+
+      // Mock assistant to simulate event flow with tools
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Fallback,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+          content: [{ type: MessageContentType.OutputText, text: 'Function completed', id: '1' }],
+          hasTools: true,
+        })
       })
 
       const { saveFunctionResult } = useChatStore.getState()
@@ -665,22 +845,28 @@ describe('messageSlice', () => {
         createdAt: DateTime.now().toISO(),
       }
 
-      const mockResponse: Message = {
-        id: 'response-id',
-        threadId: 'test-thread-id',
-        role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Function completed', id: '1' }],
-        createdAt: DateTime.now().toISO(),
-      }
-
       useChatStore.setState({
         messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
         threadId: 'test-thread-id',
       })
-      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(() => {
+
+      // Mock assistant to simulate threadId change during execution
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
         // Simulate threadId change during execution
         useChatStore.setState({ threadId: 'different-thread-id' })
-        return Promise.resolve(mockResponse)
+
+        // Events for different threadId should be ignored
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+        })
       })
 
       const { saveFunctionResult } = useChatStore.getState()
@@ -713,18 +899,24 @@ describe('messageSlice', () => {
         createdAt: DateTime.now().toISO(),
       }
 
-      const mockResponse: Message = {
-        id: 'response-id',
-        threadId: 'test-thread-id',
-        role: MessageRole.Assistant,
-        content: [{ type: MessageContentType.OutputText, text: 'Function completed', id: '1' }],
-        createdAt: DateTime.now().toISO(),
-      }
-
       useChatStore.setState({
         messages: { list: [messageWithSingleCall], loading: false, error: null, ready: true },
       })
-      ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue(mockResponse)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { saveFunctionResult } = useChatStore.getState()
 
@@ -788,20 +980,31 @@ describe('messageSlice', () => {
         createdAt: DateTime.now().toISO(),
       }
 
-      const mockResponse: Message = {
-        id: 'response-id',
-        threadId: 'test-thread-id',
-        role: MessageRole.Assistant,
-        content: [
-          { type: MessageContentType.OutputText, text: 'All functions completed', id: '1' },
-        ],
-        createdAt: DateTime.now().toISO(),
-      }
-
       useChatStore.setState({
         messages: { list: [messageWithMultipleCalls], loading: false, error: null, ready: true },
       })
-      ;(mockAssistant.sendFunctionCallResponse as Mock).mockResolvedValue(mockResponse)
+
+      // Mock assistant to simulate event flow
+      ;(mockAssistant.sendFunctionCallResponse as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.OutputTextDelta,
+          messageId: 'response-id',
+          threadId: 'test-thread-id',
+          contentId: 'content-1',
+          textDelta: 'All functions completed',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'response-id',
+          userMessageId: 'test-message-id',
+          threadId: 'test-thread-id',
+        })
+      })
 
       const { saveFunctionResult } = useChatStore.getState()
 
@@ -816,6 +1019,444 @@ describe('messageSlice', () => {
       expect(functionCall.status).toBe(FunctionStatus.Success)
       expect(functionCall.result).toEqual({ success: true })
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalled()
+    })
+  })
+
+  describe('stopMessage', () => {
+    it('should abort message when abortController exists', () => {
+      const abortController = new AbortController()
+      const abortSpy = vi.spyOn(abortController, 'abort')
+
+      useChatStore.setState({
+        messageAbortController: abortController,
+        waitingForReply: true,
+        waitingForTools: true,
+      })
+
+      const { stopMessage } = useChatStore.getState()
+
+      stopMessage()
+
+      expect(abortSpy).toHaveBeenCalled()
+      const state = useChatStore.getState()
+      expect(state.messageAbortController).toBe(null)
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+    })
+
+    it('should reset waiting states when no abortController exists', () => {
+      useChatStore.setState({
+        messageAbortController: null,
+        waitingForReply: true,
+        waitingForTools: true,
+      })
+
+      const { stopMessage } = useChatStore.getState()
+
+      stopMessage()
+
+      const state = useChatStore.getState()
+      expect(state.messageAbortController).toBe(null)
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+    })
+
+    it('should handle undefined abortController gracefully', () => {
+      useChatStore.setState({
+        messageAbortController: undefined as unknown as AbortController,
+        waitingForReply: true,
+        waitingForTools: true,
+      })
+
+      const { stopMessage } = useChatStore.getState()
+
+      expect(() => stopMessage()).not.toThrow()
+
+      const state = useChatStore.getState()
+      expect(state.messageAbortController).toBe(null)
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+    })
+  })
+
+  describe('handleMessageError', () => {
+    const mockMessage: Message = {
+      id: 'user-message-id',
+      threadId: 'test-thread-id',
+      role: MessageRole.User,
+      content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
+      createdAt: DateTime.now().toISO() || '',
+    }
+
+    beforeEach(() => {
+      useChatStore.setState({
+        threadId: 'test-thread-id',
+        messages: { list: [mockMessage], loading: false, error: null, ready: true },
+        waitingForReply: true,
+        waitingForTools: true,
+        messageAbortController: new AbortController(),
+      })
+    })
+
+    it('should handle error and reset waiting states', () => {
+      const error = new Error('Test error')
+      const { handleMessageError } = useChatStore.getState()
+
+      handleMessageError('test-thread-id', error, 'user-message-id', undefined)
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].error).toBe('Test error')
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+    })
+
+    it('should handle error with assistant message ID', () => {
+      const assistantMessage: Message = {
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Response', id: 'content-2' }],
+        createdAt: DateTime.now().toISO(),
+      }
+
+      useChatStore.setState({
+        messages: {
+          list: [mockMessage, assistantMessage],
+          loading: false,
+          error: null,
+          ready: true,
+        },
+      })
+
+      const error = new Error('Assistant error')
+      const { handleMessageError } = useChatStore.getState()
+
+      handleMessageError('test-thread-id', error, 'user-message-id', 'assistant-message-id')
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[1].error).toBe('Assistant error')
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+    })
+
+    it('should return early if threadId does not match', () => {
+      const error = new Error('Test error')
+      const { handleMessageError } = useChatStore.getState()
+
+      handleMessageError('different-thread-id', error, 'user-message-id', undefined)
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].error).toBeUndefined()
+      expect(state.waitingForReply).toBe(true)
+      expect(state.waitingForTools).toBe(true)
+      expect(state.messageAbortController).not.toBe(null)
+    })
+
+    it('should handle string error', () => {
+      const error = 'String error message'
+      const { handleMessageError } = useChatStore.getState()
+
+      handleMessageError('test-thread-id', error, 'user-message-id', undefined)
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].error).toBe('String error message')
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+    })
+
+    it('should handle unknown error types', () => {
+      const error = { custom: 'error object' }
+      const { handleMessageError } = useChatStore.getState()
+
+      handleMessageError('test-thread-id', error, 'user-message-id', undefined)
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].error).toBe('Unknown error')
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+    })
+  })
+
+  describe('handleMessageEvent', () => {
+    beforeEach(() => {
+      useChatStore.setState({
+        threadId: 'test-thread-id',
+        messages: { list: [], loading: false, error: null, ready: true },
+        waitingForReply: false,
+        waitingForTools: false,
+        messageAbortController: null,
+      })
+    })
+
+    it('should return early if threadId does not match', () => {
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Created,
+        messageId: 'message-id',
+        threadId: 'different-thread-id',
+      })
+
+      const state = useChatStore.getState()
+      expect(state.messages.list).toHaveLength(0)
+    })
+
+    it('should handle Created event', () => {
+      const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDate.toJSDate())
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Created,
+        messageId: 'assistant-message-id',
+        threadId: 'test-thread-id',
+      })
+
+      const state = useChatStore.getState()
+      expect(state.messages.list).toHaveLength(1)
+      expect(state.messages.list[0]).toEqual({
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [],
+        createdAt: mockDate.toISO(),
+      })
+    })
+
+    it('should handle OutputTextDelta event', () => {
+      const mockDate = '2024-01-01T12:00:00Z'
+      vi.setSystemTime(new Date(mockDate))
+
+      const existingMessage: Message = {
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
+        createdAt: mockDate,
+      }
+
+      useChatStore.setState({
+        messages: { list: [existingMessage], loading: false, error: null, ready: true },
+      })
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.OutputTextDelta,
+        messageId: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        contentId: 'content-1',
+        textDelta: ' World',
+      })
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].content[0]).toEqual({
+        type: MessageContentType.OutputText,
+        text: 'Hello World',
+        id: 'content-1',
+      })
+    })
+
+    it('should handle FunctionCall event', () => {
+      const mockDate = '2024-01-01T12:00:00Z'
+      vi.setSystemTime(new Date(mockDate))
+
+      const existingMessage: Message = {
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [],
+        createdAt: mockDate,
+      }
+
+      useChatStore.setState({
+        messages: { list: [existingMessage], loading: false, error: null, ready: true },
+      })
+
+      const functionCallContent: FunctionCallContent = {
+        id: 'call-1',
+        type: MessageContentType.FunctionCall,
+        status: FunctionStatus.Idle,
+        name: FunctionName.FillInput,
+        arguments: {
+          input_type: 'text',
+          input_value: 'test',
+          input_selector: '#input',
+          label_value: 'Test Input',
+        },
+      }
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.FunctionCall,
+        messageId: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        content: functionCallContent,
+      })
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].content[0]).toEqual(functionCallContent)
+      expect(state.waitingForTools).toBe(true)
+    })
+
+    it('should handle Completed event', async () => {
+      const mockDate = '2024-01-01T12:00:00Z'
+      vi.setSystemTime(new Date(mockDate))
+
+      const existingMessage: Message = {
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [{ type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' }],
+        createdAt: mockDate,
+      }
+
+      useChatStore.setState({
+        messages: { list: [existingMessage], loading: false, error: null, ready: true },
+        waitingForReply: true,
+        messageAbortController: new AbortController(),
+      })
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Completed,
+        messageId: 'assistant-message-id',
+        userMessageId: 'user-message-id',
+        threadId: 'test-thread-id',
+      })
+
+      // Wait for async saveMessageToRepository to complete
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      const state = useChatStore.getState()
+      expect(state.waitingForReply).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+      expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
+    })
+
+    it('should handle Completed event when message not found', () => {
+      useChatStore.setState({
+        messages: { list: [], loading: false, error: null, ready: true },
+        waitingForReply: true,
+        messageAbortController: new AbortController(),
+      })
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Completed,
+        messageId: 'non-existent-message-id',
+        userMessageId: 'user-message-id',
+        threadId: 'test-thread-id',
+      })
+
+      const state = useChatStore.getState()
+      expect(state.waitingForReply).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+      expect(repository.createMessage).not.toHaveBeenCalled()
+    })
+
+    it('should handle Error event', () => {
+      const mockHandleMessageError = vi.fn()
+      useChatStore.setState({
+        handleMessageError: mockHandleMessageError,
+      })
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Error,
+        messageId: 'assistant-message-id',
+        userMessageId: 'user-message-id',
+        threadId: 'test-thread-id',
+        error: 'Test error',
+      })
+
+      expect(mockHandleMessageError).toHaveBeenCalledWith(
+        'test-thread-id',
+        'Test error',
+        'user-message-id',
+        'assistant-message-id',
+      )
+    })
+
+    it('should handle Fallback event without tools', async () => {
+      const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDate.toJSDate())
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      const fallbackContent: MessageContent[] = [
+        { type: MessageContentType.OutputText, text: 'Fallback response', id: 'content-1' },
+      ]
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Fallback,
+        messageId: 'assistant-message-id',
+        userMessageId: 'user-message-id',
+        threadId: 'test-thread-id',
+        content: fallbackContent,
+        hasTools: false,
+      })
+
+      // Wait for async saveMessageToRepository to complete
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      const state = useChatStore.getState()
+      expect(state.messages.list).toHaveLength(1)
+      expect(state.messages.list[0]).toEqual({
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: fallbackContent,
+        createdAt: mockDate.toISO(),
+      })
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(false)
+      expect(state.messageAbortController).toBe(null)
+      expect(repository.createMessage).toHaveBeenCalledWith(state.messages.list[0])
+    })
+
+    it('should handle Fallback event with tools', async () => {
+      const mockDate = DateTime.fromISO('2024-01-01T12:00:00Z')
+      vi.setSystemTime(mockDate.toJSDate())
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      const fallbackContent: MessageContent[] = []
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.Fallback,
+        messageId: 'assistant-message-id',
+        userMessageId: 'user-message-id',
+        threadId: 'test-thread-id',
+        content: fallbackContent,
+        hasTools: true,
+      })
+
+      // Wait for async saveMessageToRepository to complete
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      const state = useChatStore.getState()
+      expect(state.messages.list).toHaveLength(1)
+      expect(state.messages.list[0]).toMatchObject({
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: fallbackContent,
+        createdAt: mockDate.toISO(),
+      })
+      expect(state.waitingForReply).toBe(false)
+      expect(state.waitingForTools).toBe(true)
+      expect(state.messageAbortController).toBe(null)
+      expect(repository.createMessage).toHaveBeenCalledWith(state.messages.list[0])
     })
   })
 })

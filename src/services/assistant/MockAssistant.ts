@@ -1,10 +1,9 @@
+import { MessageContentType, type Message } from '@/types/types'
 import {
-  AIModel,
   AIProvider,
-  MessageContentType,
-  type Message,
-  type ProviderMessageResponse,
-} from '@/types/types'
+  type ProviderMessageEvent,
+  ProviderMessageEventType,
+} from '@/types/provider.types'
 
 import type { IAssistant } from './IAssistant'
 
@@ -16,43 +15,51 @@ export class MockAssistant implements IAssistant {
   }
 
   async sendMessage({
-    signal,
+    message,
+    eventHandler,
   }: {
-    model: AIModel
-    instructions?: string
-    text: string
-    history?: ReadonlyArray<Message>
-    signal?: AbortSignal
-  }): Promise<ProviderMessageResponse> {
-    // Simulate API delay
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(resolve, 1000)
-
-      if (signal) {
-        signal.addEventListener('abort', () => {
-          clearTimeout(timeout)
-          reject(new Error('Request aborted'))
-        })
-      }
+    message: Message
+    eventHandler: (event: ProviderMessageEvent) => void
+  }): Promise<void> {
+    eventHandler({
+      type: ProviderMessageEventType.Created,
+      messageId: 'mock-message-id',
+      threadId: message.threadId,
     })
 
-    return {
-      id: 'mock-message-id',
-      hasTools: false,
-      content: [
-        {
-          id: '1',
-          type: MessageContentType.OutputText,
-          text: 'Hello, how can I help you today?',
-        },
-      ],
-    }
+    // Simulate API delay
+    await new Promise(resolve => {
+      setTimeout(resolve, 200)
+    })
+
+    eventHandler({
+      type: ProviderMessageEventType.OutputTextDelta,
+      messageId: 'mock-message-id',
+      threadId: message.threadId,
+      contentId: '1',
+      textDelta: 'Hello, how can I help you today?',
+    })
+
+    eventHandler({
+      type: ProviderMessageEventType.Completed,
+      messageId: 'mock-message-id',
+      threadId: message.threadId,
+      userMessageId: message.id,
+    })
   }
 
-  sendFunctionCallResponse(): Promise<ProviderMessageResponse> {
-    return Promise.resolve({
-      id: 'mock-message-id',
-      hasTools: false,
+  sendFunctionCallResponse({
+    message,
+    eventHandler,
+  }: {
+    message: Message
+    eventHandler: (event: ProviderMessageEvent) => void
+  }): Promise<void> {
+    eventHandler({
+      type: ProviderMessageEventType.Fallback,
+      messageId: 'mock-message-id',
+      threadId: message.threadId,
+      userMessageId: message.id,
       content: [
         {
           id: '2',
@@ -60,6 +67,9 @@ export class MockAssistant implements IAssistant {
           text: 'Completed',
         },
       ],
+      hasTools: false,
     })
+
+    return Promise.resolve()
   }
 }

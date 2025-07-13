@@ -9,7 +9,7 @@ import {
   SelectValue,
   SelectSeparator,
 } from '@/components/ui/select'
-import { AIModel } from '@/types/types'
+import { AIModel } from '@/types/provider.types'
 import { getModelDisplayName } from '@/utils/provider'
 import useChatStore from '@/stores/useChatStore'
 import browser from '@/services/browser'

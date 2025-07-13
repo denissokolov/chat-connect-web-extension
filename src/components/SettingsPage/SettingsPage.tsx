@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AIProvider } from '@/types/types'
+import { AIProvider } from '@/types/provider.types'
 import { getTokenKey } from '@/utils/token'
 import browser from '@/services/browser'
 

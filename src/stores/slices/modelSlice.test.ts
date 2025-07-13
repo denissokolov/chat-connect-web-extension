@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import useChatStore from '@/stores/useChatStore'
-import { AIModel } from '@/types/types'
+import { AIModel } from '@/types/provider.types'
 
 describe('modelSlice', () => {
   beforeEach(() => {

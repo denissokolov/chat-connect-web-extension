@@ -8,7 +8,7 @@ import { getProviderByModel } from '@/utils/provider'
 import { logError } from '@/utils/log'
 import { getStringError } from '@/utils/error'
 import { getTokenKey } from '@/utils/token'
-import { AIProvider, AIModel } from '@/types/types'
+import { AIProvider, AIModel } from '@/types/provider.types'
 
 export const createProviderSlice: StateCreator<ChatStore, [], [], ProviderSlice> = (set, get) => ({
   provider: {

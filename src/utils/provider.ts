@@ -1,4 +1,4 @@
-import { AIModel, AIProvider } from '@/types/types'
+import { AIModel, AIProvider } from '@/types/provider.types'
 import { isStorybookEnv, isTestEnv } from './env'
 
 export const getProviderByModel = (model: AIModel): AIProvider => {

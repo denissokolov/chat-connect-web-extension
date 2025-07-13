@@ -1,5 +1,6 @@
 import type { IAssistant } from '@/services/assistant'
-import type { AIModel, ChatView, FunctionCallResult, Message, Thread } from '@/types/types'
+import type { ChatView, FunctionCallResult, Message, Thread } from '@/types/types'
+import type { AIModel, ProviderMessageEvent } from '@/types/provider.types'
 
 export type ThreadSlice = {
   threadId: string
@@ -37,13 +38,15 @@ export type ViewSlice = {
   setCurrentView: (view: ChatView) => void
 }
 
+export type StoreMessages = Readonly<{
+  list: ReadonlyArray<Message>
+  loading: boolean
+  error: string | null
+  ready: boolean
+}>
+
 export type MessageSlice = {
-  messages: {
-    list: ReadonlyArray<Message>
-    loading: boolean
-    error: string | null
-    ready: boolean
-  }
+  messages: StoreMessages
   sendMessage: (text: string) => Promise<void>
   stopMessage: () => void
   waitingForReply: boolean
@@ -54,7 +57,13 @@ export type MessageSlice = {
     callId: string,
     result: FunctionCallResult,
   ) => Promise<void>
-  handleMessageError: (messageId: string, threadId: string, error: unknown) => void
+  handleMessageError: (
+    threadId: string,
+    error: unknown,
+    userMessageId: string,
+    assistantMessageId?: string | undefined,
+  ) => void
+  handleMessageEvent: (event: ProviderMessageEvent) => void
 }
 
 export type ChatStore = ThreadSlice & ProviderSlice & ModelSlice & ViewSlice & MessageSlice

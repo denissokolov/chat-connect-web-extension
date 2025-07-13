@@ -1,22 +1,28 @@
 import { type StateCreator } from 'zustand'
-import { DateTime } from 'luxon'
 
 import type { MessageSlice, ChatStore } from '@/stores/useChatStore.types'
 import browser from '@/services/browser'
-import repository from '@/services/repository'
 import { logError } from '@/utils/log'
 import { getStringError } from '@/utils/error'
-import {
-  MessageRole,
-  MessageContentType,
-  type Message,
-  type PageContext,
-  type FunctionCallResult,
-  FunctionStatus,
-} from '@/types/types'
+import { type PageContext, type FunctionCallResult } from '@/types/types'
 import { getBasicInstructions } from '@/utils/instructions'
-import { createAssistantMessage, getFirstTextLine } from '@/utils/message'
+import {
+  createAssistantMessage,
+  createEmptyAssistantMessage,
+  createUserMessage,
+  isMessageFunctionsCompleted,
+} from '@/utils/message'
 import { emptyMessages } from '@/utils/empty'
+import { ProviderMessageEventType, type ProviderMessageEvent } from '@/types/provider.types'
+import {
+  addMessage,
+  addMessageContent,
+  appendMessageTextContent,
+  saveMessageToRepository,
+  setMessageError,
+  updateMessageFunctionResult,
+  updateMessageInRepository,
+} from './messageSlice.utils'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
   messages: {
@@ -36,7 +42,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     set({ messageAbortController: null, waitingForReply: false, waitingForTools: false })
   },
   sendMessage: async (text: string) => {
-    const { assistant, model, messages, threadId } = get()
+    const { assistant, model, messages, threadId, handleMessageEvent } = get()
     if (!assistant || !model) {
       throw new Error('Assistant not initialized')
     }
@@ -50,182 +56,157 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       pageContextError = getStringError(error)
     }
 
-    const newMessage: Message = {
-      id: crypto.randomUUID(),
-      role: MessageRole.User,
-      content: [{ type: MessageContentType.OutputText, text, id: crypto.randomUUID() }],
-      createdAt: DateTime.now().toISO(),
-      threadId,
-      error: pageContextError,
-      context: pageContext?.title
-        ? {
-            title: pageContext?.title,
-            favicon: pageContext?.favicon || undefined,
-            url: pageContext?.url || undefined,
-          }
-        : undefined,
-    }
+    const newMessage = createUserMessage(threadId, text, pageContext, pageContextError)
 
     const abortController = new AbortController()
 
     set(state => ({
-      messages: {
-        ...state.messages,
-        list: [...state.messages.list, newMessage],
-      },
+      messages: addMessage(state.messages, newMessage),
       waitingForReply: !pageContextError,
-      messageAbortController: abortController,
+      messageAbortController: pageContextError ? null : abortController,
     }))
-
-    await repository.createMessage(newMessage)
-    if (messages.list.length === 0) {
-      const title =
-        getFirstTextLine(newMessage, 150) || DateTime.now().toLocaleString(DateTime.DATETIME_MED)
-      await repository.createThread({
-        id: threadId,
-        title,
-        createdAt: newMessage.createdAt,
-        updatedAt: newMessage.createdAt,
-      })
-    } else {
-      await repository.updateThread({
-        id: threadId,
-        updatedAt: newMessage.createdAt,
-      })
-    }
 
     if (pageContextError) {
       return
     }
 
-    try {
-      const response = await assistant.sendMessage({
-        model: model,
-        instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
-        text: text,
-        history: messages.list,
-        signal: abortController.signal,
-      })
-      if (get().threadId !== threadId) {
-        return
-      }
+    await saveMessageToRepository(newMessage, messages.list.length === 0)
 
-      const responseMessage = createAssistantMessage(response, threadId)
-      set(state => ({
-        messages: {
-          ...state.messages,
-          list: [...state.messages.list, responseMessage],
-        },
-        waitingForReply: false,
-        waitingForTools: response.hasTools,
-        messageAbortController: null,
-      }))
-      await repository.createMessage(responseMessage)
+    try {
+      await assistant.sendMessage({
+        model: model,
+        message: newMessage,
+        eventHandler: handleMessageEvent,
+        instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
+        history: messages.list,
+      })
     } catch (error) {
-      get().handleMessageError(newMessage.id, threadId, error)
+      get().handleMessageError(threadId, error, newMessage.id)
     }
   },
   saveFunctionResult: async (messageId: string, callId: string, result: FunctionCallResult) => {
-    const { assistant, model, threadId, messages } = get()
+    const { assistant, model, threadId, messages, handleMessageEvent } = get()
     if (!assistant || !model) {
       throw new Error('Assistant not initialized')
     }
 
-    const status = result.success ? FunctionStatus.Success : FunctionStatus.Error
+    const updatedMessages = updateMessageFunctionResult(messages, messageId, callId, result)
 
-    let completed = true
-    let message: Message | undefined = undefined
-
-    const updatedMessages = messages.list.map(msg => {
-      if (msg.id === messageId) {
-        const content = msg.content.map(i => {
-          if (i.id === callId) {
-            return { ...i, status, result }
-          }
-
-          if (
-            i.type === MessageContentType.FunctionCall &&
-            (i.status === FunctionStatus.Idle || i.status === FunctionStatus.Pending)
-          ) {
-            completed = false
-          }
-
-          return i
-        })
-        message = {
-          ...msg,
-          content,
-        }
-        return message
-      }
-      return msg
-    })
-
+    const message = updatedMessages.list.find(msg => msg.id === messageId)
     if (!message) {
       return
     }
 
+    const completed = isMessageFunctionsCompleted(message)
+
     if (!completed) {
-      set({ messages: { ...messages, list: updatedMessages } })
+      set({ messages: updatedMessages })
       return
     }
 
     const abortController = new AbortController()
     set({
-      messages: { ...messages, list: updatedMessages },
+      messages: updatedMessages,
       waitingForReply: true,
       waitingForTools: false,
       messageAbortController: abortController,
     })
 
-    await repository.updateMessage(message)
+    await updateMessageInRepository(message)
 
     try {
-      const response = await assistant.sendFunctionCallResponse({
+      await assistant.sendFunctionCallResponse({
         model: model,
         message,
+        eventHandler: handleMessageEvent,
       })
-
-      if (get().threadId !== threadId) {
-        return
-      }
-
-      const responseMessage = createAssistantMessage(response, threadId)
-      set(state => ({
-        messages: {
-          ...state.messages,
-          list: [...state.messages.list, responseMessage],
-        },
-        waitingForReply: false,
-        waitingForTools: response.hasTools,
-        messageAbortController: null,
-      }))
-      await repository.createMessage(responseMessage)
     } catch (error) {
-      get().handleMessageError(messageId, threadId, error)
+      get().handleMessageError(threadId, error, messageId)
     }
   },
-  handleMessageError: (messageId: string, threadId: string, error: unknown) => {
+  handleMessageError: (
+    threadId: string,
+    error: unknown,
+    userMessageId: string,
+    assistantMessageId: string | undefined,
+  ) => {
     logError('Error sending message', error)
     if (get().threadId !== threadId) {
       return
     }
 
-    const isAborted =
-      error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))
-
     set(state => ({
-      messages: isAborted
-        ? state.messages // Don't show error for cancelled requests
-        : {
-            ...state.messages,
-            list: state.messages.list.map(msg =>
-              msg.id === messageId ? { ...msg, error: getStringError(error) } : msg,
-            ),
-          },
+      messages: setMessageError(state.messages, error, userMessageId, assistantMessageId),
       waitingForReply: false,
       waitingForTools: false,
       messageAbortController: null,
     }))
+  },
+  handleMessageEvent: (event: ProviderMessageEvent) => {
+    const { threadId, messages, handleMessageError } = get()
+
+    if (event.threadId !== threadId) {
+      return
+    }
+
+    switch (event.type) {
+      case ProviderMessageEventType.Created: {
+        const responseMessage = createEmptyAssistantMessage(event.messageId, event.threadId)
+        set(state => ({
+          messages: addMessage(state.messages, responseMessage),
+        }))
+        break
+      }
+
+      case ProviderMessageEventType.OutputTextDelta:
+        set(state => ({
+          messages: appendMessageTextContent(
+            state.messages,
+            event.messageId,
+            event.contentId,
+            event.textDelta,
+          ),
+        }))
+        break
+
+      case ProviderMessageEventType.FunctionCall:
+        set(state => ({
+          messages: addMessageContent(state.messages, event.messageId, event.content),
+          waitingForTools: true,
+        }))
+        break
+
+      case ProviderMessageEventType.Completed: {
+        set(() => ({
+          waitingForReply: false,
+          messageAbortController: null,
+        }))
+        const message = messages.list.find(msg => msg.id === event.messageId)
+        if (message) {
+          saveMessageToRepository(message)
+        }
+        break
+      }
+
+      case ProviderMessageEventType.Error:
+        handleMessageError(event.threadId, event.error, event.userMessageId, event.messageId)
+        break
+
+      case ProviderMessageEventType.Fallback: {
+        const responseMessage = createAssistantMessage(
+          event.messageId,
+          event.threadId,
+          event.content,
+        )
+        set(state => ({
+          messages: addMessage(state.messages, responseMessage),
+          waitingForReply: false,
+          waitingForTools: event.hasTools,
+          messageAbortController: null,
+        }))
+        saveMessageToRepository(responseMessage)
+        break
+      }
+    }
   },
 })

@@ -20,6 +20,7 @@ export default function ChatMessages() {
             key={message.id}
             content={message.content}
             error={message.error}
+            hasError={message.hasError}
             context={message.context}
           />
         ) : (

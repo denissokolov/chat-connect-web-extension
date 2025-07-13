@@ -1,80 +1,342 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 import { OpenAIAssistant } from './OpenAIAssistant'
 import { mockMultipleOutputsResponse, mockSingleOutputResponse } from './OpenAIAssistant.mocks'
+import {
+  AIModel,
+  ProviderMessageEventType,
+  type ProviderMessageEvent,
+} from '@/types/provider.types'
+import { MessageContentType, FunctionStatus, FunctionName, MessageRole } from '@/types/types'
+
+vi.mock('openai', () => ({
+  default: class MockOpenAI {
+    responses = {
+      create: vi.fn(),
+    }
+  },
+}))
 
 describe('OpenAIAssistant', () => {
-  it('should parse response with multiple outputs', () => {
-    const assistant = new OpenAIAssistant('test')
-    const message = assistant.parseResponse(mockMultipleOutputsResponse)
+  describe('streaming response handling', () => {
+    it('should handle response stream with multiple outputs', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
 
-    expect(message).toBeDefined()
-    expect(message.id).toBe(mockMultipleOutputsResponse.id)
+      // Mock streaming events based on the mock response
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: mockMultipleOutputsResponse.id },
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: mockMultipleOutputsResponse.output[0].id,
+          content_index: 0,
+          delta: 'Hello',
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: mockMultipleOutputsResponse.output[0].id,
+          content_index: 0,
+          delta: ' world!',
+        },
+        {
+          type: 'response.output_item.done',
+          item: {
+            type: 'function_call',
+            call_id: 'call_V8DXgOfseNt66chXUplx7L2Z',
+            name: 'fill_input',
+            arguments:
+              '{"input_type":"radio","input_value":"personal","input_selector":"typeofclient","label_value":"Particulier"}',
+          },
+        },
+        {
+          type: 'response.output_item.done',
+          item: {
+            type: 'function_call',
+            call_id: 'call_LH7df6L6NqMKezUq1DN81PYb',
+            name: 'fill_input',
+            arguments:
+              '{"input_type":"input","input_value":"Jan","input_selector":"#firstname","label_value":"Naam"}',
+          },
+        },
+        {
+          type: 'response.output_item.done',
+          item: {
+            type: 'function_call',
+            call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
+            name: 'click_button',
+            arguments: '{"button_selector":"#submit","button_text":"Bestellen"}',
+          },
+        },
+        {
+          type: 'response.completed',
+        },
+      ]
 
-    expect(message.content).toBeDefined()
-    expect(message.content.length).toBe(4)
+      const assistant = new OpenAIAssistant('test-api-key')
 
-    expect(message.content[0].id).toBe(`${mockMultipleOutputsResponse.output[0].id}-0`)
-    expect(message.content[0].type).toBe('output_text')
-    if (
-      message.content[0].type === 'output_text' &&
-      mockMultipleOutputsResponse.output[0].type === 'message' &&
-      mockMultipleOutputsResponse.output[0].content[0].type === 'output_text'
-    ) {
-      expect(message.content[0].text).toBe(mockMultipleOutputsResponse.output[0].content[0].text)
-    }
+      // Mock the client.responses.create method to return our mock stream
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
 
-    expect(message.content[1].id).toBeDefined()
-    expect(message.content[1].type).toBe('function_call')
-    if (message.content[1].type === 'function_call' && message.content[1].name === 'fill_input') {
-      expect(message.content[1].arguments.input_value).toBe('personal')
-      expect(message.content[1].arguments.input_selector).toBe('typeofclient')
-      expect(message.content[1].arguments.label_value).toBe('Particulier')
-    } else {
-      throw new Error('Invalid function call #1')
-    }
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
 
-    expect(message.content[2].id).toBeDefined()
-    expect(message.content[2].type).toBe('function_call')
-    if (message.content[2].type === 'function_call' && message.content[2].name === 'fill_input') {
-      expect(message.content[2].arguments.input_type).toBe('input')
-      expect(message.content[2].arguments.input_value).toBe('Jan')
-      expect(message.content[2].arguments.input_selector).toBe('#firstname')
-      expect(message.content[2].arguments.label_value).toBe('Naam')
-    } else {
-      throw new Error('Invalid function call #2')
-    }
+      await assistant.sendMessage({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'test-message-id',
+          threadId: 'test-thread-id',
+          role: MessageRole.User,
+          content: [
+            { id: 'test-content-id', type: MessageContentType.OutputText, text: 'Test message' },
+          ],
+          createdAt: new Date().toISOString(),
+        },
+        eventHandler,
+      })
 
-    expect(message.content[3].type).toBe('function_call')
-    if (mockMultipleOutputsResponse.output[3].type === 'function_call') {
-      expect(message.content[3].id).toBe(mockMultipleOutputsResponse.output[3].call_id)
-    }
-    if (message.content[3].type === 'function_call' && message.content[3].name === 'click_button') {
-      expect(message.content[3].arguments.button_selector).toBe('#submit')
-      expect(message.content[3].arguments.button_text).toBe('Bestellen')
-    } else {
-      throw new Error('Invalid function call #3')
-    }
+      expect(events).toHaveLength(7)
+
+      // Check response created event
+      expect(events[0]).toEqual({
+        type: ProviderMessageEventType.Created,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+      })
+
+      // Check text delta events
+      expect(events[1]).toEqual({
+        type: ProviderMessageEventType.OutputTextDelta,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        contentId: `${mockMultipleOutputsResponse.output[0].id}-0`,
+        textDelta: 'Hello',
+      })
+
+      expect(events[2]).toEqual({
+        type: ProviderMessageEventType.OutputTextDelta,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        contentId: `${mockMultipleOutputsResponse.output[0].id}-0`,
+        textDelta: ' world!',
+      })
+
+      // Check function call events
+      expect(events[3]).toEqual({
+        type: ProviderMessageEventType.FunctionCall,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_V8DXgOfseNt66chXUplx7L2Z',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Idle,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'radio',
+            input_value: 'personal',
+            input_selector: 'typeofclient',
+            label_value: 'Particulier',
+          },
+        },
+      })
+
+      expect(events[4]).toEqual({
+        type: ProviderMessageEventType.FunctionCall,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_LH7df6L6NqMKezUq1DN81PYb',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Idle,
+          name: FunctionName.FillInput,
+          arguments: {
+            input_type: 'input',
+            input_value: 'Jan',
+            input_selector: '#firstname',
+            label_value: 'Naam',
+          },
+        },
+      })
+
+      expect(events[5]).toEqual({
+        type: ProviderMessageEventType.FunctionCall,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_112keBYEDQI5dgV01fLbW3aC',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Idle,
+          name: FunctionName.ClickButton,
+          arguments: {
+            button_selector: '#submit',
+            button_text: 'Bestellen',
+          },
+        },
+      })
+
+      // Check completion event
+      expect(events[6]).toEqual({
+        type: ProviderMessageEventType.Completed,
+        messageId: mockMultipleOutputsResponse.id,
+        userMessageId: 'test-message-id',
+        threadId: 'test-thread-id',
+      })
+    })
+
+    it('should handle response stream with single output', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
+
+      // Mock streaming events for single output
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: mockSingleOutputResponse.id },
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: mockSingleOutputResponse.output[0].id,
+          content_index: 0,
+          delta: 'Hello, world!',
+        },
+        {
+          type: 'response.completed',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      // Mock the client.responses.create method
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendMessage({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'test-message-id',
+          threadId: 'test-thread-id',
+          role: MessageRole.User,
+          content: [
+            { id: 'test-content-id-2', type: MessageContentType.OutputText, text: 'Test message' },
+          ],
+          createdAt: new Date().toISOString(),
+        },
+        eventHandler,
+      })
+
+      expect(events).toHaveLength(3)
+
+      // Check response created event
+      expect(events[0]).toEqual({
+        type: ProviderMessageEventType.Created,
+        messageId: mockSingleOutputResponse.id,
+        threadId: 'test-thread-id',
+      })
+
+      // Check text delta event
+      expect(events[1]).toEqual({
+        type: ProviderMessageEventType.OutputTextDelta,
+        messageId: mockSingleOutputResponse.id,
+        threadId: 'test-thread-id',
+        contentId: `${mockSingleOutputResponse.output[0].id}-0`,
+        textDelta: 'Hello, world!',
+      })
+
+      // Check completion event
+      expect(events[2]).toEqual({
+        type: ProviderMessageEventType.Completed,
+        messageId: mockSingleOutputResponse.id,
+        userMessageId: 'test-message-id',
+        threadId: 'test-thread-id',
+      })
+    })
+
+    it('should handle error events', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
+
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: 'test-response-id' },
+        },
+        {
+          type: 'error',
+          message: 'Something went wrong',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendMessage({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'test-message-id',
+          threadId: 'test-thread-id',
+          role: MessageRole.User,
+          content: [
+            { id: 'test-content-id-3', type: MessageContentType.OutputText, text: 'Test message' },
+          ],
+          createdAt: new Date().toISOString(),
+        },
+        eventHandler,
+      })
+
+      expect(events).toHaveLength(2)
+
+      expect(events[0]).toEqual({
+        type: ProviderMessageEventType.Created,
+        messageId: 'test-response-id',
+        threadId: 'test-thread-id',
+      })
+
+      expect(events[1]).toEqual({
+        type: ProviderMessageEventType.Error,
+        messageId: 'test-response-id',
+        userMessageId: 'test-message-id',
+        threadId: 'test-thread-id',
+        error: 'Something went wrong',
+      })
+    })
   })
 
-  it('should parse response with single output', () => {
-    const assistant = new OpenAIAssistant('test')
-    const message = assistant.parseResponse(mockSingleOutputResponse)
-
-    expect(message).toBeDefined()
-    expect(message.id).toBe(mockSingleOutputResponse.id)
-
-    expect(message.content).toBeDefined()
-    expect(message.content.length).toBe(1)
-
-    expect(message.content[0].id).toBe(`${mockSingleOutputResponse.output[0].id}-0`)
-    expect(message.content[0].type).toBe('output_text')
-    if (
-      message.content[0].type === 'output_text' &&
-      mockSingleOutputResponse.output[0].type === 'message' &&
-      mockSingleOutputResponse.output[0].content[0].type === 'output_text'
-    ) {
-      expect(message.content[0].text).toBe(mockSingleOutputResponse.output[0].content[0].text)
-    }
+  describe('getProvider', () => {
+    it('should return OpenAI provider', () => {
+      const assistant = new OpenAIAssistant('test-api-key')
+      expect(assistant.getProvider()).toBe('openai')
+    })
   })
 })

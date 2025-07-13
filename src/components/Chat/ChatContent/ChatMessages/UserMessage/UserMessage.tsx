@@ -8,10 +8,11 @@ import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/Markdown
 interface UserMessageProps {
   content?: MessageContent[]
   error?: string
+  hasError?: boolean
   context?: MessageContext
 }
 
-function UserMessage({ content, error, context }: UserMessageProps) {
+function UserMessage({ content, error, hasError, context }: UserMessageProps) {
   return (
     <>
       {context && (
@@ -19,9 +20,13 @@ function UserMessage({ content, error, context }: UserMessageProps) {
           <ContextDisplay context={context} />
         </div>
       )}
-      <div className="flex gap-3 justify-end items-center">
-        {error && <AlertCircle className="w-4 h-4 text-destructive" />}
-        {content ? (
+      {content && (
+        <div className="flex gap-3 justify-end items-center">
+          {hasError && (
+            <span title={'Message error'}>
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            </span>
+          )}
           <div className="max-w-full rounded-lg leading-1 p-3 bg-muted">
             {content.map(item =>
               item.type === 'output_text' ? (
@@ -29,10 +34,10 @@ function UserMessage({ content, error, context }: UserMessageProps) {
               ) : null,
             )}
           </div>
-        ) : null}
-      </div>
+        </div>
+      )}
       {error && (
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-2 justify-center">
           <p className="text-sm text-destructive wrap-anywhere">{error}</p>
         </div>
       )}

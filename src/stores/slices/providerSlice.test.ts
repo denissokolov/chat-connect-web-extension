@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock, type MockedFunction } from 'vitest'
 
 import useChatStore from '@/stores/useChatStore'
-import { AIProvider, AIModel } from '@/types/types'
+import { AIProvider, AIModel } from '@/types/provider.types'
 import browser from '@/services/browser'
 import { MockAssistant } from '@/services/assistant'
 

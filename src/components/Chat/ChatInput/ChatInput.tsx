@@ -15,13 +15,15 @@ function ChatInput() {
 
   const sendMessage = useChatStore(state => state.sendMessage)
   const stopMessage = useChatStore(state => state.stopMessage)
+
   const waitingForReply = useChatStore(state => state.waitingForReply)
   const waitingForTools = useChatStore(state => state.waitingForTools)
+  const messagesReady = useChatStore(state => state.messages.ready)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (waitingForReply || waitingForTools || !input.trim()) {
+    if (waitingForReply || waitingForTools || !messagesReady || !input.trim()) {
       return
     }
 
@@ -74,7 +76,7 @@ function ChatInput() {
           ) : (
             <Button
               type="submit"
-              disabled={!input.trim()}
+              disabled={!input.trim() || !messagesReady}
               size="icon"
               title="Send"
               aria-label="Send message"

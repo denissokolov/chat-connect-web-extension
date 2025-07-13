@@ -19,6 +19,7 @@ interface AssistantMessageProps {
     result: FunctionCallResult,
   ) => Promise<void>
   autoExecuteTools: boolean
+  error?: string
 }
 
 function AssistantMessage({
@@ -26,6 +27,7 @@ function AssistantMessage({
   content,
   saveFunctionResult,
   autoExecuteTools,
+  error,
 }: AssistantMessageProps) {
   return (
     <div className="max-w-full leading-1 mb-8">
@@ -67,6 +69,11 @@ function AssistantMessage({
 
         return null
       })}
+      {error && (
+        <div className="flex items-center gap-2 mt-2 justify-center">
+          <p className="text-sm text-destructive wrap-anywhere">{error}</p>
+        </div>
+      )}
     </div>
   )
 }

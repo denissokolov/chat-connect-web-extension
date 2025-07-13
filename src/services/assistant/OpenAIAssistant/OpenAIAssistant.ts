@@ -1,21 +1,25 @@
 import OpenAI from 'openai'
-import type { Tool, Response, ResponseInputItem } from 'openai/resources/responses/responses'
 
 import {
-  AIModel,
-  AIProvider,
   type Message,
   MessageContentType,
-  type MessageContent,
-  type ProviderMessageResponse,
   FunctionName,
   FunctionStatus,
+  type FunctionCallContent,
 } from '@/types/types'
 import type { IAssistant } from '@/services/assistant'
-import { logDebug } from '@/utils/log'
+import { logDebug, logError, logWarning } from '@/utils/log'
+import {
+  AIProvider,
+  AIModel,
+  type ProviderMessageEvent,
+  ProviderMessageEventType,
+} from '@/types/provider.types'
+import { getLastAssistantMessageId, getMessageText } from '@/utils/message'
 
 export class OpenAIAssistant implements IAssistant {
   private client: OpenAI
+  private responseId: string | undefined
 
   constructor(apiKey: string) {
     this.client = new OpenAI({
@@ -31,33 +35,34 @@ export class OpenAIAssistant implements IAssistant {
   async sendMessage(params: {
     model: AIModel
     instructions?: string
-    text: string
+    message: Message
     history?: ReadonlyArray<Message>
     signal?: AbortSignal
-  }): Promise<ProviderMessageResponse> {
-    const response = await this.client.responses.create(
-      {
-        model: params.model,
-        instructions: params.instructions,
-        input: params.text,
-        previous_response_id: this.getPreviousResponseId(params.history),
-        store: true,
-        tools: [this.getFillInputTool(), this.getClickButtonTool()],
-      },
-      {
-        signal: params.signal,
-      },
+    eventHandler: (event: ProviderMessageEvent) => void
+  }): Promise<void> {
+    const stream = await this.client.responses.create({
+      model: params.model,
+      instructions: params.instructions,
+      input: getMessageText(params.message),
+      previous_response_id: this.getPreviousResponseId(params.history),
+      store: true,
+      tools: [this.getFillInputTool(), this.getClickButtonTool()],
+      stream: true,
+    })
+
+    await this.handleResponseStream(
+      stream,
+      params.eventHandler,
+      params.message.threadId,
+      params.message.id,
     )
-
-    logDebug('OpenAIAssistant.sendMessage.response', response)
-
-    return this.parseResponse(response)
   }
 
   public async sendFunctionCallResponse(params: {
     model: AIModel
     message: Message
-  }): Promise<ProviderMessageResponse> {
+    eventHandler: (event: ProviderMessageEvent) => void
+  }): Promise<void> {
     const input = params.message.content.reduce((acc, content) => {
       if (content.type === MessageContentType.FunctionCall) {
         acc.push({
@@ -67,78 +72,145 @@ export class OpenAIAssistant implements IAssistant {
         })
       }
       return acc
-    }, [] as ResponseInputItem.FunctionCallOutput[])
+    }, [] as OpenAI.Responses.ResponseInputItem.FunctionCallOutput[])
 
-    const response = await this.client.responses.create({
+    const stream = await this.client.responses.create({
       model: params.model,
       input,
       previous_response_id: params.message.id,
       store: true,
       tools: [this.getFillInputTool(), this.getClickButtonTool()],
+      stream: true,
     })
 
-    logDebug('OpenAIAssistant.sendMessage.functionCallResponse', response)
-
-    return this.parseResponse(response)
+    await this.handleResponseStream(
+      stream,
+      params.eventHandler,
+      params.message.threadId,
+      params.message.id,
+    )
   }
 
-  private getPreviousResponseId(history?: ReadonlyArray<Message>): string | undefined {
-    return history && history.length > 0 ? history[history.length - 1]?.id : undefined
+  private getResponseId(): string {
+    if (!this.responseId) {
+      throw new Error('Response ID is not set')
+    }
+    return this.responseId
   }
 
-  public parseResponse(response: Response): ProviderMessageResponse {
-    let hasTools = false
-    const result = response.output.reduce((acc, output) => {
-      if (output.type === 'message') {
-        output.content.forEach((content, index) => {
-          if (content.type === 'output_text') {
-            acc.push({
-              id: `${output.id}-${index}`,
-              type: MessageContentType.OutputText,
-              text: content.text,
-            })
-          }
-        })
-      } else if (output.type === 'function_call') {
-        hasTools = true
-        const args = JSON.parse(output.arguments)
-        if (output.name === FunctionName.FillInput) {
-          acc.push({
-            id: output.call_id,
-            type: MessageContentType.FunctionCall,
-            status: FunctionStatus.Idle,
-            name: FunctionName.FillInput,
-            arguments: {
-              input_type: args.input_type,
-              input_value: args.input_value,
-              input_selector: args.input_selector,
-              label_value: args.label_value,
-            },
+  private async handleResponseStream(
+    stream: AsyncIterable<OpenAI.Responses.ResponseStreamEvent>,
+    eventHandler: (event: ProviderMessageEvent) => void,
+    threadId: string,
+    userMessageId: string,
+  ): Promise<void> {
+    for await (const event of stream) {
+      switch (event.type) {
+        case 'response.created': {
+          logDebug('OpenAIAssistant.sendMessage.response.created', event)
+          this.responseId = event.response.id
+          eventHandler({
+            type: ProviderMessageEventType.Created,
+            messageId: this.getResponseId(),
+            threadId,
           })
-        } else if (output.name === FunctionName.ClickButton) {
-          acc.push({
-            id: output.call_id,
-            type: MessageContentType.FunctionCall,
-            status: FunctionStatus.Idle,
-            name: FunctionName.ClickButton,
-            arguments: {
-              button_selector: args.button_selector,
-              button_text: args.button_text,
-            },
-          })
+          break
         }
-      }
-      return acc
-    }, [] as MessageContent[])
 
-    return {
-      id: response.id,
-      content: result,
-      hasTools,
+        case 'response.output_text.delta':
+          eventHandler({
+            type: ProviderMessageEventType.OutputTextDelta,
+            messageId: this.getResponseId(),
+            threadId,
+            contentId: this.getTextContentId(event.item_id, event.content_index),
+            textDelta: event.delta,
+          })
+          break
+
+        case 'response.output_item.done':
+          if (event.item.type === 'function_call') {
+            const content = this.getFunctionCallContent(event.item)
+            if (content) {
+              eventHandler({
+                type: ProviderMessageEventType.FunctionCall,
+                messageId: this.getResponseId(),
+                threadId,
+                content,
+              })
+            }
+          }
+          break
+
+        case 'response.completed':
+          logDebug('OpenAIAssistant.sendMessage.response.completed', event)
+          eventHandler({
+            type: ProviderMessageEventType.Completed,
+            messageId: this.getResponseId(),
+            userMessageId,
+            threadId,
+          })
+          break
+
+        case 'error':
+          logError('OpenAIAssistant.sendMessage.response.error', event)
+          eventHandler({
+            type: ProviderMessageEventType.Error,
+            messageId: this.getResponseId(),
+            userMessageId,
+            threadId,
+            error: event.message,
+          })
+          break
+      }
     }
   }
 
-  private getFillInputTool(): Tool {
+  private getTextContentId(outputId: string, contentIndex: number): string {
+    return `${outputId}-${contentIndex}`
+  }
+
+  private getFunctionCallContent(
+    output: OpenAI.Responses.ResponseFunctionToolCall,
+  ): FunctionCallContent | null {
+    const args = JSON.parse(output.arguments)
+
+    if (output.name === FunctionName.FillInput) {
+      return {
+        id: output.call_id,
+        type: MessageContentType.FunctionCall,
+        status: FunctionStatus.Idle,
+        name: FunctionName.FillInput,
+        arguments: {
+          input_type: args.input_type,
+          input_value: args.input_value,
+          input_selector: args.input_selector,
+          label_value: args.label_value,
+        },
+      }
+    }
+
+    if (output.name === FunctionName.ClickButton) {
+      return {
+        id: output.call_id,
+        type: MessageContentType.FunctionCall,
+        status: FunctionStatus.Idle,
+        name: FunctionName.ClickButton,
+        arguments: {
+          button_selector: args.button_selector,
+          button_text: args.button_text,
+        },
+      }
+    }
+
+    logWarning('Unsupported function call', output)
+    return null
+  }
+
+  private getPreviousResponseId(history?: ReadonlyArray<Message>): string | undefined {
+    return history ? getLastAssistantMessageId(history) : undefined
+  }
+
+  private getFillInputTool(): OpenAI.Responses.Tool {
     return {
       type: 'function',
       name: 'fill_input',
@@ -173,7 +245,7 @@ export class OpenAIAssistant implements IAssistant {
     }
   }
 
-  private getClickButtonTool(): Tool {
+  private getClickButtonTool(): OpenAI.Responses.Tool {
     return {
       type: 'function',
       name: 'click_button',
