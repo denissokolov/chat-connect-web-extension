@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent } from 'storybook/test'
+import { expect } from 'storybook/test'
 import { useEffect } from 'react'
 
 import useChatStore from '@/stores/useChatStore'
@@ -72,10 +72,6 @@ export const WithChats: Story = {
     },
   ],
   play: async ({ canvas }) => {
-    // Check that the header is present
-    const header = canvas.getByText('Chat History')
-    await expect(header).toBeInTheDocument()
-
     // Check that chat items are rendered
     const firstChat = canvas.getByText('How do I implement a React component with TypeScript?')
     await expect(firstChat).toBeInTheDocument()
@@ -84,54 +80,6 @@ export const WithChats: Story = {
       'What are the best practices for state management in React?',
     )
     await expect(secondChat).toBeInTheDocument()
-  },
-}
-
-export const WithSelectedChat: Story = {
-  decorators: [
-    Story => {
-      useEffect(() => {
-        useChatStore.setState({
-          threads: {
-            list: mockThreads,
-            loading: false,
-            error: null,
-            ready: true,
-          },
-          threadId: 'thread-1',
-        })
-      }, [])
-      return <Story />
-    },
-  ],
-  play: async ({ canvas }) => {
-    // Check that the selected chat has the selected styling
-    const selectedChat = canvas
-      .getByText('How do I implement a React component with TypeScript?')
-      .closest('button')
-    await expect(selectedChat).toHaveClass('bg-muted')
-  },
-}
-
-export const Interactive: Story = {
-  decorators: [
-    Story => {
-      useEffect(() => {
-        useChatStore.setState({
-          threads: {
-            list: mockThreads,
-            loading: false,
-            error: null,
-            ready: true,
-          },
-        })
-      }, [])
-      return <Story />
-    },
-  ],
-  play: async ({ canvas }) => {
-    const firstChat = canvas.getByText('How do I implement a React component with TypeScript?')
-    await userEvent.click(firstChat)
   },
 }
 

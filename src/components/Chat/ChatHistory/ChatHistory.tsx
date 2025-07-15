@@ -2,11 +2,9 @@ import { memo } from 'react'
 import { AlertCircle, MessageSquare } from 'lucide-react'
 
 import useChatStore from '@/stores/useChatStore'
-import { cn } from '@/utils/ui'
 
 function ChatHistory() {
   const threads = useChatStore(state => state.threads)
-  const selectedThreadId = useChatStore(state => state.threadId)
   const onThreadSelect = useChatStore(state => state.selectThread)
 
   if (threads.loading) {
@@ -53,19 +51,13 @@ function ChatHistory() {
 
   return (
     <div className="h-full flex-1 flex flex-col">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold text-foreground">{'Chat History'}</h2>
-      </div>
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-1 p-2">
           {threads.list.map(thread => (
             <button
               key={thread.id}
               onClick={() => onThreadSelect(thread.id)}
-              className={cn(
-                'w-full text-left p-3 rounded-lg transition-colors hover:bg-muted/50',
-                selectedThreadId === thread.id && 'bg-muted',
-              )}
+              className="w-full text-left p-3 rounded-lg transition-colors hover:bg-muted/50 cursor-pointer"
             >
               <p className="text-sm font-medium text-foreground line-clamp-1">{thread.title}</p>
             </button>
