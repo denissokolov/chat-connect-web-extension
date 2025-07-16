@@ -1629,7 +1629,10 @@ describe('messageSlice', () => {
 
       const state = useChatStore.getState()
       expect(state.waitingForReply).toBe(false)
-      expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
+      expect(repository.createMessage).toHaveBeenCalledWith({
+        ...existingMessage,
+        history: true,
+      })
     })
 
     it('should handle Completed event and call sendFunctionResults when message has completed functions', async () => {
@@ -1695,7 +1698,10 @@ describe('messageSlice', () => {
 
       const state = useChatStore.getState()
       expect(state.waitingForReply).toBe(false)
-      expect(repository.createMessage).toHaveBeenCalledWith(existingMessage)
+      expect(repository.createMessage).toHaveBeenCalledWith({
+        ...existingMessage,
+        history: true,
+      })
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
         model: AIModel.OpenAI_ChatGPT_4o,
         message: existingMessage,
@@ -1781,7 +1787,10 @@ describe('messageSlice', () => {
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
-      expect(repository.createMessage).toHaveBeenCalledWith(state.messages.list[0])
+      expect(repository.createMessage).toHaveBeenCalledWith({
+        ...state.messages.list[0],
+        history: true,
+      })
     })
 
     it('should handle Fallback event with tools', async () => {
@@ -1816,7 +1825,10 @@ describe('messageSlice', () => {
       })
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(true)
-      expect(repository.createMessage).toHaveBeenCalledWith(state.messages.list[0])
+      expect(repository.createMessage).toHaveBeenCalledWith({
+        ...state.messages.list[0],
+        history: true,
+      })
     })
   })
 })

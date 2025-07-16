@@ -30,7 +30,7 @@ function AssistantMessage({
   error,
 }: AssistantMessageProps) {
   return (
-    <div className="max-w-full leading-1 mb-8">
+    <div className="max-w-full leading-1">
       {content.map(item => {
         if (item.type === MessageContentType.OutputText) {
           return <MarkdownMessage key={item.id} text={item.text} />

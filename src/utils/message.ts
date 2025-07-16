@@ -3,6 +3,7 @@ import {
   type Message,
   type MessageContent,
   MessageContentType,
+  type MessageGroup,
   MessageRole,
   type PageContext,
 } from '@/types/types'
@@ -103,4 +104,17 @@ export function areMessageFunctionsComplete(message: Message): boolean {
   }
 
   return hasFunction
+}
+
+export function splitMessagesIntoGroups(messages: ReadonlyArray<Message>): MessageGroup[] {
+  const result: MessageGroup[] = []
+
+  messages.forEach((message, index) => {
+    if (message.role === MessageRole.User || index === 0) {
+      result.push({ id: message.id, messages: [], history: message.history ?? false })
+    }
+    result[result.length - 1].messages.push(message)
+  })
+
+  return result
 }

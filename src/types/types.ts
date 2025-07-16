@@ -79,6 +79,13 @@ export type Message = {
   threadId: string
   context?: MessageContext
   complete: boolean
+  history?: boolean
+}
+
+export type MessageGroup = {
+  id: string
+  messages: Message[]
+  history: boolean
 }
 
 export interface PageContext {

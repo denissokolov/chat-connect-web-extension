@@ -148,7 +148,7 @@ export async function saveMessageToRepository(message: Message, first?: boolean)
       })
     }
 
-    await repository.createMessage(message)
+    await repository.createMessage({ ...message, history: true })
   } catch (error) {
     logError('Saving message to repository failed', error)
   }

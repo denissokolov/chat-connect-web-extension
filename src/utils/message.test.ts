@@ -18,6 +18,7 @@ import {
   getMessageText,
   getLastAssistantMessageId,
   areMessageFunctionsComplete,
+  splitMessagesIntoGroups,
 } from './message'
 
 describe('message utils', () => {
@@ -1507,6 +1508,299 @@ describe('message utils', () => {
 
       const result = areMessageFunctionsComplete(message)
       expect(result).toBe(false)
+    })
+  })
+
+  describe('splitMessagesIntoGroups', () => {
+    const createMockUserMessage = (id: string, text: string, history?: boolean): Message => ({
+      id,
+      role: MessageRole.User,
+      content: [{ id: `${id}-content`, type: MessageContentType.OutputText, text }],
+      createdAt: new Date().toISOString(),
+      threadId: 'test-thread-id',
+      complete: true,
+      history,
+    })
+
+    const createMockAssistantMessage = (id: string, text: string): Message => ({
+      id,
+      role: MessageRole.Assistant,
+      content: [{ id: `${id}-content`, type: MessageContentType.OutputText, text }],
+      createdAt: new Date().toISOString(),
+      threadId: 'test-thread-id',
+      complete: true,
+    })
+
+    it('should return empty array when input is empty', () => {
+      const result = splitMessagesIntoGroups([])
+      expect(result).toEqual([])
+    })
+
+    it('should create single group with one user message', () => {
+      const userMessage = createMockUserMessage('user-1', 'Hello')
+      const messages = [userMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage],
+        history: false,
+      })
+    })
+
+    it('should create single group with user message and assistant response', () => {
+      const userMessage = createMockUserMessage('user-1', 'Hello')
+      const assistantMessage = createMockAssistantMessage('assistant-1', 'Hi there!')
+      const messages = [userMessage, assistantMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage, assistantMessage],
+        history: false,
+      })
+    })
+
+    it('should create multiple groups for multiple user messages', () => {
+      const userMessage1 = createMockUserMessage('user-1', 'First question')
+      const assistantMessage1 = createMockAssistantMessage('assistant-1', 'First answer')
+      const userMessage2 = createMockUserMessage('user-2', 'Second question')
+      const assistantMessage2 = createMockAssistantMessage('assistant-2', 'Second answer')
+      const messages = [userMessage1, assistantMessage1, userMessage2, assistantMessage2]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage1, assistantMessage1],
+        history: false,
+      })
+      expect(result[1]).toEqual({
+        id: 'user-2',
+        messages: [userMessage2, assistantMessage2],
+        history: false,
+      })
+    })
+
+    it('should handle user message with multiple assistant responses', () => {
+      const userMessage = createMockUserMessage('user-1', 'Complex question')
+      const assistantMessage1 = createMockAssistantMessage('assistant-1', 'First part of answer')
+      const assistantMessage2 = createMockAssistantMessage('assistant-2', 'Second part of answer')
+      const messages = [userMessage, assistantMessage1, assistantMessage2]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage, assistantMessage1, assistantMessage2],
+        history: false,
+      })
+    })
+
+    it('should preserve history flag when set to true', () => {
+      const userMessage = createMockUserMessage('user-1', 'Historical message', true)
+      const assistantMessage = createMockAssistantMessage('assistant-1', 'Historical response')
+      const messages = [userMessage, assistantMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage, assistantMessage],
+        history: true,
+      })
+    })
+
+    it('should preserve history flag when set to false', () => {
+      const userMessage = createMockUserMessage('user-1', 'Current message', false)
+      const assistantMessage = createMockAssistantMessage('assistant-1', 'Current response')
+      const messages = [userMessage, assistantMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage, assistantMessage],
+        history: false,
+      })
+    })
+
+    it('should default history to false when not specified', () => {
+      const userMessage = createMockUserMessage('user-1', 'Message without history flag')
+      const assistantMessage = createMockAssistantMessage('assistant-1', 'Response')
+      const messages = [userMessage, assistantMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage, assistantMessage],
+        history: false,
+      })
+    })
+
+    it('should handle mixed history flags across multiple groups', () => {
+      const historicalUserMessage = createMockUserMessage('user-1', 'Historical question', true)
+      const historicalAssistantMessage = createMockAssistantMessage(
+        'assistant-1',
+        'Historical answer',
+      )
+      const currentUserMessage = createMockUserMessage('user-2', 'Current question', false)
+      const currentAssistantMessage = createMockAssistantMessage('assistant-2', 'Current answer')
+      const messages = [
+        historicalUserMessage,
+        historicalAssistantMessage,
+        currentUserMessage,
+        currentAssistantMessage,
+      ]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [historicalUserMessage, historicalAssistantMessage],
+        history: true,
+      })
+      expect(result[1]).toEqual({
+        id: 'user-2',
+        messages: [currentUserMessage, currentAssistantMessage],
+        history: false,
+      })
+    })
+
+    it('should handle consecutive user messages without assistant responses', () => {
+      const userMessage1 = createMockUserMessage('user-1', 'First question')
+      const userMessage2 = createMockUserMessage('user-2', 'Second question')
+      const userMessage3 = createMockUserMessage('user-3', 'Third question')
+      const messages = [userMessage1, userMessage2, userMessage3]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(3)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage1],
+        history: false,
+      })
+      expect(result[1]).toEqual({
+        id: 'user-2',
+        messages: [userMessage2],
+        history: false,
+      })
+      expect(result[2]).toEqual({
+        id: 'user-3',
+        messages: [userMessage3],
+        history: false,
+      })
+    })
+
+    it('should handle assistant message at the beginning before any user message', () => {
+      const assistantMessage = createMockAssistantMessage(
+        'assistant-1',
+        'Unexpected assistant message',
+      )
+      const userMessage = createMockUserMessage('user-1', 'User question after assistant')
+      const messages = [assistantMessage, userMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({
+        id: 'assistant-1',
+        messages: [assistantMessage],
+        history: false,
+      })
+      expect(result[1]).toEqual({
+        id: 'user-1',
+        messages: [userMessage],
+        history: false,
+      })
+    })
+
+    it('should handle complex conversation flow', () => {
+      const userMessage1 = createMockUserMessage('user-1', 'First question', true)
+      const assistantMessage1 = createMockAssistantMessage('assistant-1', 'First answer')
+      const assistantMessage2 = createMockAssistantMessage('assistant-2', 'Additional context')
+      const userMessage2 = createMockUserMessage('user-2', 'Follow-up question')
+      const assistantMessage3 = createMockAssistantMessage('assistant-3', 'Follow-up answer')
+      const userMessage3 = createMockUserMessage('user-3', 'Final question', false)
+      const messages = [
+        userMessage1,
+        assistantMessage1,
+        assistantMessage2,
+        userMessage2,
+        assistantMessage3,
+        userMessage3,
+      ]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(3)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage1, assistantMessage1, assistantMessage2],
+        history: true,
+      })
+      expect(result[1]).toEqual({
+        id: 'user-2',
+        messages: [userMessage2, assistantMessage3],
+        history: false,
+      })
+      expect(result[2]).toEqual({
+        id: 'user-3',
+        messages: [userMessage3],
+        history: false,
+      })
+    })
+
+    it('should handle messages with function calls', () => {
+      const userMessage = createMockUserMessage('user-1', 'Please fill the form')
+      const assistantMessage: Message = {
+        id: 'assistant-1',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'text-1',
+            type: MessageContentType.OutputText,
+            text: 'I will fill the form for you',
+          },
+          {
+            id: 'func-1',
+            type: MessageContentType.FunctionCall,
+            status: FunctionStatus.Success,
+            name: FunctionName.FillInput,
+            arguments: {
+              input_type: 'text',
+              input_value: 'test',
+              input_selector: '#test',
+              label_value: 'Test',
+            },
+          },
+        ],
+        createdAt: new Date().toISOString(),
+        threadId: 'test-thread-id',
+        complete: true,
+      }
+      const messages = [userMessage, assistantMessage]
+
+      const result = splitMessagesIntoGroups(messages)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        id: 'user-1',
+        messages: [userMessage, assistantMessage],
+        history: false,
+      })
     })
   })
 })

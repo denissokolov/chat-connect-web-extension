@@ -821,7 +821,10 @@ describe('messageSlice.utils', () => {
         createdAt: mockDate,
         updatedAt: mockDate,
       })
-      expect(mockRepository.createMessage).toHaveBeenCalledWith(mockMessage)
+      expect(mockRepository.createMessage).toHaveBeenCalledWith({
+        ...mockMessage,
+        history: true,
+      })
     })
 
     it('should use fallback title when getFirstTextLine returns empty', async () => {
@@ -843,7 +846,10 @@ describe('messageSlice.utils', () => {
         createdAt: mockDate,
         updatedAt: mockDate,
       })
-      expect(mockRepository.createMessage).toHaveBeenCalledWith(message)
+      expect(mockRepository.createMessage).toHaveBeenCalledWith({
+        ...message,
+        history: true,
+      })
     })
 
     it('should update thread and create message for subsequent messages', async () => {
@@ -858,7 +864,10 @@ describe('messageSlice.utils', () => {
         id: 'test-thread-id',
         updatedAt: mockDate,
       })
-      expect(mockRepository.createMessage).toHaveBeenCalledWith(mockMessage)
+      expect(mockRepository.createMessage).toHaveBeenCalledWith({
+        ...mockMessage,
+        history: true,
+      })
       expect(mockRepository.createThread).not.toHaveBeenCalled()
     })
 
@@ -870,7 +879,10 @@ describe('messageSlice.utils', () => {
 
       await saveMessageToRepository(mockMessage, false)
 
-      expect(mockRepository.createMessage).toHaveBeenCalledWith(mockMessage)
+      expect(mockRepository.createMessage).toHaveBeenCalledWith({
+        ...mockMessage,
+        history: true,
+      })
     })
 
     it('should not throw error if createThread fails', async () => {

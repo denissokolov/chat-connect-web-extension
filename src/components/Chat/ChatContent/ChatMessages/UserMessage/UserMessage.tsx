@@ -21,7 +21,7 @@ function UserMessage({ content, error, hasError, context }: UserMessageProps) {
         </div>
       )}
       {content && (
-        <div className="flex gap-3 justify-end items-center">
+        <div className="flex gap-3 mb-4 justify-end items-center">
           {hasError && (
             <span title={'Message error'}>
               <AlertCircle className="w-4 h-4 text-destructive" />
@@ -37,7 +37,7 @@ function UserMessage({ content, error, hasError, context }: UserMessageProps) {
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-2 mt-2 justify-center">
+        <div className="flex items-center gap-2 justify-center">
           <p className="text-sm text-destructive wrap-anywhere">{error}</p>
         </div>
       )}
