@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
-import { useLayoutEffect } from 'react'
 
 import useChatStore from '@/stores/useChatStore'
 import ChatHistory from './ChatHistory'
@@ -25,21 +24,17 @@ export default meta
 type Story = StoryObj<typeof ChatHistory>
 
 export const EmptyState: Story = {
-  decorators: [
-    Story => {
-      useLayoutEffect(() => {
-        useChatStore.setState({
-          threads: {
-            list: [],
-            loading: false,
-            error: null,
-            ready: true,
-          },
-        })
-      }, [])
-      return <Story />
-    },
-  ],
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      threads: {
+        list: [],
+        loading: false,
+        error: null,
+        ready: true,
+      },
+    })
+  },
   play: async ({ canvas }) => {
     const heading = canvas.getByText('No chats yet')
     await expect(heading).toBeInTheDocument()
@@ -56,21 +51,17 @@ export const EmptyState: Story = {
 }
 
 export const WithChats: Story = {
-  decorators: [
-    Story => {
-      useLayoutEffect(() => {
-        useChatStore.setState({
-          threads: {
-            list: mockThreads,
-            loading: false,
-            error: null,
-            ready: true,
-          },
-        })
-      }, [])
-      return <Story />
-    },
-  ],
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      threads: {
+        list: mockThreads,
+        loading: false,
+        error: null,
+        ready: true,
+      },
+    })
+  },
   play: async ({ canvas }) => {
     // Check that chat items are rendered
     const firstChat = canvas.getByText('How do I implement a React component with TypeScript?')
@@ -84,21 +75,17 @@ export const WithChats: Story = {
 }
 
 export const Loading: Story = {
-  decorators: [
-    Story => {
-      useLayoutEffect(() => {
-        useChatStore.setState({
-          threads: {
-            list: mockThreads,
-            loading: true,
-            error: null,
-            ready: true,
-          },
-        })
-      }, [])
-      return <Story />
-    },
-  ],
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      threads: {
+        list: mockThreads,
+        loading: true,
+        error: null,
+        ready: true,
+      },
+    })
+  },
   play: async ({ canvas }) => {
     const loading = canvas.getByText('Loading threads...')
     await expect(loading).toBeInTheDocument()
@@ -106,21 +93,17 @@ export const Loading: Story = {
 }
 
 export const ErrorState: Story = {
-  decorators: [
-    Story => {
-      useLayoutEffect(() => {
-        useChatStore.setState({
-          threads: {
-            list: mockThreads,
-            loading: false,
-            error: 'Error loading threads',
-            ready: false,
-          },
-        })
-      }, [])
-      return <Story />
-    },
-  ],
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      threads: {
+        list: mockThreads,
+        loading: false,
+        error: 'Error loading threads',
+        ready: false,
+      },
+    })
+  },
   play: async ({ canvas }) => {
     const error = canvas.getByText('Error loading threads')
     await expect(error).toBeInTheDocument()
