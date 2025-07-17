@@ -152,7 +152,9 @@ export class IndexedDBRepository implements IRepository {
       const request = index.getAll(threadId)
 
       request.onsuccess = () => {
-        const messages: Message[] = request.result
+        const messages: Message[] = request.result.sort((a, b) =>
+          a.createdAt.localeCompare(b.createdAt),
+        )
         resolve(messages)
       }
 
