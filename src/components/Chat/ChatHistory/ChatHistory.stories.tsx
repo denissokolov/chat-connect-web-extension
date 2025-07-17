@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 
 import useChatStore from '@/stores/useChatStore'
 import ChatHistory from './ChatHistory'
@@ -27,7 +27,7 @@ type Story = StoryObj<typeof ChatHistory>
 export const EmptyState: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           threads: {
             list: [],
@@ -58,7 +58,7 @@ export const EmptyState: Story = {
 export const WithChats: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           threads: {
             list: mockThreads,
@@ -86,7 +86,7 @@ export const WithChats: Story = {
 export const Loading: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           threads: {
             list: mockThreads,
@@ -108,7 +108,7 @@ export const Loading: Story = {
 export const ErrorState: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           threads: {
             list: mockThreads,

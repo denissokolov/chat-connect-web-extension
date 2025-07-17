@@ -11,7 +11,7 @@ import {
   MessageContentType,
   MessageRole,
 } from '@/types/types'
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { MockAssistant } from '@/services/assistant'
 
 const messages: Message[] = [
@@ -116,7 +116,7 @@ type Story = StoryObj<typeof Chat>
 export const Default: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           messages: {
             list: messages,
@@ -140,7 +140,7 @@ export const Default: Story = {
 export const Empty: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           messages: {
             list: [],
@@ -164,7 +164,7 @@ export const Empty: Story = {
 export const Typing: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           messages: {
             list: [],
@@ -189,7 +189,7 @@ export const Typing: Story = {
 export const WriteMessage: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         const mockAssistant = new MockAssistant('mock-api-key')
         useChatStore.setState({
           messages: {
@@ -229,7 +229,7 @@ export const WriteMessage: Story = {
 export const WithError: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         useChatStore.setState({
           messages: {
             list: [
@@ -259,7 +259,7 @@ export const WithError: Story = {
 export const WithFunctionCall: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         const mockAssistant = new MockAssistant('mock-api-key')
         useChatStore.setState({
           waitingForReply: false,
@@ -402,7 +402,7 @@ export const WithFunctionCall: Story = {
 export const MessagesLoading: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         const mockAssistant = new MockAssistant('mock-api-key')
         useChatStore.setState({
           waitingForReply: false,
@@ -434,7 +434,7 @@ export const MessagesLoading: Story = {
 export const MessagesError: Story = {
   decorators: [
     Story => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         const mockAssistant = new MockAssistant('mock-api-key')
         useChatStore.setState({
           waitingForReply: false,
