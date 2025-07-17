@@ -1,10 +1,8 @@
-name: 'Chromatic'
+name: Chromatic
 
 on:
-  workflow_run:
-    workflows: ['CI']
-    types:
-      - completed
+  workflow_dispatch:
+  push:
     branches: [main]
 
 permissions:
@@ -15,7 +13,6 @@ jobs:
     name: Run Chromatic
 
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
@@ -35,3 +32,4 @@ jobs:
         uses: chromaui/action@latest
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          exitOnceUploaded: true
