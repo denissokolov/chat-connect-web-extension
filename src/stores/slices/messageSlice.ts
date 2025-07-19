@@ -157,6 +157,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
             event.contentId,
             event.textDelta,
           ),
+          waitingForReply: false,
         }))
         break
 
