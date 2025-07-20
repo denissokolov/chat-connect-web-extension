@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect } from 'react'
 
-import { FunctionStatus, type ClickButtonArguments, type FunctionCallResult } from '@/types/types'
+import { type ClickButtonArguments } from '@/types/tool.types'
+import { FunctionStatus, type FunctionCallResult } from '@/types/tool.types'
 import browser from '@/services/browser'
 import { sanitizeSelector } from '@/utils/html/sanitizeSelector'
 

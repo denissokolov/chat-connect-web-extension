@@ -1,9 +1,12 @@
 import { logError } from '@/utils/log'
 import type { IBrowser } from './IBrowser'
-import type { FunctionCallResult, PageContext } from '@/types/types'
+import { type PageContext } from '@/types/types'
+import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
 import { cleanHtmlContent } from '@/utils/html/cleanHtmlContent'
-import { clickButton } from '@/utils/html/clickButton'
-import { setFieldValue } from '@/utils/html/setFieldValue'
+import { clickButton } from '@/utils/html/pure/clickButton'
+import { setFieldValue } from '@/utils/html/pure/setFieldValue'
+import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
+import { getTextContent } from '@/utils/html/getTextContent'
 
 export class ChromeBrowser implements IBrowser {
   openExtensionSettings() {
@@ -70,16 +73,39 @@ export class ChromeBrowser implements IBrowser {
       return null
     }
 
-    const html = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => document.documentElement.outerHTML,
-    })
-
     return {
       title: tab.title || '',
       url: tab.url || '',
       favicon: tab.favIconUrl || null,
-      html: cleanHtmlContent(html[0].result),
+    }
+  }
+
+  async getPageContent(format: PageContentFormat): Promise<FunctionCallResult> {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab || !tab.id) {
+      return { success: false, error: 'Failed to get current tab' }
+    }
+
+    const html = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: getDocumentHtml,
+    })
+
+    const result: FunctionCallResult = html[0].result
+    if (!result.success) {
+      return result
+    }
+
+    if (!result.result) {
+      return { success: false, error: 'Failed to get page content' }
+    }
+
+    return {
+      success: true,
+      result:
+        format === PageContentFormat.Text
+          ? getTextContent(result.result)
+          : cleanHtmlContent(result.result),
     }
   }
 

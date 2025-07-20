@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { OpenAIAssistant } from './OpenAIAssistant'
 import { mockMultipleOutputsResponse, mockSingleOutputResponse } from './OpenAIAssistant.mocks'
@@ -7,7 +7,8 @@ import {
   ProviderMessageEventType,
   type ProviderMessageEvent,
 } from '@/types/provider.types'
-import { MessageContentType, FunctionStatus, FunctionName, MessageRole } from '@/types/types'
+import { MessageContentType, MessageRole } from '@/types/types'
+import { type AssistantTool, FunctionStatus, FunctionName } from '@/types/tool.types'
 
 vi.mock('openai', () => ({
   default: class MockOpenAI {
@@ -104,6 +105,7 @@ describe('OpenAIAssistant', () => {
           complete: true,
         },
         eventHandler,
+        tools: [],
       })
 
       expect(events).toHaveLength(7)
@@ -244,6 +246,7 @@ describe('OpenAIAssistant', () => {
           complete: true,
         },
         eventHandler,
+        tools: [],
       })
 
       expect(events).toHaveLength(3)
@@ -316,6 +319,7 @@ describe('OpenAIAssistant', () => {
           complete: true,
         },
         eventHandler,
+        tools: [],
       })
 
       expect(events).toHaveLength(2)
@@ -340,6 +344,292 @@ describe('OpenAIAssistant', () => {
     it('should return OpenAI provider', () => {
       const assistant = new OpenAIAssistant('test-api-key')
       expect(assistant.getProvider()).toBe('openai')
+    })
+  })
+
+  describe('mapTools', () => {
+    let assistant: OpenAIAssistant
+
+    beforeEach(() => {
+      assistant = new OpenAIAssistant('test-api-key')
+    })
+
+    it('should return undefined when tools is empty array', () => {
+      const result = assistant.mapTools([])
+      expect(result).toBeUndefined()
+    })
+
+    it('should transform single tool correctly', () => {
+      const mockTool: AssistantTool = {
+        name: FunctionName.FillInput,
+        description: 'Fill an input field',
+        parameters: [
+          {
+            name: 'input_type',
+            description: 'Type of input',
+            enum: ['input', 'textarea'],
+            required: true,
+          },
+          {
+            name: 'input_value',
+            description: 'Value to fill',
+            required: true,
+          },
+          {
+            name: 'optional_param',
+            description: 'Optional parameter',
+            required: false,
+          },
+        ],
+      }
+
+      const result = assistant.mapTools([mockTool])
+
+      expect(result).toBeDefined()
+      expect(result).toHaveLength(1)
+      expect(result![0]).toEqual({
+        type: 'function',
+        name: 'fill_input',
+        description: 'Fill an input field',
+        strict: true,
+        parameters: {
+          type: 'object',
+          properties: {
+            input_type: {
+              type: 'string',
+              description: 'Type of input',
+              enum: ['input', 'textarea'],
+            },
+            input_value: {
+              type: 'string',
+              description: 'Value to fill',
+              enum: undefined,
+            },
+            optional_param: {
+              type: 'string',
+              description: 'Optional parameter',
+              enum: undefined,
+            },
+          },
+          required: ['input_type', 'input_value'],
+          additionalProperties: false,
+        },
+      })
+    })
+
+    it('should transform multiple tools correctly', () => {
+      const mockTools: AssistantTool[] = [
+        {
+          name: FunctionName.FillInput,
+          description: 'Fill an input field',
+          parameters: [
+            {
+              name: 'input_type',
+              description: 'Type of input',
+              required: true,
+            },
+          ],
+        },
+        {
+          name: FunctionName.ClickButton,
+          description: 'Click a button',
+          parameters: [
+            {
+              name: 'button_selector',
+              description: 'Button selector',
+              required: true,
+            },
+            {
+              name: 'button_text',
+              description: 'Button text',
+              required: false,
+            },
+          ],
+        },
+      ]
+
+      const result = assistant.mapTools(mockTools)
+
+      expect(result).toBeDefined()
+      expect(result).toHaveLength(2)
+
+      if (result) {
+        expect(result[0].name).toBe('fill_input')
+        expect(result[1].name).toBe('click_button')
+        expect(result[0].parameters?.required).toEqual(['input_type'])
+        expect(result[1].parameters?.required).toEqual(['button_selector'])
+      }
+    })
+
+    it('should handle tool with no required parameters', () => {
+      const mockTool: AssistantTool = {
+        name: FunctionName.GetPageContent,
+        description: 'Get page content',
+        parameters: [
+          {
+            name: 'format',
+            description: 'Content format',
+            enum: ['html', 'text'],
+            required: false,
+          },
+        ],
+      }
+
+      const result = assistant.mapTools([mockTool])
+
+      expect(result).toBeDefined()
+      expect(result).toHaveLength(1)
+
+      if (result) {
+        expect(result[0].parameters?.required).toEqual([])
+        expect(result[0].parameters?.properties).toEqual({
+          format: {
+            type: 'string',
+            description: 'Content format',
+            enum: ['html', 'text'],
+          },
+        })
+      }
+    })
+
+    it('should handle tool with no parameters', () => {
+      const mockTool: AssistantTool = {
+        name: FunctionName.GetPageContent,
+        description: 'Get page content',
+        parameters: [],
+      }
+
+      const result = assistant.mapTools([mockTool])
+
+      expect(result).toBeDefined()
+      expect(result).toHaveLength(1)
+
+      if (result) {
+        expect(result[0].parameters?.properties).toEqual({})
+        expect(result[0].parameters?.required).toEqual([])
+      }
+    })
+
+    it('should set all parameters as string type', () => {
+      const mockTool: AssistantTool = {
+        name: FunctionName.FillInput,
+        description: 'Fill an input field',
+        parameters: [
+          {
+            name: 'param1',
+            description: 'First parameter',
+            required: true,
+          },
+          {
+            name: 'param2',
+            description: 'Second parameter',
+            enum: ['option1', 'option2'],
+            required: false,
+          },
+        ],
+      }
+
+      const result = assistant.mapTools([mockTool])
+
+      expect(result).toBeDefined()
+      if (result) {
+        const properties = result[0].parameters?.properties as Record<string, { type: string }>
+        expect(properties.param1.type).toBe('string')
+        expect(properties.param2.type).toBe('string')
+      }
+    })
+
+    it('should set strict mode and additionalProperties false', () => {
+      const mockTool: AssistantTool = {
+        name: FunctionName.FillInput,
+        description: 'Fill an input field',
+        parameters: [
+          {
+            name: 'test_param',
+            description: 'Test parameter',
+            required: true,
+          },
+        ],
+      }
+
+      const result = assistant.mapTools([mockTool])
+
+      expect(result).toBeDefined()
+      if (result) {
+        expect(result[0].strict).toBe(true)
+        expect(result[0].parameters?.additionalProperties).toBe(false)
+        expect(result[0].parameters?.type).toBe('object')
+        expect(result[0].type).toBe('function')
+      }
+    })
+
+    it('should map fillInput tool correctly', () => {
+      const fillInputTool: AssistantTool = {
+        name: FunctionName.FillInput,
+        description: 'Fill the given value into the input field on the page.',
+        parameters: [
+          {
+            name: 'input_type',
+            description: 'The type of the input to fill',
+            enum: ['input', 'textarea', 'select', 'radio', 'checkbox'],
+            required: true,
+          },
+          {
+            name: 'input_value',
+            description: 'The value to fill in the input',
+            required: true,
+          },
+          {
+            name: 'input_selector',
+            description:
+              'The selector of the input to fill. It will be used as document.querySelector(input_selector).',
+            required: true,
+          },
+          {
+            name: 'label_value',
+            description:
+              'The value of the label of the input to fill. Provide any relevant details if there is no label, e.g. the placeholder text.',
+          },
+        ],
+      }
+
+      const result = assistant.mapTools([fillInputTool])
+
+      expect(result).toBeDefined()
+      if (result) {
+        expect(result[0]).toEqual({
+          type: 'function',
+          name: 'fill_input',
+          description: 'Fill the given value into the input field on the page.',
+          strict: true,
+          parameters: {
+            type: 'object',
+            properties: {
+              input_type: {
+                type: 'string',
+                enum: ['input', 'textarea', 'select', 'radio', 'checkbox'],
+                description: 'The type of the input to fill',
+              },
+              input_value: {
+                type: 'string',
+                description: 'The value to fill in the input',
+              },
+              input_selector: {
+                type: 'string',
+                description:
+                  'The selector of the input to fill. It will be used as document.querySelector(input_selector).',
+              },
+              label_value: {
+                type: 'string',
+                description:
+                  'The value of the label of the input to fill. Provide any relevant details if there is no label, e.g. the placeholder text.',
+              },
+            },
+            required: ['input_type', 'input_value', 'input_selector'],
+            additionalProperties: false,
+          },
+        })
+      }
     })
   })
 })

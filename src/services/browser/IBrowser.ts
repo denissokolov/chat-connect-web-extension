@@ -1,4 +1,5 @@
-import type { FunctionCallResult, PageContext } from '@/types/types'
+import type { PageContext } from '@/types/types'
+import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
 
 export interface IBrowser {
   openExtensionSettings(): void
@@ -9,7 +10,7 @@ export interface IBrowser {
   subscribeToPageInfo(callback: (title: string | null, favicon: string | null) => void): () => void
 
   getPageContext: () => Promise<PageContext | null>
-
+  getPageContent(format: PageContentFormat): Promise<FunctionCallResult>
   setFieldValue(selector: string, value: string): Promise<FunctionCallResult>
   clickButton(selector: string): Promise<FunctionCallResult>
 }

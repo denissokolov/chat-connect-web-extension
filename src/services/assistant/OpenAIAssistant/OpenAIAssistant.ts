@@ -1,12 +1,6 @@
 import OpenAI from 'openai'
 
-import {
-  type Message,
-  MessageContentType,
-  FunctionName,
-  FunctionStatus,
-  type FunctionCallContent,
-} from '@/types/types'
+import { type Message, MessageContentType, type FunctionCallContent } from '@/types/types'
 import type { IAssistant } from '@/services/assistant'
 import { logDebug, logError, logWarning } from '@/utils/log'
 import {
@@ -16,6 +10,7 @@ import {
   ProviderMessageEventType,
 } from '@/types/provider.types'
 import { getLastAssistantMessageId, getMessageText } from '@/utils/message'
+import { FunctionName, FunctionStatus, type AssistantTool } from '@/types/tool.types'
 
 export class OpenAIAssistant implements IAssistant {
   private client: OpenAI
@@ -40,6 +35,7 @@ export class OpenAIAssistant implements IAssistant {
     history?: ReadonlyArray<Message>
     signal?: AbortSignal
     eventHandler: (event: ProviderMessageEvent) => void
+    tools: AssistantTool[]
   }): Promise<void> {
     this.progress = true
 
@@ -49,7 +45,7 @@ export class OpenAIAssistant implements IAssistant {
       input: getMessageText(params.message),
       previous_response_id: this.getPreviousResponseId(params.history),
       store: true,
-      tools: [this.getFillInputTool(), this.getClickButtonTool()],
+      tools: this.mapTools(params.tools),
       stream: true,
     })
 
@@ -65,6 +61,7 @@ export class OpenAIAssistant implements IAssistant {
     model: AIModel
     message: Message
     eventHandler: (event: ProviderMessageEvent) => void
+    tools: AssistantTool[]
   }): Promise<void> {
     this.progress = true
 
@@ -84,7 +81,7 @@ export class OpenAIAssistant implements IAssistant {
       input,
       previous_response_id: params.message.id,
       store: true,
-      tools: [this.getFillInputTool(), this.getClickButtonTool()],
+      tools: this.mapTools(params.tools),
       stream: true,
     })
 
@@ -216,6 +213,18 @@ export class OpenAIAssistant implements IAssistant {
       }
     }
 
+    if (output.name === FunctionName.GetPageContent) {
+      return {
+        id: output.call_id,
+        type: MessageContentType.FunctionCall,
+        status: FunctionStatus.Idle,
+        name: FunctionName.GetPageContent,
+        arguments: {
+          format: args.format,
+        },
+      }
+    }
+
     logWarning('Unsupported function call', output)
     return null
   }
@@ -224,64 +233,32 @@ export class OpenAIAssistant implements IAssistant {
     return history ? getLastAssistantMessageId(history) : undefined
   }
 
-  private getFillInputTool(): OpenAI.Responses.Tool {
-    return {
-      type: 'function',
-      name: 'fill_input',
-      description: 'Fill the given value into the input field on the page.',
-      strict: true,
-      parameters: {
-        type: 'object',
-        properties: {
-          input_type: {
-            type: 'string',
-            enum: ['input', 'textarea', 'select', 'radio', 'checkbox'],
-            description: 'The type of the input to fill',
-          },
-          input_value: {
-            type: 'string',
-            description: 'The value to fill in the input',
-          },
-          input_selector: {
-            type: 'string',
-            description:
-              'The selector of the input to fill. It will be used as document.querySelector(input_selector).',
-          },
-          label_value: {
-            type: 'string',
-            description:
-              'The value of the label of the input to fill. Provide any relevant details if there is no label, e.g. the placeholder text.',
-          },
-        },
-        required: ['input_type', 'input_value', 'input_selector', 'label_value'],
-        additionalProperties: false,
-      },
+  public mapTools(tools: AssistantTool[]): OpenAI.Responses.FunctionTool[] | undefined {
+    if (tools.length === 0) {
+      return undefined
     }
-  }
 
-  private getClickButtonTool(): OpenAI.Responses.Tool {
-    return {
+    return tools.map(tool => ({
       type: 'function',
-      name: 'click_button',
-      description: 'Click the button on the page.',
+      name: tool.name,
+      description: tool.description,
       strict: true,
       parameters: {
         type: 'object',
-        properties: {
-          button_selector: {
-            type: 'string',
-            description:
-              'The selector of the button to click. It will be used as document.querySelector(button_selector).',
+        properties: tool.parameters.reduce(
+          (acc, param) => {
+            acc[param.name] = {
+              type: 'string',
+              description: param.description,
+              enum: param.enum,
+            }
+            return acc
           },
-          button_text: {
-            type: 'string',
-            description:
-              'The text of the button to click. Provide any relevant details if there is no text, e.g. the button label.',
-          },
-        },
-        required: ['button_selector', 'button_text'],
+          {} as Record<string, unknown>,
+        ),
+        required: tool.parameters.filter(param => param.required).map(param => param.name),
         additionalProperties: false,
       },
-    }
+    }))
   }
 }

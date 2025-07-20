@@ -2,12 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
 import AssistantMessage from './AssistantMessage'
-import {
-  FunctionName,
-  FunctionStatus,
-  MessageContentType,
-  type MessageContent,
-} from '@/types/types'
+import { MessageContentType, type MessageContent } from '@/types/types'
+import { FunctionName, FunctionStatus, PageContentFormat } from '@/types/tool.types'
 
 const meta: Meta<typeof AssistantMessage> = {
   title: 'Chat / Assistant Message',
@@ -20,6 +16,9 @@ const meta: Meta<typeof AssistantMessage> = {
       control: 'object',
       description: 'Array of message content items',
     },
+  },
+  args: {
+    saveFunctionResult: async () => {},
   },
 }
 
@@ -421,5 +420,74 @@ export const ErrorOnly: Story = {
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
     expect(canvas.getByText(/Failed to get the response/)).toBeInTheDocument()
+  },
+}
+
+export const GetPageContentInProgress: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.GetPageContent,
+        status: FunctionStatus.Idle,
+        arguments: {
+          format: PageContentFormat.Text,
+        },
+      },
+    ],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Getting page text...')).toBeInTheDocument()
+  },
+}
+
+export const GetPageContentSuccess: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.GetPageContent,
+        status: FunctionStatus.Success,
+        result: {
+          success: true,
+          result: 'This is a test page content',
+        },
+        arguments: {
+          format: PageContentFormat.Text,
+        },
+      },
+    ],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Getting page text - success')).toBeInTheDocument()
+  },
+}
+
+export const GetPageContentError: Story = {
+  args: {
+    content: [
+      {
+        id: '7',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.GetPageContent,
+        status: FunctionStatus.Error,
+        result: {
+          success: false,
+          error: 'Failed to get page content.',
+        },
+        arguments: {
+          format: PageContentFormat.Text,
+        },
+      },
+    ],
+  },
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    expect(canvas.getByText('Getting page text - error')).toBeInTheDocument()
+    expect(canvas.getByText('Failed to get page content.')).toBeInTheDocument()
   },
 }

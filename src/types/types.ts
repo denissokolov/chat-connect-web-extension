@@ -1,3 +1,12 @@
+import type {
+  FunctionCallResult,
+  FunctionName,
+  FunctionStatus,
+  FillInputArguments,
+  ClickButtonArguments,
+  GetPageContentArguments,
+} from './tool.types'
+
 export enum MessageRole {
   User = 'user',
   Assistant = 'assistant',
@@ -6,35 +15,6 @@ export enum MessageRole {
 export enum MessageContentType {
   OutputText = 'output_text',
   FunctionCall = 'function_call',
-}
-
-export enum FunctionName {
-  FillInput = 'fill_input',
-  ClickButton = 'click_button',
-}
-
-export enum FunctionStatus {
-  Idle = 'idle',
-  Pending = 'pending',
-  Success = 'success',
-  Error = 'error',
-}
-
-export type FunctionCallResult = {
-  success: boolean
-  error?: string
-}
-
-export type FillInputArguments = {
-  input_type: string
-  input_value: string
-  input_selector: string
-  label_value: string
-}
-
-export type ClickButtonArguments = {
-  button_selector: string
-  button_text: string
 }
 
 export type FunctionCallContent =
@@ -53,6 +33,14 @@ export type FunctionCallContent =
       result?: FunctionCallResult
       name: FunctionName.ClickButton
       arguments: ClickButtonArguments
+    }
+  | {
+      id: string
+      type: MessageContentType.FunctionCall
+      status: FunctionStatus
+      result?: FunctionCallResult
+      name: FunctionName.GetPageContent
+      arguments: GetPageContentArguments
     }
 
 export type MessageContent =
@@ -91,7 +79,6 @@ export type MessageGroup = {
 export interface PageContext {
   title: string
   url: string
-  html: string
   favicon: string | null
 }
 

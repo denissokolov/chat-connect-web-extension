@@ -1,15 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { DateTime } from 'luxon'
 
-import {
-  FunctionName,
-  MessageContentType,
-  MessageRole,
-  type ClickButtonArguments,
-  type MessageContent,
-  type Message,
-  FunctionStatus,
-} from '@/types/types'
+import { MessageContentType, MessageRole, type MessageContent, type Message } from '@/types/types'
+import { FunctionName, FunctionStatus, type ClickButtonArguments } from '@/types/tool.types'
 
 import {
   createAssistantMessage,

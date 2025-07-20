@@ -1,4 +1,4 @@
-import type { FunctionCallResult } from '@/types/types'
+import type { FunctionCallResult } from '@/types/tool.types'
 
 export function setFieldValue(selector: string, value: string): FunctionCallResult {
   const parseBooleanValue = (): boolean => {
@@ -160,7 +160,7 @@ export function setFieldValue(selector: string, value: string): FunctionCallResu
     console.error(error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : (error?.toString() ?? 'Unknown error'),
+      error: error instanceof Error ? error.message : (error?.toString?.() ?? 'Unknown error'),
     } as FunctionCallResult
   }
 }

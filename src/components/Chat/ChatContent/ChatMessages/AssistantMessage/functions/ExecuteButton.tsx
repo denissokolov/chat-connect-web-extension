@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { CheckIcon, Loader2, PlayIcon, CircleAlertIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { FunctionStatus } from '@/types/types'
+import { FunctionStatus } from '@/types/tool.types'
 
 interface ExecuteFunctionProps {
   label: string

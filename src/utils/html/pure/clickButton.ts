@@ -1,4 +1,4 @@
-import type { FunctionCallResult } from '@/types/types'
+import type { FunctionCallResult } from '@/types/tool.types'
 
 export function clickButton(selector: string): FunctionCallResult {
   try {
@@ -24,7 +24,7 @@ export function clickButton(selector: string): FunctionCallResult {
     console.error(error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : (error?.toString() ?? 'Unknown error'),
+      error: error instanceof Error ? error.message : (error?.toString?.() ?? 'Unknown error'),
     }
   }
 }

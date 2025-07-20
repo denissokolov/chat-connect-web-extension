@@ -4,6 +4,10 @@ export function getBasicInstructions(pageContext: PageContext): string {
   return `
 # Identity
 You are a helpful assistant that can help users with questions about the current webpage they are viewing.
+You can use the following tools to help you:
+- fill_input: to fill in input fields
+- click_button: to click buttons
+- get_page_content: to get the content of the page
 
 # Page Information
 
@@ -14,9 +18,5 @@ You are a helpful assistant that can help users with questions about the current
 <page-url>
   ${pageContext.url}
 </page-url>
-
-<page-html>
-  ${pageContext.html}
-</page-html>
 `.trim()
 }

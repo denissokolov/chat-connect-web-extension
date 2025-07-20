@@ -1,4 +1,5 @@
-import type { FunctionCallResult, PageContext } from '@/types/types'
+import { type PageContext } from '@/types/types'
+import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
 import type { IBrowser } from './IBrowser'
 
 export class MockBrowser implements IBrowser {
@@ -27,24 +28,43 @@ export class MockBrowser implements IBrowser {
       title: 'Sample Web Page',
       url: 'mock-url',
       favicon: this.favicon,
-      html: `
-        <html>
-          <head>
-            <title>Sample Web Page</title>
-          </head>
-          <body>
-            <h1>Sample Web Page</h1>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </p>
-            <p>
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
-          </body>
-        </html>
+    })
+  }
+
+  getPageContent(format: PageContentFormat): Promise<FunctionCallResult> {
+    if (format === PageContentFormat.Html) {
+      return Promise.resolve({
+        success: true,
+        result: `
+          <html>
+            <head>
+              <title>Sample Web Page</title>
+            </head>
+            <body>
+              <h1>Sample Web Page</h1>
+              <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              </p>
+              <p>
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+              </p>
+            </body>
+          </html>
+        `,
+      })
+    }
+
+    return Promise.resolve({
+      success: true,
+      result: `Sample Web Page
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
       `,
     })
   }

@@ -1,5 +1,5 @@
+import { FunctionStatus } from '@/types/tool.types'
 import {
-  FunctionStatus,
   type Message,
   type MessageContent,
   MessageContentType,

@@ -90,9 +90,28 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/utils/html/*.ts'],
+    files: ['src/utils/html/pure/*.ts'],
+    ignores: ['src/utils/html/pure/*.test.ts'],
     rules: {
       'no-console': 'off',
+      'no-restricted-syntax': [
+        'error',
+        {
+          // Forbid all import declarations that are not type-only
+          selector: "ImportDeclaration:not([importKind='type'])",
+          message: 'Only type imports are allowed.',
+        },
+        {
+          // Forbid require() calls
+          selector: "CallExpression[callee.name='require']",
+          message: 'Require statements are forbidden.',
+        },
+        {
+          // Forbid dynamic import()
+          selector: 'ImportExpression',
+          message: 'Dynamic imports are forbidden.',
+        },
+      ],
     },
   },
   storybook.configs['flat/recommended'],

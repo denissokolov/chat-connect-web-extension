@@ -1,14 +1,11 @@
 import { memo } from 'react'
 
-import {
-  FunctionName,
-  MessageContentType,
-  type FunctionCallResult,
-  type MessageContent,
-} from '@/types/types'
+import { MessageContentType, type MessageContent } from '@/types/types'
+import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 import FillInputMessage from './functions/FillInputMessage'
 import ClickButtonMessage from './functions/ClickButtonMessage'
+import GetPageContentMessage from './functions/GetPageContentMessage'
 
 interface AssistantMessageProps {
   messageId: string
@@ -62,6 +59,19 @@ function AssistantMessage({
                 error={item.result?.error}
                 saveResult={saveFunctionResult}
                 autoExecute={autoExecuteTools}
+              />
+            )
+          }
+          if (item.name === FunctionName.GetPageContent) {
+            return (
+              <GetPageContentMessage
+                key={item.id}
+                args={item.arguments}
+                messageId={messageId}
+                callId={item.id}
+                status={item.status}
+                error={item.result?.error}
+                saveResult={saveFunctionResult}
               />
             )
           }

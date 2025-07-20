@@ -4,7 +4,7 @@ import type { MessageSlice, ChatStore } from '@/stores/useChatStore.types'
 import browser from '@/services/browser'
 import { logError } from '@/utils/log'
 import { getStringError } from '@/utils/error'
-import { type PageContext, type FunctionCallResult, type Message } from '@/types/types'
+import { type PageContext, type Message } from '@/types/types'
 import { getBasicInstructions } from '@/utils/instructions'
 import {
   createAssistantMessage,
@@ -24,6 +24,8 @@ import {
   updateMessageFunctionResult,
   updateMessageInRepository,
 } from './messageSlice.utils'
+import type { FunctionCallResult } from '@/types/tool.types'
+import { getAvailableTools } from '@/utils/tools'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
   messages: {
@@ -76,6 +78,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         eventHandler: handleMessageEvent,
         instructions: pageContext ? getBasicInstructions(pageContext) : undefined,
         history: messages.list,
+        tools: getAvailableTools(),
       })
     } catch (error) {
       get().handleMessageError(threadId, error, newMessage.id)
@@ -111,6 +114,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         model: model,
         message,
         eventHandler: handleMessageEvent,
+        tools: getAvailableTools(),
       })
     } catch (error) {
       get().handleMessageError(threadId, error, message.id)

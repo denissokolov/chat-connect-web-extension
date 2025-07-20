@@ -8,14 +8,12 @@ import repository from '@/services/repository'
 import {
   MessageContentType,
   MessageRole,
-  FunctionStatus,
-  FunctionName,
-  type Message,
-  type PageContext,
-  type FunctionCallResult,
-  type MessageContent,
   type FunctionCallContent,
+  type Message,
+  type MessageContent,
+  type PageContext,
 } from '@/types/types'
+import { FunctionStatus, FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import { AIModel, AIProvider, ProviderMessageEventType } from '@/types/provider.types'
 
 vi.mock('@/services/assistant', () => ({
@@ -50,9 +48,19 @@ describe('messageSlice', () => {
   const mockPageContext: PageContext = {
     title: 'Test Page',
     url: 'https://example.com',
-    html: '<html><body>Test content</body></html>',
     favicon: 'test-favicon.ico',
   }
+  const toolsMock = [
+    expect.objectContaining({
+      name: 'fill_input',
+    }),
+    expect.objectContaining({
+      name: 'click_button',
+    }),
+    expect.objectContaining({
+      name: 'get_page_content',
+    }),
+  ]
 
   beforeEach(() => {
     useChatStore.setState({
@@ -153,6 +161,7 @@ describe('messageSlice', () => {
         eventHandler: expect.any(Function),
         instructions: expect.stringContaining('Test Page'),
         history: [],
+        tools: toolsMock,
       })
     })
 
@@ -188,6 +197,7 @@ describe('messageSlice', () => {
         eventHandler: expect.any(Function),
         instructions: undefined,
         history: [],
+        tools: toolsMock,
       })
     })
 
@@ -237,6 +247,7 @@ describe('messageSlice', () => {
         eventHandler: expect.any(Function),
         instructions: undefined,
         history: existingMessages,
+        tools: toolsMock,
       })
     })
 
@@ -324,6 +335,7 @@ describe('messageSlice', () => {
         eventHandler: expect.any(Function),
         instructions: undefined,
         history: [],
+        tools: toolsMock,
       })
     })
 
@@ -732,6 +744,7 @@ describe('messageSlice', () => {
           ],
         },
         eventHandler: expect.any(Function),
+        tools: toolsMock,
       })
     })
 
@@ -1245,6 +1258,7 @@ describe('messageSlice', () => {
         model: AIModel.OpenAI_ChatGPT_4o,
         message: mockMessage,
         eventHandler: expect.any(Function),
+        tools: toolsMock,
       })
     })
 
@@ -1344,6 +1358,7 @@ describe('messageSlice', () => {
         model: AIModel.OpenAI_ChatGPT_4o,
         message: mockMessage,
         eventHandler: expect.any(Function),
+        tools: toolsMock,
       })
     })
   })
@@ -1706,6 +1721,7 @@ describe('messageSlice', () => {
         model: AIModel.OpenAI_ChatGPT_4o,
         message: existingMessage,
         eventHandler: expect.any(Function),
+        tools: toolsMock,
       })
     })
 

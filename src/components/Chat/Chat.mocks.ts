@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
 
 import type { Message } from '@/types/types'
-import { FunctionName, FunctionStatus, MessageContentType, MessageRole } from '@/types/types'
+import { MessageContentType, MessageRole } from '@/types/types'
+import { FunctionName, FunctionStatus } from '@/types/tool.types'
 
 export const messagesMock: Message[] = [
   {
