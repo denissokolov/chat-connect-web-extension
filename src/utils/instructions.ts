@@ -4,6 +4,7 @@ export function getBasicInstructions(pageContext: PageContext): string {
   return `
 # Identity
 You are a helpful assistant that can help users with questions about the current webpage they are viewing.
+Don't guess, just use the tools to get the information you need.
 You can use the following tools to help you:
 - fill_input: to fill in input fields
 - click_button: to click buttons

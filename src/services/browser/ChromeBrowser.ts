@@ -2,11 +2,10 @@ import { logError } from '@/utils/log'
 import type { IBrowser } from './IBrowser'
 import { type PageContext } from '@/types/types'
 import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
-import { cleanHtmlContent } from '@/utils/html/cleanHtmlContent'
 import { clickButton } from '@/utils/html/pure/clickButton'
 import { setFieldValue } from '@/utils/html/pure/setFieldValue'
 import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
-import { getTextContent } from '@/utils/html/getTextContent'
+import { getTextContent } from '@/utils/html/pure/getTextContent'
 
 export class ChromeBrowser implements IBrowser {
   openExtensionSettings() {
@@ -100,13 +99,7 @@ export class ChromeBrowser implements IBrowser {
       return { success: false, error: 'Failed to get page content' }
     }
 
-    return {
-      success: true,
-      result:
-        format === PageContentFormat.Text
-          ? getTextContent(result.result)
-          : cleanHtmlContent(result.result),
-    }
+    return format === PageContentFormat.Html ? result : getTextContent(result.result)
   }
 
   async setFieldValue(selector: string, value: string): Promise<FunctionCallResult> {

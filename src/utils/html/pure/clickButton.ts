@@ -20,7 +20,7 @@ export function clickButton(selector: string): FunctionCallResult {
     console.error(`Button not found for selector: ${selector}`)
     return { success: false, error: 'Button not found' }
   } catch (error) {
-    console.error(`Error clicking button for selector ${selector}`)
+    console.error(`ChatConnect: error clicking button for selector ${selector}`)
     console.error(error)
     return {
       success: false,

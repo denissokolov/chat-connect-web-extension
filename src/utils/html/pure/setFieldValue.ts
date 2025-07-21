@@ -156,7 +156,7 @@ export function setFieldValue(selector: string, value: string): FunctionCallResu
 
     return result
   } catch (error) {
-    console.error(`Error setting value for selector ${selector}`)
+    console.error(`ChatConnect: error setting value for selector ${selector}`)
     console.error(error)
     return {
       success: false,
