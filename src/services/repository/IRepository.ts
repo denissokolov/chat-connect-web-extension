@@ -1,4 +1,4 @@
-import type { Message, Thread } from '@/types/types'
+import type { Message, Thread } from '@/types/chat.types'
 
 export interface IRepository {
   init(): Promise<void>

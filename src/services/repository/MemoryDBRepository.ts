@@ -1,5 +1,5 @@
 import type { IRepository } from './IRepository'
-import type { Message, Thread } from '@/types/types'
+import type { Message, Thread } from '@/types/chat.types'
 
 export class MemoryDBRepository implements IRepository {
   private threads: Map<string, Thread> = new Map()

@@ -5,8 +5,8 @@ import {
   MessageContentType,
   type MessageGroup,
   MessageRole,
-  type PageContext,
-} from '@/types/types'
+} from '@/types/chat.types'
+import { type PageContext } from '@/types/browser.types'
 import { DateTime } from 'luxon'
 
 export function createAssistantMessage(

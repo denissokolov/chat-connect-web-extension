@@ -6,7 +6,7 @@ import {
   type Message,
   type MessageContent,
   type Thread,
-} from '@/types/types'
+} from '@/types/chat.types'
 
 import { MemoryDBRepository } from './MemoryDBRepository'
 

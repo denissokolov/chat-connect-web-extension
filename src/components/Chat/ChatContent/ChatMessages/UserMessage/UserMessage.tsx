@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { AlertCircle } from 'lucide-react'
 
-import { type MessageContent, type MessageContext } from '@/types/types'
+import { type MessageContent, type MessageContext } from '@/types/chat.types'
 import ContextDisplay from '@/components/Chat/ContextDisplay/ContextDisplay'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 

@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { MessageContentType, type MessageContent } from '@/types/types'
+import { MessageContentType, type MessageContent } from '@/types/chat.types'
 import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 import FillInputMessage from './functions/FillInputMessage'

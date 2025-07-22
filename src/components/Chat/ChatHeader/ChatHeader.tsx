@@ -3,7 +3,7 @@ import { memo, useCallback } from 'react'
 
 import { Button } from '@/components/ui/button'
 import useChatStore from '@/stores/useChatStore'
-import { ChatView } from '@/types/types'
+import { ChatView } from '@/types/chat.types'
 
 interface ChatHeaderProps {
   currentView: ChatView

@@ -1,4 +1,4 @@
-import type { Message } from '@/types/types'
+import type { Message } from '@/types/chat.types'
 import type { AIModel, AIProvider, ProviderMessageEvent } from '@/types/provider.types'
 import type { AssistantTool } from '@/types/tool.types'
 

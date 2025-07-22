@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
 import AssistantMessage from './AssistantMessage'
-import { MessageContentType, type MessageContent } from '@/types/types'
+import { MessageContentType, type MessageContent } from '@/types/chat.types'
 import { FunctionName, FunctionStatus, PageContentFormat } from '@/types/tool.types'
 
 const meta: Meta<typeof AssistantMessage> = {

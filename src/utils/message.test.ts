@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { DateTime } from 'luxon'
 
-import { MessageContentType, MessageRole, type MessageContent, type Message } from '@/types/types'
+import {
+  MessageContentType,
+  MessageRole,
+  type MessageContent,
+  type Message,
+} from '@/types/chat.types'
 import { FunctionName, FunctionStatus, type ClickButtonArguments } from '@/types/tool.types'
 
 import {

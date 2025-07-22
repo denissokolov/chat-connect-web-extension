@@ -1,4 +1,4 @@
-import type { Thread } from '@/types/types'
+import type { Thread } from '@/types/chat.types'
 import { DateTime } from 'luxon'
 
 export const mockThreads: Thread[] = [

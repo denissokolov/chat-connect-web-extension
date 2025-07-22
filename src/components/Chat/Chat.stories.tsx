@@ -4,7 +4,7 @@ import { DateTime } from 'luxon'
 
 import Chat from './Chat'
 import useChatStore from '@/stores/useChatStore'
-import { MessageContentType, MessageRole } from '@/types/types'
+import { MessageContentType, MessageRole } from '@/types/chat.types'
 import { MockAssistant } from '@/services/assistant'
 import { messagesMock, messagesWithFunctionCallMock } from './Chat.mocks'
 

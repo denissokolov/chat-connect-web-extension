@@ -1,5 +1,5 @@
 import type { IAssistant } from '@/services/assistant'
-import type { ChatView, Message, Thread } from '@/types/types'
+import type { ChatView, Message, Thread } from '@/types/chat.types'
 import type { FunctionCallResult } from '@/types/tool.types'
 import type { AIModel, ProviderMessageEvent } from '@/types/provider.types'
 

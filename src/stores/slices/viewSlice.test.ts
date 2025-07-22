@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import useChatStore from '@/stores/useChatStore'
-import { ChatView } from '@/types/types'
+import { ChatView } from '@/types/chat.types'
 
 describe('viewSlice', () => {
   beforeEach(() => {

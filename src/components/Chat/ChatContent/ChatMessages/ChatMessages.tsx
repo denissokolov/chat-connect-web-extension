@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 
 import useChatStore from '@/stores/useChatStore'
-import { MessageRole } from '@/types/types'
+import { MessageRole } from '@/types/chat.types'
 import { splitMessagesIntoGroups } from '@/utils/message'
 import { cn } from '@/utils/ui'
 

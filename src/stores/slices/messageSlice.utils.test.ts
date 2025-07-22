@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { MessageContentType, MessageRole } from '@/types/types'
+import { MessageContentType, MessageRole } from '@/types/chat.types'
 import { FunctionName, FunctionStatus, type FunctionCallResult } from '@/types/tool.types'
-import type { Message, MessageContent } from '@/types/types'
+import type { Message, MessageContent } from '@/types/chat.types'
 import type { StoreMessages } from '@/stores/useChatStore.types'
 
 import {

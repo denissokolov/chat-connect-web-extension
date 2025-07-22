@@ -1,4 +1,4 @@
-import { MessageContentType, type Message, type MessageContent } from '@/types/types'
+import { MessageContentType, type Message, type MessageContent } from '@/types/chat.types'
 import { FunctionStatus, type FunctionCallResult } from '@/types/tool.types'
 import type { StoreMessages } from '@/stores/useChatStore.types'
 import { getStringError } from '@/utils/error'

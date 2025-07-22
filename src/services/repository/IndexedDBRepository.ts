@@ -1,5 +1,5 @@
 import type { IRepository } from './IRepository'
-import type { Message, Thread } from '@/types/types'
+import type { Message, Thread } from '@/types/chat.types'
 
 export class IndexedDBRepository implements IRepository {
   private readonly dbName = 'ChatConnectDB'

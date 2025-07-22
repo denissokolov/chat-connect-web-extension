@@ -1,5 +1,6 @@
-import { type PageContext } from '@/types/types'
+import { type PageContext } from '@/types/browser.types'
 import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
+
 import type { IBrowser } from './IBrowser'
 
 export class MockBrowser implements IBrowser {

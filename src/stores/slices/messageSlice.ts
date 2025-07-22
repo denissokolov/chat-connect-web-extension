@@ -4,7 +4,8 @@ import type { MessageSlice, ChatStore } from '@/stores/useChatStore.types'
 import browser from '@/services/browser'
 import { logError } from '@/utils/log'
 import { getStringError } from '@/utils/error'
-import { type PageContext, type Message } from '@/types/types'
+import { type PageContext } from '@/types/browser.types'
+import { type Message } from '@/types/chat.types'
 import { getBasicInstructions } from '@/utils/instructions'
 import {
   createAssistantMessage,

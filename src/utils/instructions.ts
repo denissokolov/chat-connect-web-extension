@@ -1,4 +1,4 @@
-import type { PageContext } from '@/types/types'
+import type { PageContext } from '@/types/browser.types'
 
 export function getBasicInstructions(pageContext: PageContext): string {
   return `

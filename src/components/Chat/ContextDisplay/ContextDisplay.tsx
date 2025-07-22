@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/ui'
-import { type MessageContext } from '@/types/types'
+import { type MessageContext } from '@/types/chat.types'
 import browser from '@/services/browser'
 
 interface ContextDisplayProps {

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
 import UserMessage from './UserMessage'
-import { MessageContentType } from '@/types/types'
+import { MessageContentType } from '@/types/chat.types'
 
 const meta: Meta<typeof UserMessage> = {
   title: 'Chat / User Message',

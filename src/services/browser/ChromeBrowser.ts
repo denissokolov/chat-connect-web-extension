@@ -1,11 +1,12 @@
-import { logError } from '@/utils/log'
-import type { IBrowser } from './IBrowser'
-import { type PageContext } from '@/types/types'
+import { type PageContext } from '@/types/browser.types'
 import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
 import { clickButton } from '@/utils/html/pure/clickButton'
 import { setFieldValue } from '@/utils/html/pure/setFieldValue'
 import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
 import { getTextContent } from '@/utils/html/pure/getTextContent'
+import { logError } from '@/utils/log'
+
+import type { IBrowser } from './IBrowser'
 
 export class ChromeBrowser implements IBrowser {
   openExtensionSettings() {

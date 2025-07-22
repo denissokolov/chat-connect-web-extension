@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 
-import { type Message, MessageContentType, type FunctionCallContent } from '@/types/types'
+import { type Message, MessageContentType, type FunctionCallContent } from '@/types/chat.types'
 import type { IAssistant } from '@/services/assistant'
 import { logDebug, logError, logWarning } from '@/utils/log'
 import {

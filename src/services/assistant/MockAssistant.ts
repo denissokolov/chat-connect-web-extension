@@ -1,4 +1,4 @@
-import { MessageContentType, type Message } from '@/types/types'
+import { MessageContentType, type Message } from '@/types/chat.types'
 import {
   AIProvider,
   type ProviderMessageEvent,

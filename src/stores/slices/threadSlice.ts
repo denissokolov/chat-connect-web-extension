@@ -1,7 +1,7 @@
 import { type StateCreator } from 'zustand'
 
 import type { ThreadSlice, ChatStore } from '@/stores/useChatStore.types'
-import { ChatView } from '@/types/types'
+import { ChatView } from '@/types/chat.types'
 import repository from '@/services/repository'
 import { getStringError } from '@/utils/error'
 import { emptyMessages, emptyThreads } from '@/utils/empty'

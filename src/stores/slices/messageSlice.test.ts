@@ -11,8 +11,8 @@ import {
   type FunctionCallContent,
   type Message,
   type MessageContent,
-  type PageContext,
-} from '@/types/types'
+} from '@/types/chat.types'
+import { type PageContext } from '@/types/browser.types'
 import { FunctionStatus, FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import { AIModel, AIProvider, ProviderMessageEventType } from '@/types/provider.types'
 

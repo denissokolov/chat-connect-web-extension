@@ -1,4 +1,4 @@
-import type { PageContext } from '@/types/types'
+import type { PageContext } from '@/types/browser.types'
 import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
 
 export interface IBrowser {

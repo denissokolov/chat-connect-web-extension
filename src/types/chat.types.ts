@@ -76,17 +76,6 @@ export type MessageGroup = {
   history: boolean
 }
 
-export interface PageContext {
-  title: string
-  url: string
-  favicon: string | null
-}
-
-export enum Platform {
-  Mac = 'mac',
-  Win = 'win',
-}
-
 export type Thread = {
   id: string
   title: string

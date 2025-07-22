@@ -7,7 +7,7 @@ import {
   ProviderMessageEventType,
   type ProviderMessageEvent,
 } from '@/types/provider.types'
-import { MessageContentType, MessageRole } from '@/types/types'
+import { MessageContentType, MessageRole } from '@/types/chat.types'
 import { type AssistantTool, FunctionStatus, FunctionName } from '@/types/tool.types'
 
 vi.mock('openai', () => ({

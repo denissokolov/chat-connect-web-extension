@@ -1,4 +1,4 @@
-import type { FunctionCallContent, MessageContent } from './types'
+import type { FunctionCallContent, MessageContent } from './chat.types'
 
 export enum AIProvider {
   OpenAI = 'openai',
