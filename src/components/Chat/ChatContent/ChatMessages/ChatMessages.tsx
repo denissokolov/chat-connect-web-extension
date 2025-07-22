@@ -60,6 +60,7 @@ export default function ChatMessages() {
                   content={message.content}
                   saveFunctionResult={saveFunctionResult}
                   autoExecuteTools={autoExecuteTools}
+                  error={message.error}
                 />
               ),
             )}

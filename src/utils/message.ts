@@ -84,7 +84,7 @@ export function getMessageText(message: Message): string {
 export function getLastAssistantMessageId(messages: ReadonlyArray<Message>): string | undefined {
   for (let i = messages.length - 1; i >= 0; i--) {
     const message = messages[i]
-    if (message && message.role === MessageRole.Assistant && message.complete) {
+    if (message && message.role === MessageRole.Assistant && message.complete && !message.error) {
       return message.id
     }
   }

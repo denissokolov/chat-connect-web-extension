@@ -166,7 +166,7 @@ export class OpenAIAssistant implements IAssistant {
           logError('OpenAIAssistant.sendMessage.response.error', event)
           eventHandler({
             type: ProviderMessageEventType.Error,
-            messageId: this.getResponseId(),
+            messageId: this.responseId, // undefined is ok
             userMessageId,
             threadId,
             error: event.message,

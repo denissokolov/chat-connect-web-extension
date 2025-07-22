@@ -55,7 +55,7 @@ type ProviderMessageCompletedEvent = {
 
 type ProviderMessageErrorEvent = {
   type: ProviderMessageEventType.Error
-  messageId: string
+  messageId?: string
   userMessageId: string
   threadId: string
   error: string

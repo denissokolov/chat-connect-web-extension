@@ -1161,6 +1161,201 @@ describe('message utils', () => {
       const result = getLastAssistantMessageId(history)
       expect(result).toBe('assistant-msg-2')
     })
+
+    it('should return undefined when all assistant messages have errors', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'First response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'Network error',
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Second response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'Processing error',
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBeUndefined()
+    })
+
+    it('should skip assistant messages with errors and return the most recent error-free one', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'Good response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Error response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'Processing failed',
+        },
+        {
+          id: 'assistant-msg-3',
+          role: MessageRole.Assistant,
+          content: [
+            {
+              id: 'content-3',
+              type: MessageContentType.OutputText,
+              text: 'Another error response',
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'Network timeout',
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-1')
+    })
+
+    it('should return the most recent complete and error-free assistant message', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'First good response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Second good response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-3',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-3', type: MessageContentType.OutputText, text: 'Error response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'API error',
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-2')
+    })
+
+    it('should handle mixed conditions: incomplete, error, and valid assistant messages', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'Valid response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Incomplete response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-3',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-3', type: MessageContentType.OutputText, text: 'Error response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'Failed to process',
+        },
+        {
+          id: 'assistant-msg-4',
+          role: MessageRole.Assistant,
+          content: [
+            {
+              id: 'content-4',
+              type: MessageContentType.OutputText,
+              text: 'Another valid response',
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBe('assistant-msg-4')
+    })
+
+    it('should return undefined when assistant messages are either incomplete or have errors', () => {
+      const history: ReadonlyArray<Message> = [
+        {
+          id: 'assistant-msg-1',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-1', type: MessageContentType.OutputText, text: 'Incomplete response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: false,
+        },
+        {
+          id: 'assistant-msg-2',
+          role: MessageRole.Assistant,
+          content: [
+            { id: 'content-2', type: MessageContentType.OutputText, text: 'Error response' },
+          ],
+          createdAt: new Date().toISOString(),
+          threadId: 'thread-1',
+          complete: true,
+          error: 'Something went wrong',
+        },
+      ]
+
+      const result = getLastAssistantMessageId(history)
+      expect(result).toBeUndefined()
+    })
   })
 
   describe('areMessageFunctionsComplete', () => {
