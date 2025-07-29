@@ -31,19 +31,25 @@ const tools: AssistantTool[] = [
     ],
   },
   {
-    name: FunctionName.ClickButton,
-    description: 'Click the button on the page.',
+    name: FunctionName.ClickElement,
+    description: 'Click the html element on the page.',
     parameters: [
       {
-        name: 'button_selector',
+        name: 'element_selector',
         description:
-          'The selector of the button to click. It will be used as document.querySelector(button_selector).',
+          'The selector of the html element to click. It will be used as document.querySelector(element_selector).',
         required: true,
       },
       {
-        name: 'button_text',
+        name: 'element_type',
         description:
-          'The text of the button to click. Provide any relevant details if there is no text, e.g. the button label.',
+          'The type of the html element to click. It could be "button", "input", "link", "select", "textarea", etc.',
+        required: true,
+      },
+      {
+        name: 'element_text',
+        description:
+          'The text of the element (button, input, link, etc.) to click. Provide any relevant details if there is no text, e.g. the element label, placeholder, title, etc.',
         required: true,
       },
     ],

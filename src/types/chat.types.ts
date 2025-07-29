@@ -3,7 +3,7 @@ import type {
   FunctionName,
   FunctionStatus,
   FillInputArguments,
-  ClickButtonArguments,
+  ClickElementArguments,
   GetPageContentArguments,
 } from './tool.types'
 
@@ -31,8 +31,8 @@ export type FunctionCallContent =
       type: MessageContentType.FunctionCall
       status: FunctionStatus
       result?: FunctionCallResult
-      name: FunctionName.ClickButton
-      arguments: ClickButtonArguments
+      name: FunctionName.ClickElement
+      arguments: ClickElementArguments
     }
   | {
       id: string

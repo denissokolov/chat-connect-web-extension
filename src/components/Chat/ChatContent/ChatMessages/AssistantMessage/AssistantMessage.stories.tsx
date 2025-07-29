@@ -298,11 +298,12 @@ export const WithMultipleFunctionCallsAndText: Story = {
       {
         id: '11',
         type: MessageContentType.FunctionCall,
-        name: FunctionName.ClickButton,
+        name: FunctionName.ClickElement,
         status: FunctionStatus.Idle,
         arguments: {
-          button_selector: '#submit',
-          button_text: 'Bestellen',
+          element_selector: '#submit',
+          element_text: 'Bestellen',
+          element_type: 'button',
         },
       },
     ],

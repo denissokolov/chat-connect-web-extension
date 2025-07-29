@@ -55,7 +55,7 @@ describe('messageSlice', () => {
       name: 'fill_input',
     }),
     expect.objectContaining({
-      name: 'click_button',
+      name: 'click_element',
     }),
     expect.objectContaining({
       name: 'get_page_content',
@@ -625,10 +625,11 @@ describe('messageSlice', () => {
             id: 'call-2',
             type: MessageContentType.FunctionCall,
             status: FunctionStatus.Idle,
-            name: FunctionName.ClickButton,
+            name: FunctionName.ClickElement,
             arguments: {
-              button_selector: '#button',
-              button_text: 'Click Me',
+              element_selector: '#button',
+              element_text: 'Click Me',
+              element_type: 'button',
             },
           },
         ],
@@ -1046,10 +1047,11 @@ describe('messageSlice', () => {
             id: 'call-2',
             type: MessageContentType.FunctionCall,
             status: FunctionStatus.Pending,
-            name: FunctionName.ClickButton,
+            name: FunctionName.ClickElement,
             arguments: {
-              button_selector: '#button',
-              button_text: 'Click Me',
+              element_selector: '#button',
+              element_text: 'Click Me',
+              element_type: 'button',
             },
           },
           {

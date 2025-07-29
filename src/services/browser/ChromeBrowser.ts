@@ -1,6 +1,6 @@
 import { type PageContext } from '@/types/browser.types'
 import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
-import { clickButton } from '@/utils/html/pure/clickButton'
+import { clickElement } from '@/utils/html/pure/clickElement'
 import { setFieldValue } from '@/utils/html/pure/setFieldValue'
 import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
 import { getTextContent } from '@/utils/html/pure/getTextContent'
@@ -118,7 +118,7 @@ export class ChromeBrowser implements IBrowser {
     return result[0].result
   }
 
-  async clickButton(selector: string): Promise<FunctionCallResult> {
+  async clickElement(selector: string): Promise<FunctionCallResult> {
     const tabId = await this.getCurrentTabId()
     if (!tabId) {
       return { success: false, error: 'Failed to get current tab' }
@@ -127,7 +127,7 @@ export class ChromeBrowser implements IBrowser {
     const result = await chrome.scripting.executeScript({
       target: { tabId },
       args: [selector],
-      func: clickButton as unknown as () => void,
+      func: clickElement as unknown as () => void,
     })
 
     return result[0].result

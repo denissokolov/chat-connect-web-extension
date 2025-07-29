@@ -69,8 +69,8 @@ describe('OpenAIAssistant', () => {
           item: {
             type: 'function_call',
             call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
-            name: 'click_button',
-            arguments: '{"button_selector":"#submit","button_text":"Bestellen"}',
+            name: 'click_element',
+            arguments: '{"element_selector":"#submit","element_text":"Bestellen"}',
           },
         },
         {
@@ -179,10 +179,10 @@ describe('OpenAIAssistant', () => {
           id: 'call_112keBYEDQI5dgV01fLbW3aC',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Bestellen',
+            element_selector: '#submit',
+            element_text: 'Bestellen',
           },
         },
       })
@@ -431,16 +431,16 @@ describe('OpenAIAssistant', () => {
           ],
         },
         {
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           description: 'Click a button',
           parameters: [
             {
-              name: 'button_selector',
+              name: 'element_selector',
               description: 'Button selector',
               required: true,
             },
             {
-              name: 'button_text',
+              name: 'element_text',
               description: 'Button text',
               required: false,
             },
@@ -455,9 +455,9 @@ describe('OpenAIAssistant', () => {
 
       if (result) {
         expect(result[0].name).toBe('fill_input')
-        expect(result[1].name).toBe('click_button')
+        expect(result[1].name).toBe('click_element')
         expect(result[0].parameters?.required).toEqual(['input_type'])
-        expect(result[1].parameters?.required).toEqual(['button_selector'])
+        expect(result[1].parameters?.required).toEqual(['element_selector'])
       }
     })
 

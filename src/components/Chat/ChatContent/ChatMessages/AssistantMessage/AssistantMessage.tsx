@@ -4,7 +4,7 @@ import { MessageContentType, type MessageContent } from '@/types/chat.types'
 import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 import FillInputMessage from './functions/FillInputMessage'
-import ClickButtonMessage from './functions/ClickButtonMessage'
+import ClickElementMessage from './functions/ClickElementMessage'
 import GetPageContentMessage from './functions/GetPageContentMessage'
 
 interface AssistantMessageProps {
@@ -48,9 +48,9 @@ function AssistantMessage({
               />
             )
           }
-          if (item.name === FunctionName.ClickButton) {
+          if (item.name === FunctionName.ClickElement) {
             return (
-              <ClickButtonMessage
+              <ClickElementMessage
                 key={item.id}
                 args={item.arguments}
                 messageId={messageId}

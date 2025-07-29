@@ -74,7 +74,7 @@ export class MockBrowser implements IBrowser {
     return Promise.resolve({ success: true })
   }
 
-  clickButton(_selector: string): Promise<FunctionCallResult> {
+  clickElement(_selector: string): Promise<FunctionCallResult> {
     return Promise.resolve({ success: true })
   }
 }

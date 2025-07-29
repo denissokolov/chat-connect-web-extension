@@ -12,5 +12,5 @@ export interface IBrowser {
   getPageContext: () => Promise<PageContext | null>
   getPageContent(format: PageContentFormat): Promise<FunctionCallResult>
   setFieldValue(selector: string, value: string): Promise<FunctionCallResult>
-  clickButton(selector: string): Promise<FunctionCallResult>
+  clickElement(selector: string): Promise<FunctionCallResult>
 }

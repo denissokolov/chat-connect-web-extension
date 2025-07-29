@@ -1,14 +1,14 @@
 import { memo, useCallback, useEffect } from 'react'
 
-import { type ClickButtonArguments } from '@/types/tool.types'
+import { type ClickElementArguments } from '@/types/tool.types'
 import { FunctionStatus, type FunctionCallResult } from '@/types/tool.types'
 import browser from '@/services/browser'
 import { sanitizeSelector } from '@/utils/html/sanitizeSelector'
 
 import ExecuteButton from './ExecuteButton'
 
-interface ClickButtonMessageProps {
-  args: ClickButtonArguments
+interface ClickElementMessageProps {
+  args: ClickElementArguments
   messageId: string
   callId: string
   status: FunctionStatus
@@ -17,7 +17,7 @@ interface ClickButtonMessageProps {
   autoExecute: boolean
 }
 
-function ClickButtonMessage({
+function ClickElementMessage({
   args,
   messageId,
   callId,
@@ -25,15 +25,15 @@ function ClickButtonMessage({
   error,
   saveResult,
   autoExecute,
-}: ClickButtonMessageProps) {
+}: ClickElementMessageProps) {
   const execute = useCallback(async () => {
     let result: FunctionCallResult
 
-    const sanitizedSelector = sanitizeSelector(args.button_selector)
+    const sanitizedSelector = sanitizeSelector(args.element_selector)
     if (!sanitizedSelector) {
       result = { success: false, error: 'Invalid selector' }
     } else {
-      result = await browser.clickButton(sanitizedSelector)
+      result = await browser.clickElement(sanitizedSelector)
     }
 
     saveResult(messageId, callId, result)
@@ -47,10 +47,10 @@ function ClickButtonMessage({
 
   return (
     <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border ">
-      <div>{'Click the button'}</div>
-      <ExecuteButton label={args.button_text} status={status} error={error} onClick={execute} />
+      <div>{`Click the ${args.element_type}`}</div>
+      <ExecuteButton label={args.element_text} status={status} error={error} onClick={execute} />
     </div>
   )
 }
 
-export default memo(ClickButtonMessage)
+export default memo(ClickElementMessage)

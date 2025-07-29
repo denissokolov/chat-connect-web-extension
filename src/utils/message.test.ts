@@ -7,7 +7,7 @@ import {
   type MessageContent,
   type Message,
 } from '@/types/chat.types'
-import { FunctionName, FunctionStatus, type ClickButtonArguments } from '@/types/tool.types'
+import { FunctionName, FunctionStatus, type ClickElementArguments } from '@/types/tool.types'
 
 import {
   createAssistantMessage,
@@ -52,9 +52,10 @@ describe('message utils', () => {
     })
 
     it('should create a message with a function call', () => {
-      const clickButtonArguments: ClickButtonArguments = {
-        button_selector: '#submit',
-        button_text: 'Submit',
+      const clickElementArguments: ClickElementArguments = {
+        element_selector: '#submit',
+        element_text: 'Submit',
+        element_type: 'button',
       }
 
       const mockContent: MessageContent[] = [
@@ -67,8 +68,8 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
-          arguments: clickButtonArguments,
+          name: FunctionName.ClickElement,
+          arguments: clickElementArguments,
         },
       ]
 
@@ -84,8 +85,8 @@ describe('message utils', () => {
         id: 'click-1',
         status: FunctionStatus.Idle,
         type: MessageContentType.FunctionCall,
-        name: FunctionName.ClickButton,
-        arguments: clickButtonArguments,
+        name: FunctionName.ClickElement,
+        arguments: clickElementArguments,
       })
     })
 
@@ -117,9 +118,10 @@ describe('message utils', () => {
     })
 
     it('should handle complex batching scenario with multiple groups', () => {
-      const clickButtonArguments: ClickButtonArguments = {
-        button_selector: '#submit',
-        button_text: 'Submit',
+      const clickElementArguments: ClickElementArguments = {
+        element_selector: '#submit',
+        element_text: 'Submit',
+        element_type: 'button',
       }
 
       const mockContent: MessageContent[] = [
@@ -180,8 +182,8 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
-          arguments: clickButtonArguments,
+          name: FunctionName.ClickElement,
+          arguments: clickElementArguments,
         },
       ]
 
@@ -250,9 +252,9 @@ describe('message utils', () => {
       expect(result.content[5]).toEqual({
         id: 'click-1',
         type: MessageContentType.FunctionCall,
-        name: FunctionName.ClickButton,
+        name: FunctionName.ClickElement,
         status: FunctionStatus.Idle,
-        arguments: clickButtonArguments,
+        arguments: clickElementArguments,
       })
     })
   })
@@ -377,10 +379,11 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -418,10 +421,11 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
         {
@@ -575,10 +579,11 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
         {
@@ -611,10 +616,11 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'input',
           },
         },
       ])
@@ -748,10 +754,11 @@ describe('message utils', () => {
           id: 'click-1',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
         {
@@ -1411,10 +1418,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Success,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -1441,10 +1449,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Error,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -1471,10 +1480,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Error,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -1501,10 +1511,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Idle,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -1531,10 +1542,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Pending,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -1651,10 +1663,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Error,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])
@@ -1691,10 +1704,11 @@ describe('message utils', () => {
           id: 'func-2',
           type: MessageContentType.FunctionCall,
           status: FunctionStatus.Pending,
-          name: FunctionName.ClickButton,
+          name: FunctionName.ClickElement,
           arguments: {
-            button_selector: '#submit',
-            button_text: 'Submit',
+            element_selector: '#submit',
+            element_text: 'Submit',
+            element_type: 'button',
           },
         },
       ])

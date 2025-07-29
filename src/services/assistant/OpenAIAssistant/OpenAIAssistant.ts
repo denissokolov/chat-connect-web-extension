@@ -200,15 +200,16 @@ export class OpenAIAssistant implements IAssistant {
       }
     }
 
-    if (output.name === FunctionName.ClickButton) {
+    if (output.name === FunctionName.ClickElement) {
       return {
         id: output.call_id,
         type: MessageContentType.FunctionCall,
         status: FunctionStatus.Idle,
-        name: FunctionName.ClickButton,
+        name: FunctionName.ClickElement,
         arguments: {
-          button_selector: args.button_selector,
-          button_text: args.button_text,
+          element_selector: args.element_selector,
+          element_text: args.element_text,
+          element_type: args.element_type,
         },
       }
     }

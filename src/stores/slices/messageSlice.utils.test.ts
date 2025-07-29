@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { MessageContentType, MessageRole } from '@/types/chat.types'
+import {
+  MessageContentType,
+  MessageRole,
+  type MessageContent,
+  type Message,
+} from '@/types/chat.types'
 import { FunctionName, FunctionStatus, type FunctionCallResult } from '@/types/tool.types'
-import type { Message, MessageContent } from '@/types/chat.types'
 import type { StoreMessages } from '@/stores/useChatStore.types'
 
 import {
@@ -614,11 +618,12 @@ describe('messageSlice.utils', () => {
           {
             type: MessageContentType.FunctionCall,
             id: 'function-call-2',
-            name: FunctionName.ClickButton,
+            name: FunctionName.ClickElement,
             status: FunctionStatus.Pending,
             arguments: {
-              button_selector: 'button',
-              button_text: 'Click me',
+              element_selector: 'button',
+              element_text: 'Click me',
+              element_type: 'button',
             },
           },
         ],
@@ -661,12 +666,13 @@ describe('messageSlice.utils', () => {
       expect(result.list[0].content[1]).toEqual({
         type: MessageContentType.FunctionCall,
         id: 'function-call-2',
-        name: FunctionName.ClickButton,
+        name: FunctionName.ClickElement,
         status: FunctionStatus.Success,
         result: functionResult,
         arguments: {
-          button_selector: 'button',
-          button_text: 'Click me',
+          element_selector: 'button',
+          element_text: 'Click me',
+          element_type: 'button',
         },
       })
     })

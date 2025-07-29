@@ -1,6 +1,6 @@
 export enum FunctionName {
   FillInput = 'fill_input',
-  ClickButton = 'click_button',
+  ClickElement = 'click_element',
   GetPageContent = 'get_page_content',
 }
 
@@ -24,9 +24,10 @@ export type FillInputArguments = {
   label_value: string
 }
 
-export type ClickButtonArguments = {
-  button_selector: string
-  button_text: string
+export type ClickElementArguments = {
+  element_selector: string
+  element_type: string
+  element_text: string
 }
 
 export enum PageContentFormat {

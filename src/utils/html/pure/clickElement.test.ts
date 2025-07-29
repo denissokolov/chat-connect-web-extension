@@ -1,8 +1,8 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 
-import { clickButton } from './clickButton'
+import { clickElement } from './clickElement'
 
-describe('clickButton', () => {
+describe('clickElement', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
     vi.clearAllMocks()
@@ -18,40 +18,18 @@ describe('clickButton', () => {
     // Mock the click method
     const clickSpy = vi.spyOn(button, 'click')
 
-    const result = clickButton('#test-button')
+    const result = clickElement('#test-button')
 
     expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
   })
 
   it('returns false when button does not exist', () => {
-    const result = clickButton('#non-existent-button')
+    const result = clickElement('#non-existent-button')
 
     expect(result).toEqual({
       success: false,
-      error: 'Button not found',
-    })
-  })
-
-  it('returns false when element exists but is not a button', () => {
-    const div = document.createElement('div')
-    div.id = 'test-div'
-    document.body.appendChild(div)
-
-    const result = clickButton('#test-div')
-
-    expect(result).toEqual({
-      success: false,
-      error: 'Button not found',
-    })
-  })
-
-  it('returns false when element is null', () => {
-    const result = clickButton('invalid-selector')
-
-    expect(result).toEqual({
-      success: false,
-      error: 'Button not found',
+      error: 'Element not found',
     })
   })
 
@@ -66,7 +44,7 @@ describe('clickButton', () => {
       throw clickError
     })
 
-    const result = clickButton('#error-button')
+    const result = clickElement('#error-button')
 
     expect(result).toEqual({
       success: false,
@@ -81,7 +59,7 @@ describe('clickButton', () => {
       throw querySelectorError
     })
 
-    const result = clickButton('#test-button')
+    const result = clickElement('#test-button')
 
     expect(result).toEqual({
       success: false,
@@ -97,7 +75,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(button, 'click')
 
-    const result = clickButton('.btn-primary')
+    const result = clickElement('.btn-primary')
 
     expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
@@ -110,7 +88,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(button, 'click')
 
-    const result = clickButton('[data-testid="submit-btn"]')
+    const result = clickElement('[data-testid="submit-btn"]')
 
     expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
@@ -125,7 +103,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(input, 'click')
 
-    const result = clickButton('#input-button')
+    const result = clickElement('#input-button')
 
     expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
@@ -141,28 +119,13 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(input, 'click')
 
-    const result = clickButton('#disabled-input-button')
+    const result = clickElement('#disabled-input-button')
 
     expect(result).toEqual({
       success: false,
       error: 'Button is disabled',
     })
     expect(clickSpy).not.toHaveBeenCalled()
-  })
-
-  it('returns false for input[type="text"] elements', () => {
-    const input = document.createElement('input')
-    input.type = 'text'
-    input.id = 'text-input'
-    input.value = 'Text Input'
-    document.body.appendChild(input)
-
-    const result = clickButton('#text-input')
-
-    expect(result).toEqual({
-      success: false,
-      error: 'Button not found',
-    })
   })
 
   it('returns true for input[type="button"] with onclick handler', () => {
@@ -176,7 +139,7 @@ describe('clickButton', () => {
     }
     document.body.appendChild(input)
 
-    const result = clickButton('#onclick-input-button')
+    const result = clickElement('#onclick-input-button')
 
     expect(result).toEqual({ success: true })
     expect(clicked).toBe(true)
@@ -191,7 +154,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(input, 'click')
 
-    const result = clickButton('#submit-button')
+    const result = clickElement('#submit-button')
 
     expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
@@ -207,7 +170,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(input, 'click')
 
-    const result = clickButton('#disabled-submit-button')
+    const result = clickElement('#disabled-submit-button')
 
     expect(result).toEqual({
       success: false,
@@ -227,7 +190,7 @@ describe('clickButton', () => {
     }
     document.body.appendChild(input)
 
-    const result = clickButton('#onclick-submit-button')
+    const result = clickElement('#onclick-submit-button')
 
     expect(result).toEqual({ success: true })
     expect(clicked).toBe(true)
@@ -241,7 +204,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(button, 'click')
 
-    const result = clickButton('#disabled-button')
+    const result = clickElement('#disabled-button')
 
     expect(result).toEqual({
       success: false,
@@ -261,7 +224,7 @@ describe('clickButton', () => {
 
     const clickSpy = vi.spyOn(button, 'click')
 
-    const result = clickButton('.nested-btn')
+    const result = clickElement('.nested-btn')
 
     expect(result).toEqual({ success: true })
     expect(clickSpy).toHaveBeenCalledOnce()
@@ -276,7 +239,7 @@ describe('clickButton', () => {
     }
     document.body.appendChild(button)
 
-    const result = clickButton('#onclick-button')
+    const result = clickElement('#onclick-button')
 
     expect(result).toEqual({ success: true })
     expect(clicked).toBe(true)
