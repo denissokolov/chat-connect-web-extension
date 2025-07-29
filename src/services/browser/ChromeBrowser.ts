@@ -3,7 +3,7 @@ import { PageContentFormat, type FunctionCallResult } from '@/types/tool.types'
 import { clickElement } from '@/utils/html/pure/clickElement'
 import { setFieldValue } from '@/utils/html/pure/setFieldValue'
 import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
-import { getTextContent } from '@/utils/html/pure/getTextContent'
+import { getDocumentMarkdown } from '@/utils/html/pure/getDocumentMarkdown'
 import { logError } from '@/utils/log'
 
 import type { IBrowser } from './IBrowser'
@@ -88,19 +88,14 @@ export class ChromeBrowser implements IBrowser {
 
     const html = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: getDocumentHtml,
+      func: format === PageContentFormat.Html ? getDocumentHtml : getDocumentMarkdown,
     })
 
     const result: FunctionCallResult = html[0].result
-    if (!result.success) {
-      return result
-    }
-
     if (!result.result) {
       return { success: false, error: 'Failed to get page content' }
     }
-
-    return format === PageContentFormat.Html ? result : getTextContent(result.result)
+    return result
   }
 
   async setFieldValue(selector: string, value: string): Promise<FunctionCallResult> {
