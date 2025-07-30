@@ -6,7 +6,7 @@
 
 ## 🔗 Download Build
 
-[Download latest build (ZIP)](https://github.com/denissokolov/chat-connect-web-extension/releases/latest/download/chat-connect.zip)
+[Download latest build (ZIP)](https://github.com/denissokolov/chat-connect-web-extension/releases/latest/download/chat-connect-chrome.zip)
 
 ## Prerequisites
 
