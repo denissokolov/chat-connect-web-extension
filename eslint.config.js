@@ -60,8 +60,9 @@ export default tseslint.config(
       'no-restricted-globals': [
         'error',
         {
-          name: 'chrome',
-          message: 'Use browser service abstraction instead of direct chrome global access.',
+          name: 'browser',
+          message:
+            'Instead of accessing the WXT browser directly, use the browser from the service layer.',
         },
       ],
       '@typescript-eslint/no-unused-vars': [
@@ -84,7 +85,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/services/browser/**/*.ts', 'src/background.ts'],
+    files: ['src/services/browser/**/*.ts', 'src/entrypoints/**/*.ts'],
     rules: {
       'no-restricted-globals': 'off',
     },
