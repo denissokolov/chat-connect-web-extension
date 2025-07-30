@@ -10,7 +10,7 @@
 
 ## Prerequisites
 
-- Node.js (version 18 or higher)
+- Node.js (version 22 or higher)
 - npm package manager
 - Google Chrome browser
 
@@ -81,7 +81,7 @@ https://lucide.dev/icons/ - icon library
 
 5. **Load the extension**
    - Click "Load unpacked" button
-   - Navigate to your project folder and select the `dist` folder (or the build output folder)
+   - Navigate to your project folder and select the `dist/chrome-mv3` folder (or the build output folder)
    - Click "Select Folder"
 
 6. **Verify installation**

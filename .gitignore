@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 coverage
+stats.html
+stats-*.json
+.wxt
+web-ext.config.ts
 
 # Editor directories and files
 .vscode/*

@@ -5,21 +5,22 @@ import { setFieldValue } from '@/utils/html/pure/setFieldValue'
 import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
 import { getDocumentMarkdown } from '@/utils/html/pure/getDocumentMarkdown'
 import { logError } from '@/utils/log'
+import { Browser } from '#imports'
 
 import type { IBrowser } from './IBrowser'
 
-export class ChromeBrowser implements IBrowser {
+export class WXTBrowser implements IBrowser {
   openExtensionSettings() {
-    chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') })
+    browser.tabs.create({ url: browser.runtime.getURL('/settings.html') })
   }
 
   async getSecureValue(key: string): Promise<string | null> {
-    const result = await chrome.storage.sync.get(key)
-    return result[key] || null
+    const result = await storage.getItem<string>(`sync:${key}`)
+    return result || null
   }
 
   async saveSecureValue(key: string, value: string): Promise<void> {
-    await chrome.storage.sync.set({ [key]: value })
+    await storage.setItem(`sync:${key}`, value)
   }
 
   subscribeToPageInfo(
@@ -27,7 +28,7 @@ export class ChromeBrowser implements IBrowser {
   ): () => void {
     const getPageInfo = async () => {
       try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+        const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
         callback(tab?.title || null, tab?.favIconUrl || null)
       } catch (error) {
         logError('Failed to get page info', error)
@@ -48,7 +49,7 @@ export class ChromeBrowser implements IBrowser {
         title?: string
         favIconUrl?: string
       },
-      tab: chrome.tabs.Tab,
+      tab: Browser.tabs.Tab,
     ) => {
       if (
         tab.active &&
@@ -58,17 +59,17 @@ export class ChromeBrowser implements IBrowser {
       }
     }
 
-    chrome.tabs.onActivated.addListener(handleTabActivated)
-    chrome.tabs.onUpdated.addListener(handleTabUpdated)
+    browser.tabs.onActivated.addListener(handleTabActivated)
+    browser.tabs.onUpdated.addListener(handleTabUpdated)
 
     return () => {
-      chrome.tabs.onActivated.removeListener(handleTabActivated)
-      chrome.tabs.onUpdated.removeListener(handleTabUpdated)
+      browser.tabs.onActivated.removeListener(handleTabActivated)
+      browser.tabs.onUpdated.removeListener(handleTabUpdated)
     }
   }
 
   async getPageContext(): Promise<PageContext | null> {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
     if (!tab || !tab.id) {
       return null
     }
@@ -81,21 +82,17 @@ export class ChromeBrowser implements IBrowser {
   }
 
   async getPageContent(format: PageContentFormat): Promise<FunctionCallResult> {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
     if (!tab || !tab.id) {
       return { success: false, error: 'Failed to get current tab' }
     }
 
-    const html = await chrome.scripting.executeScript({
+    const result = await browser.scripting.executeScript({
       target: { tabId: tab.id },
       func: format === PageContentFormat.Html ? getDocumentHtml : getDocumentMarkdown,
     })
 
-    const result: FunctionCallResult = html[0].result
-    if (!result.result) {
-      return { success: false, error: 'Failed to get page content' }
-    }
-    return result
+    return this.handleFunctionCallResult(result, 'Failed to get page content')
   }
 
   async setFieldValue(selector: string, value: string): Promise<FunctionCallResult> {
@@ -104,13 +101,13 @@ export class ChromeBrowser implements IBrowser {
       return { success: false, error: 'Failed to get current tab' }
     }
 
-    const result = await chrome.scripting.executeScript({
+    const result = await browser.scripting.executeScript({
       target: { tabId },
       args: [selector, value],
-      func: setFieldValue as unknown as () => void,
+      func: setFieldValue,
     })
 
-    return result[0].result
+    return this.handleFunctionCallResult(result, 'Failed to set field value')
   }
 
   async clickElement(selector: string): Promise<FunctionCallResult> {
@@ -119,17 +116,28 @@ export class ChromeBrowser implements IBrowser {
       return { success: false, error: 'Failed to get current tab' }
     }
 
-    const result = await chrome.scripting.executeScript({
+    const result = await browser.scripting.executeScript({
       target: { tabId },
       args: [selector],
-      func: clickElement as unknown as () => void,
+      func: clickElement,
     })
 
-    return result[0].result
+    return this.handleFunctionCallResult(result, 'Failed to click element')
+  }
+
+  private handleFunctionCallResult(
+    result: Browser.scripting.InjectionResult<FunctionCallResult>[],
+    errorMessage: string,
+  ): FunctionCallResult {
+    const functionCallResult = result[0].result
+    if (!functionCallResult) {
+      return { success: false, error: errorMessage }
+    }
+    return functionCallResult
   }
 
   private async getCurrentTabId(): Promise<number | null> {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
     if (!tab?.id) {
       logError('Failed to get current tab id')
       return null
