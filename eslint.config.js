@@ -9,7 +9,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'storybook-static', 'test-results', 'coverage'] },
+  { ignores: ['dist', 'node_modules', 'storybook-static', 'test-results', 'coverage', '.wxt'] },
   {
     extends: [
       js.configs.recommended,

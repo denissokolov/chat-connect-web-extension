@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import type { Preview } from '@storybook/react-vite'
 
-import '@/global.css'
+import '@/assets/global.css'
 
 window['IS_STORYBOOK'] = true
 

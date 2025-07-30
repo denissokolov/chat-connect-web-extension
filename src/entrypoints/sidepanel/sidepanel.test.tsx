@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 
-import { Panel } from './panel'
+import { SidePanel } from './sidepanel'
 
-describe('Panel', () => {
+describe('SidePanel', () => {
   it('should render without crashing', () => {
-    render(<Panel />)
+    render(<SidePanel />)
     expect(screen.getByTitle('Show chat history')).toBeDefined()
     expect(screen.getByTitle('Start new chat')).toBeDefined()
   })
