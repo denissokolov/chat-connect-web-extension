@@ -92,7 +92,7 @@ export class WXTBrowser implements IBrowser {
       func: format === PageContentFormat.Html ? getDocumentHtml : getDocumentMarkdown,
     })
 
-    return this.hadleFunctionCallResult(result, 'Failed to get page content')
+    return this.handleFunctionCallResult(result, 'Failed to get page content')
   }
 
   async setFieldValue(selector: string, value: string): Promise<FunctionCallResult> {
@@ -107,7 +107,7 @@ export class WXTBrowser implements IBrowser {
       func: setFieldValue,
     })
 
-    return this.hadleFunctionCallResult(result, 'Failed to set field value')
+    return this.handleFunctionCallResult(result, 'Failed to set field value')
   }
 
   async clickElement(selector: string): Promise<FunctionCallResult> {
@@ -122,10 +122,10 @@ export class WXTBrowser implements IBrowser {
       func: clickElement,
     })
 
-    return this.hadleFunctionCallResult(result, 'Failed to click element')
+    return this.handleFunctionCallResult(result, 'Failed to click element')
   }
 
-  private hadleFunctionCallResult(
+  private handleFunctionCallResult(
     result: Browser.scripting.InjectionResult<FunctionCallResult>[],
     errorMessage: string,
   ): FunctionCallResult {
