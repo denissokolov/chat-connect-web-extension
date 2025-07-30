@@ -17,7 +17,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.54.0-noble
 
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
 
     steps:
@@ -50,16 +50,16 @@ jobs:
         uses: davelosert/vitest-coverage-report-action@v2
 
       - name: Build project
-        run: npm run build
+        run: npm run zip
 
-      - name: Upload build artifact
+      - name: Create release
         if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: softprops/action-gh-release@v2
         with:
-          name: chat-connect
-          path: dist
-          if-no-files-found: error
-          overwrite: true
+          tag_name: latest-chrome
+          files: dist/chat-connect-chrome.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   chromatic:
     name: Run Chromatic
@@ -85,31 +85,3 @@ jobs:
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitOnceUploaded: true
-
-  release:
-    name: Create release
-    needs: [check, chromatic]
-
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: chat-connect
-          path: dist
-
-      - name: Compress build
-        run: cd dist && zip -r ../chat-connect.zip .
-
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          files: chat-connect.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

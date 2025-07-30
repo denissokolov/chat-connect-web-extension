@@ -25,4 +25,8 @@ export default defineConfig({
       default_title: 'Chat Connect', // This is needed for the shortcut to work.
     },
   },
+  zip: {
+    name: 'chat-connect',
+    artifactTemplate: '{{name}}-{{browser}}.zip',
+  },
 })
