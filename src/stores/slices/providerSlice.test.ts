@@ -42,23 +42,6 @@ describe('providerSlice', () => {
       expect(useChatStore.getState().assistant).toBe(existingAssistant)
     })
 
-    it('should set provider as not configured when API key is missing', async () => {
-      ;(browser.getSecureValue as Mock).mockResolvedValue(null)
-
-      const { setupProvider } = useChatStore.getState()
-
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
-
-      const state = useChatStore.getState()
-      expect(state.provider).toEqual({
-        ready: false,
-        loading: false,
-        configured: false,
-        error: 'No API key found',
-      })
-      expect(browser.getSecureValue).toHaveBeenCalledWith('token_mock')
-    })
-
     it('should setup mock assistant successfully', async () => {
       ;(browser.getSecureValue as Mock).mockResolvedValue('test-api-key')
 

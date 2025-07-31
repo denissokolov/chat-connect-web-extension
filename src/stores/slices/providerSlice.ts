@@ -39,10 +39,6 @@ export const createProviderSlice: StateCreator<ChatStore, [], [], ProviderSlice>
 
     try {
       const apiKey = await browser.getSecureValue(getTokenKey(provider))
-      if (!apiKey) {
-        throw new Error('No API key found')
-      }
-
       if (provider === AIProvider.OpenAI) {
         assistant = new OpenAIAssistant(apiKey)
       } else {

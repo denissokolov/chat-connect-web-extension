@@ -34,15 +34,15 @@
     "@tailwindcss/vite": "^4.1.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.534.0",
+    "lucide-react": "^0.535.0",
     "luxon": "^3.7.1",
     "markdown-to-jsx": "^7.7.12",
-    "openai": "^5.10.2",
+    "openai": "^5.11.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.0.1",
