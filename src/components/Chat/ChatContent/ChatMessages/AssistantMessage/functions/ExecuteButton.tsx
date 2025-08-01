@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useRef } from 'react'
 import { CheckIcon, Loader2, PlayIcon, CircleAlertIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -12,11 +12,13 @@ interface ExecuteFunctionProps {
 }
 
 function ExecuteButton({ label, status, error, onClick }: ExecuteFunctionProps) {
+  const executed = useRef(false)
   const handleClick = () => {
-    if (status !== FunctionStatus.Idle) {
+    if (status !== FunctionStatus.Idle || executed.current) {
       return
     }
 
+    executed.current = true
     onClick()
   }
 

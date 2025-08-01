@@ -1,7 +1,10 @@
+import { memo, useCallback } from 'react'
+
 import browser from '@/services/browser'
 import { type GetPageContentArguments } from '@/types/tool.types'
 import { FunctionStatus, type FunctionCallResult } from '@/types/tool.types'
-import { memo, useCallback, useEffect } from 'react'
+
+import { useAutoExecuteFunction } from './hooks'
 
 interface GetPageContentProps {
   args: GetPageContentArguments
@@ -25,11 +28,7 @@ function GetPageContentMessage({
     saveResult(messageId, callId, result)
   }, [args, callId, messageId, saveResult])
 
-  useEffect(() => {
-    if (status === FunctionStatus.Idle) {
-      execute()
-    }
-  }, [execute, status])
+  useAutoExecuteFunction(status, execute)
 
   const statusText =
     status === FunctionStatus.Success

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect } from 'react'
+import { memo, useCallback } from 'react'
 
 import { type FillInputArguments } from '@/types/tool.types'
 import { type FunctionCallResult, FunctionStatus } from '@/types/tool.types'
@@ -6,6 +6,7 @@ import browser from '@/services/browser'
 import { sanitizeSelector } from '@/utils/html/sanitizeSelector'
 
 import ExecuteButton from './ExecuteButton'
+import { useAutoExecuteFunction } from './hooks'
 
 interface FunctionCallMessageProps {
   args: FillInputArguments
@@ -39,11 +40,7 @@ function FillInputMessage({
     saveResult(messageId, callId, result)
   }, [args, callId, messageId, saveResult])
 
-  useEffect(() => {
-    if (autoExecute && status === FunctionStatus.Idle) {
-      execute()
-    }
-  }, [autoExecute, execute, status])
+  useAutoExecuteFunction(status, execute, autoExecute)
 
   return (
     <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border">
