@@ -2,6 +2,7 @@ export enum FunctionName {
   FillInput = 'fill_input',
   ClickElement = 'click_element',
   GetPageContent = 'get_page_content',
+  Placeholder = 'placeholder', // This is a placeholder for the function call that is streaming
 }
 
 export enum FunctionStatus {

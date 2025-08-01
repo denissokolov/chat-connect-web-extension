@@ -7,7 +7,12 @@ import {
   type MessageContent,
   type Message,
 } from '@/types/chat.types'
-import { FunctionName, FunctionStatus, type ClickElementArguments } from '@/types/tool.types'
+import {
+  FunctionName,
+  FunctionStatus,
+  type ClickElementArguments,
+  type FillInputArguments,
+} from '@/types/tool.types'
 
 import {
   createAssistantMessage,
@@ -1380,341 +1385,196 @@ describe('message utils', () => {
       complete: true,
     })
 
-    it('should return false when message has no function calls', () => {
-      const message = createMockMessage([
-        {
-          id: 'text-1',
-          type: MessageContentType.OutputText,
-          text: 'Hello world',
-        },
-      ])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
+    const createMockFillInputCall = (
+      id: string,
+      status: FunctionStatus,
+      args?: FillInputArguments,
+    ): MessageContent => ({
+      id,
+      type: MessageContentType.FunctionCall,
+      status,
+      name: FunctionName.FillInput,
+      arguments: args || {
+        input_type: 'text',
+        input_value: 'test',
+        input_selector: '#test',
+        label_value: 'Test',
+      },
     })
 
-    it('should return false when message has empty content', () => {
-      const message = createMockMessage([])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
+    const createMockClickElementCall = (
+      id: string,
+      status: FunctionStatus,
+      args?: ClickElementArguments,
+    ): MessageContent => ({
+      id,
+      type: MessageContentType.FunctionCall,
+      status,
+      name: FunctionName.ClickElement,
+      arguments: args || {
+        element_selector: '#submit',
+        element_text: 'Submit',
+        element_type: 'button',
+      },
     })
 
-    it('should return true when all function calls have Success status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(true)
+    const createMockPlaceholderCall = (id: string): MessageContent => ({
+      id,
+      type: MessageContentType.FunctionCall,
+      name: FunctionName.Placeholder,
     })
 
-    it('should return true when all function calls have Error status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Error,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Error,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(true)
+    const createMockTextContent = (id: string, text: string): MessageContent => ({
+      id,
+      type: MessageContentType.OutputText,
+      text,
     })
 
-    it('should return true when function calls have mixed Success and Error statuses', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Error,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
+    describe('when message has no function calls', () => {
+      it('should return false for message with only text content', () => {
+        const message = createMockMessage([createMockTextContent('text-1', 'Hello world')])
 
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(true)
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
+
+      it('should return false for message with empty content', () => {
+        const message = createMockMessage([])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
     })
 
-    it('should return false when any function call has Idle status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Idle,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
+    describe('when function has placeholder name', () => {
+      it('should return false when any function call has Placeholder name regardless of status', () => {
+        const message = createMockMessage([createMockPlaceholderCall('func-1')])
 
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
+
+      it('should return false when any function call has Placeholder name mixed with completed functions', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockPlaceholderCall('func-2'),
+        ])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
     })
 
-    it('should return false when any function call has Pending status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Pending,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
+    describe('when all functions are completed', () => {
+      it('should return true when all function calls have Success status', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockClickElementCall('func-2', FunctionStatus.Success),
+        ])
 
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(true)
+      })
+
+      it('should return true when all function calls have Error status', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Error),
+          createMockClickElementCall('func-2', FunctionStatus.Error),
+        ])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(true)
+      })
+
+      it('should return true when function calls have mixed Success and Error statuses', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockClickElementCall('func-2', FunctionStatus.Error),
+        ])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(true)
+      })
+
+      it('should return true when single function call has Success status', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+        ])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(true)
+      })
+
+      it('should return true when single function call has Error status', () => {
+        const message = createMockMessage([createMockFillInputCall('func-1', FunctionStatus.Error)])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(true)
+      })
     })
 
-    it('should return false when single function call has Idle status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Idle,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-      ])
+    describe('when functions are incomplete', () => {
+      it('should return false when any function call has Idle status', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockClickElementCall('func-2', FunctionStatus.Idle),
+        ])
 
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
+
+      it('should return false when any function call has Pending status', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockClickElementCall('func-2', FunctionStatus.Pending),
+        ])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
+
+      it('should return false when single function call has Idle status', () => {
+        const message = createMockMessage([createMockFillInputCall('func-1', FunctionStatus.Idle)])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
+
+      it('should return false when single function call has Pending status', () => {
+        const message = createMockMessage([
+          createMockFillInputCall('func-1', FunctionStatus.Pending),
+        ])
+
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
     })
 
-    it('should return false when single function call has Pending status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Pending,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-      ])
+    describe('when message has mixed content types', () => {
+      it('should return true when message has mixed content with completed functions', () => {
+        const message = createMockMessage([
+          createMockTextContent('text-1', 'Processing your request...'),
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockTextContent('text-2', 'Task completed successfully'),
+          createMockClickElementCall('func-2', FunctionStatus.Error),
+        ])
 
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
-    })
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(true)
+      })
 
-    it('should return true when single function call has Success status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-      ])
+      it('should return false when message has mixed content with incomplete functions', () => {
+        const message = createMockMessage([
+          createMockTextContent('text-1', 'Processing your request...'),
+          createMockFillInputCall('func-1', FunctionStatus.Success),
+          createMockTextContent('text-2', 'Still processing...'),
+          createMockClickElementCall('func-2', FunctionStatus.Pending),
+        ])
 
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(true)
-    })
-
-    it('should return true when single function call has Error status', () => {
-      const message = createMockMessage([
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Error,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-      ])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(true)
-    })
-
-    it('should return true when message has mixed content with completed functions', () => {
-      const message = createMockMessage([
-        {
-          id: 'text-1',
-          type: MessageContentType.OutputText,
-          text: 'Processing your request...',
-        },
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'text-2',
-          type: MessageContentType.OutputText,
-          text: 'Task completed successfully',
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Error,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(true)
-    })
-
-    it('should return false when message has mixed content with incomplete functions', () => {
-      const message = createMockMessage([
-        {
-          id: 'text-1',
-          type: MessageContentType.OutputText,
-          text: 'Processing your request...',
-        },
-        {
-          id: 'func-1',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Success,
-          name: FunctionName.FillInput,
-          arguments: {
-            input_type: 'text',
-            input_value: 'test',
-            input_selector: '#test',
-            label_value: 'Test',
-          },
-        },
-        {
-          id: 'text-2',
-          type: MessageContentType.OutputText,
-          text: 'Still processing...',
-        },
-        {
-          id: 'func-2',
-          type: MessageContentType.FunctionCall,
-          status: FunctionStatus.Pending,
-          name: FunctionName.ClickElement,
-          arguments: {
-            element_selector: '#submit',
-            element_text: 'Submit',
-            element_type: 'button',
-          },
-        },
-      ])
-
-      const result = areMessageFunctionsComplete(message)
-      expect(result).toBe(false)
+        const result = areMessageFunctionsComplete(message)
+        expect(result).toBe(false)
+      })
     })
   })
 

@@ -45,6 +45,13 @@ describe('OpenAIAssistant', () => {
           delta: ' world!',
         },
         {
+          type: 'response.output_item.added',
+          item: {
+            type: 'function_call',
+            call_id: 'call_V8DXgOfseNt66chXUplx7L2Z',
+          },
+        },
+        {
           type: 'response.output_item.done',
           item: {
             type: 'function_call',
@@ -52,6 +59,13 @@ describe('OpenAIAssistant', () => {
             name: 'fill_input',
             arguments:
               '{"input_type":"radio","input_value":"personal","input_selector":"typeofclient","label_value":"Particulier"}',
+          },
+        },
+        {
+          type: 'response.output_item.added',
+          item: {
+            type: 'function_call',
+            call_id: 'call_LH7df6L6NqMKezUq1DN81PYb',
           },
         },
         {
@@ -65,12 +79,20 @@ describe('OpenAIAssistant', () => {
           },
         },
         {
+          type: 'response.output_item.added',
+          item: {
+            type: 'function_call',
+            call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
+          },
+        },
+        {
           type: 'response.output_item.done',
           item: {
             type: 'function_call',
             call_id: 'call_112keBYEDQI5dgV01fLbW3aC',
             name: 'click_element',
-            arguments: '{"element_selector":"#submit","element_text":"Bestellen"}',
+            arguments:
+              '{"element_selector":"#submit","element_text":"Bestellen","element_type":"button"}',
           },
         },
         {
@@ -108,7 +130,7 @@ describe('OpenAIAssistant', () => {
         tools: [],
       })
 
-      expect(events).toHaveLength(7)
+      expect(events).toHaveLength(10)
 
       // Check response created event
       expect(events[0]).toEqual({
@@ -136,7 +158,18 @@ describe('OpenAIAssistant', () => {
 
       // Check function call events
       expect(events[3]).toEqual({
-        type: ProviderMessageEventType.FunctionCall,
+        type: ProviderMessageEventType.FunctionCallAdded,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_V8DXgOfseNt66chXUplx7L2Z',
+          type: MessageContentType.FunctionCall,
+          name: FunctionName.Placeholder,
+        },
+      })
+
+      expect(events[4]).toEqual({
+        type: ProviderMessageEventType.FunctionCallDone,
         messageId: mockMultipleOutputsResponse.id,
         threadId: 'test-thread-id',
         content: {
@@ -153,8 +186,19 @@ describe('OpenAIAssistant', () => {
         },
       })
 
-      expect(events[4]).toEqual({
-        type: ProviderMessageEventType.FunctionCall,
+      expect(events[5]).toEqual({
+        type: ProviderMessageEventType.FunctionCallAdded,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_LH7df6L6NqMKezUq1DN81PYb',
+          type: MessageContentType.FunctionCall,
+          name: FunctionName.Placeholder,
+        },
+      })
+
+      expect(events[6]).toEqual({
+        type: ProviderMessageEventType.FunctionCallDone,
         messageId: mockMultipleOutputsResponse.id,
         threadId: 'test-thread-id',
         content: {
@@ -171,8 +215,19 @@ describe('OpenAIAssistant', () => {
         },
       })
 
-      expect(events[5]).toEqual({
-        type: ProviderMessageEventType.FunctionCall,
+      expect(events[7]).toEqual({
+        type: ProviderMessageEventType.FunctionCallAdded,
+        messageId: mockMultipleOutputsResponse.id,
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_112keBYEDQI5dgV01fLbW3aC',
+          type: MessageContentType.FunctionCall,
+          name: FunctionName.Placeholder,
+        },
+      })
+
+      expect(events[8]).toEqual({
+        type: ProviderMessageEventType.FunctionCallDone,
         messageId: mockMultipleOutputsResponse.id,
         threadId: 'test-thread-id',
         content: {
@@ -183,12 +238,13 @@ describe('OpenAIAssistant', () => {
           arguments: {
             element_selector: '#submit',
             element_text: 'Bestellen',
+            element_type: 'button',
           },
         },
       })
 
       // Check completion event
-      expect(events[6]).toEqual({
+      expect(events[9]).toEqual({
         type: ProviderMessageEventType.Completed,
         messageId: mockMultipleOutputsResponse.id,
         userMessageId: 'test-message-id',
@@ -336,6 +392,377 @@ describe('OpenAIAssistant', () => {
         userMessageId: 'test-message-id',
         threadId: 'test-thread-id',
         error: 'Something went wrong',
+      })
+    })
+
+    it('should handle cancellation during streaming', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
+
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: 'test-response-id' },
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: 'test-item-id',
+          content_index: 0,
+          delta: 'Hello',
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: 'test-item-id',
+          content_index: 0,
+          delta: ' world!',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const [index, event] of mockStream.entries()) {
+            yield event
+            if (index === 1) {
+              // Cancel after first text delta
+              assistant.cancelActiveRequest()
+            }
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendMessage({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'test-message-id',
+          threadId: 'test-thread-id',
+          role: MessageRole.User,
+          content: [
+            { id: 'test-content-id', type: MessageContentType.OutputText, text: 'Test message' },
+          ],
+          createdAt: new Date().toISOString(),
+          complete: true,
+        },
+        eventHandler,
+        tools: [],
+      })
+
+      // Should only process events until cancellation
+      expect(events).toHaveLength(2)
+      expect(events[0].type).toBe(ProviderMessageEventType.Created)
+      expect(events[1].type).toBe(ProviderMessageEventType.OutputTextDelta)
+    })
+
+    it('should handle unsupported function calls', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
+
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: 'test-response-id' },
+        },
+        {
+          type: 'response.output_item.added',
+          item: {
+            type: 'function_call',
+            call_id: 'call_unsupported',
+          },
+        },
+        {
+          type: 'response.output_item.done',
+          item: {
+            type: 'function_call',
+            call_id: 'call_unsupported',
+            name: 'unsupported_function',
+            arguments: '{}',
+          },
+        },
+        {
+          type: 'response.completed',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendMessage({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'test-message-id',
+          threadId: 'test-thread-id',
+          role: MessageRole.User,
+          content: [
+            { id: 'test-content-id', type: MessageContentType.OutputText, text: 'Test message' },
+          ],
+          createdAt: new Date().toISOString(),
+          complete: true,
+        },
+        eventHandler,
+        tools: [],
+      })
+
+      // Should have created, function call added, and completed events
+      // The unsupported function call done event should be skipped
+      expect(events).toHaveLength(3)
+      expect(events[0].type).toBe(ProviderMessageEventType.Created)
+      expect(events[1].type).toBe(ProviderMessageEventType.FunctionCallAdded)
+      expect(events[2].type).toBe(ProviderMessageEventType.Completed)
+    })
+
+    it('should handle GetPageContent function calls', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
+
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: 'test-response-id' },
+        },
+        {
+          type: 'response.output_item.added',
+          item: {
+            type: 'function_call',
+            call_id: 'call_get_page_content',
+          },
+        },
+        {
+          type: 'response.output_item.done',
+          item: {
+            type: 'function_call',
+            call_id: 'call_get_page_content',
+            name: 'get_page_content',
+            arguments: '{"format":"html"}',
+          },
+        },
+        {
+          type: 'response.completed',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendMessage({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'test-message-id',
+          threadId: 'test-thread-id',
+          role: MessageRole.User,
+          content: [
+            { id: 'test-content-id', type: MessageContentType.OutputText, text: 'Test message' },
+          ],
+          createdAt: new Date().toISOString(),
+          complete: true,
+        },
+        eventHandler,
+        tools: [],
+      })
+
+      expect(events).toHaveLength(4)
+      expect(events[2]).toEqual({
+        type: ProviderMessageEventType.FunctionCallDone,
+        messageId: 'test-response-id',
+        threadId: 'test-thread-id',
+        content: {
+          id: 'call_get_page_content',
+          type: MessageContentType.FunctionCall,
+          status: FunctionStatus.Idle,
+          name: FunctionName.GetPageContent,
+          arguments: {
+            format: 'html',
+          },
+        },
+      })
+    })
+  })
+
+  describe('sendFunctionCallResponse', () => {
+    it('should handle function call response correctly', async () => {
+      const events: ProviderMessageEvent[] = []
+      const eventHandler = (event: ProviderMessageEvent) => {
+        events.push(event)
+      }
+
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: 'response-id-2' },
+        },
+        {
+          type: 'response.output_text.delta',
+          item_id: 'output-item-id',
+          content_index: 0,
+          delta: 'Function executed successfully',
+        },
+        {
+          type: 'response.completed',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendFunctionCallResponse({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'message-with-function-call',
+          threadId: 'test-thread-id',
+          role: MessageRole.Assistant,
+          content: [
+            {
+              id: 'function-call-content',
+              type: MessageContentType.FunctionCall,
+              name: FunctionName.FillInput,
+              status: FunctionStatus.Success,
+              arguments: {
+                input_type: 'input',
+                input_value: 'test',
+                input_selector: '#test',
+                label_value: 'Test Input',
+              },
+              result: { success: true },
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          complete: true,
+        },
+        eventHandler,
+        tools: [],
+      })
+
+      expect(mockCreate).toHaveBeenCalledWith({
+        model: AIModel.OpenAI_GPT_4o,
+        input: [
+          {
+            type: 'function_call_output',
+            call_id: 'function-call-content',
+            output: '{"success":true}',
+          },
+        ],
+        previous_response_id: 'message-with-function-call',
+        store: true,
+        tools: undefined,
+        stream: true,
+      })
+
+      expect(events).toHaveLength(3)
+      expect(events[0].type).toBe(ProviderMessageEventType.Created)
+      expect(events[1].type).toBe(ProviderMessageEventType.OutputTextDelta)
+      expect(events[2].type).toBe(ProviderMessageEventType.Completed)
+    })
+
+    it('should ignore placeholder function calls', async () => {
+      const eventHandler = vi.fn()
+
+      const mockStream = [
+        {
+          type: 'response.created',
+          response: { id: 'response-id-3' },
+        },
+        {
+          type: 'response.completed',
+        },
+      ]
+
+      const assistant = new OpenAIAssistant('test-api-key')
+
+      const mockCreate = vi.fn().mockResolvedValue({
+        async *[Symbol.asyncIterator]() {
+          for (const event of mockStream) {
+            yield event
+          }
+        },
+      })
+
+      // @ts-expect-error - accessing private property for testing
+      assistant.client.responses.create = mockCreate
+
+      await assistant.sendFunctionCallResponse({
+        model: AIModel.OpenAI_GPT_4o,
+        message: {
+          id: 'message-with-placeholder',
+          threadId: 'test-thread-id',
+          role: MessageRole.Assistant,
+          content: [
+            {
+              id: 'placeholder-function',
+              type: MessageContentType.FunctionCall,
+              name: FunctionName.Placeholder,
+            },
+            {
+              id: 'real-function-call',
+              type: MessageContentType.FunctionCall,
+              name: FunctionName.ClickElement,
+              status: FunctionStatus.Success,
+              arguments: {
+                element_selector: '#button',
+                element_text: 'Click me',
+                element_type: 'button',
+              },
+              result: { success: true },
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          complete: true,
+        },
+        eventHandler,
+        tools: [],
+      })
+
+      expect(mockCreate).toHaveBeenCalledWith({
+        model: AIModel.OpenAI_GPT_4o,
+        input: [
+          {
+            type: 'function_call_output',
+            call_id: 'real-function-call',
+            output: '{"success":true}',
+          },
+        ],
+        previous_response_id: 'message-with-placeholder',
+        store: true,
+        tools: undefined,
+        stream: true,
       })
     })
   })

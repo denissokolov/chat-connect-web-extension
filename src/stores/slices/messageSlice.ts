@@ -17,11 +17,11 @@ import { emptyMessages } from '@/utils/empty'
 import { ProviderMessageEventType, type ProviderMessageEvent } from '@/types/provider.types'
 import {
   addMessage,
-  addMessageContent,
   appendMessageTextContent,
   saveMessageToRepository,
   setMessageComplete,
   setMessageError,
+  addOrUpdateMessageContent,
   updateMessageFunctionResult,
   updateMessageInRepository,
 } from './messageSlice.utils'
@@ -165,9 +165,10 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
         }))
         break
 
-      case ProviderMessageEventType.FunctionCall:
+      case ProviderMessageEventType.FunctionCallAdded:
+      case ProviderMessageEventType.FunctionCallDone:
         set(state => ({
-          messages: addMessageContent(state.messages, event.messageId, event.content),
+          messages: addOrUpdateMessageContent(state.messages, event.messageId, event.content),
           waitingForTools: true,
         }))
         break

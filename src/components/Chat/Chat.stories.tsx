@@ -7,6 +7,7 @@ import useChatStore from '@/stores/useChatStore'
 import { MessageContentType, MessageRole } from '@/types/chat.types'
 import { MockAssistant } from '@/services/assistant'
 import { messagesMock, messagesWithFunctionCallMock } from './Chat.mocks'
+import { FunctionName } from '@/types/tool.types'
 
 const meta: Meta<typeof Chat> = {
   title: 'Chat / Chat',
@@ -26,10 +27,12 @@ const meta: Meta<typeof Chat> = {
 export default meta
 type Story = StoryObj<typeof Chat>
 
+const initialState = useChatStore.getInitialState()
+
 export const Default: Story = {
   beforeEach: () => {
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       messages: {
         list: messagesMock,
         loading: false,
@@ -48,7 +51,7 @@ export const Default: Story = {
 export const Empty: Story = {
   beforeEach: () => {
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       messages: {
         list: [],
         loading: false,
@@ -88,7 +91,7 @@ export const WriteMessage: Story = {
   beforeEach: () => {
     const mockAssistant = new MockAssistant('mock-api-key')
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       messages: {
         list: [],
         loading: false,
@@ -122,7 +125,7 @@ export const WriteMessage: Story = {
 export const WithError: Story = {
   beforeEach: () => {
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       messages: {
         list: [
           {
@@ -149,7 +152,7 @@ export const WithFunctionCall: Story = {
   beforeEach: () => {
     const mockAssistant = new MockAssistant('mock-api-key')
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       waitingForReply: false,
       assistant: mockAssistant,
       provider: {
@@ -172,7 +175,7 @@ export const MessagesLoading: Story = {
   beforeEach: () => {
     const mockAssistant = new MockAssistant('mock-api-key')
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       waitingForReply: false,
       assistant: mockAssistant,
       provider: {
@@ -199,7 +202,7 @@ export const MessagesError: Story = {
   beforeEach: () => {
     const mockAssistant = new MockAssistant('mock-api-key')
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       waitingForReply: false,
       assistant: mockAssistant,
       provider: {
@@ -219,5 +222,128 @@ export const MessagesError: Story = {
   play: async ({ canvas }) => {
     const error = canvas.getByText('Error loading messages')
     await expect(error).toBeInTheDocument()
+  },
+}
+
+export const StreamingEmpty: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      waitingForReply: true,
+      messages: {
+        ...initialState.messages,
+        list: [messagesMock[0]],
+      },
+    })
+  },
+}
+
+export const StreamingEmptyMessage: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      waitingForReply: true,
+      messages: {
+        ...initialState.messages,
+        list: [
+          messagesMock[0],
+          {
+            id: '2',
+            content: [{ type: MessageContentType.OutputText, text: '', id: '2' }],
+            role: MessageRole.Assistant,
+            createdAt: DateTime.now().toISO(),
+            threadId: '1',
+            complete: false,
+          },
+        ],
+      },
+    })
+  },
+}
+
+export const StreamingMessagePart: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      waitingForReply: true,
+      messages: {
+        ...initialState.messages,
+        list: [
+          messagesMock[0],
+          {
+            id: '2',
+            content: [{ type: MessageContentType.OutputText, text: 'This is a part of', id: '2' }],
+            role: MessageRole.Assistant,
+            createdAt: DateTime.now().toISO(),
+            threadId: '1',
+            complete: false,
+          },
+        ],
+      },
+    })
+  },
+}
+
+export const StreamingMessageSecondLineEmpty: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      waitingForReply: true,
+      messages: {
+        ...initialState.messages,
+        list: [
+          messagesMock[0],
+          {
+            id: '2',
+            content: [
+              {
+                type: MessageContentType.OutputText,
+                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                id: '2',
+              },
+              { type: MessageContentType.OutputText, text: '', id: '3' },
+            ],
+            role: MessageRole.Assistant,
+            createdAt: DateTime.now().toISO(),
+            threadId: '1',
+            complete: false,
+          },
+        ],
+      },
+    })
+  },
+}
+
+export const StreamingFunctionEmpty: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      waitingForReply: true,
+      messages: {
+        ...initialState.messages,
+        list: [
+          messagesMock[0],
+          {
+            id: '2',
+            content: [
+              {
+                type: MessageContentType.OutputText,
+                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                id: '2',
+              },
+              {
+                type: MessageContentType.FunctionCall,
+                name: FunctionName.Placeholder,
+                id: '3',
+              },
+            ],
+            role: MessageRole.Assistant,
+            createdAt: DateTime.now().toISO(),
+            threadId: '1',
+            complete: false,
+          },
+        ],
+      },
+    })
   },
 }

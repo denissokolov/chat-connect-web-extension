@@ -42,6 +42,11 @@ export type FunctionCallContent =
       name: FunctionName.GetPageContent
       arguments: GetPageContentArguments
     }
+  | {
+      id: string
+      type: MessageContentType.FunctionCall
+      name: FunctionName.Placeholder
+    }
 
 export type MessageContent =
   | {

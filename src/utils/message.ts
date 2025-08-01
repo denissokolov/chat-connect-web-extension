@@ -1,4 +1,4 @@
-import { FunctionStatus } from '@/types/tool.types'
+import { FunctionName, FunctionStatus } from '@/types/tool.types'
 import {
   type Message,
   type MessageContent,
@@ -97,6 +97,11 @@ export function areMessageFunctionsComplete(message: Message): boolean {
   for (const content of message.content) {
     if (content.type === MessageContentType.FunctionCall) {
       hasFunction = true
+
+      if (content.name === FunctionName.Placeholder) {
+        return false
+      }
+
       if (content.status !== FunctionStatus.Success && content.status !== FunctionStatus.Error) {
         return false
       }

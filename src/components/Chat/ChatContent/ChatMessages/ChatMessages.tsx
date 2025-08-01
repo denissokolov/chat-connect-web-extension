@@ -32,6 +32,7 @@ export default function ChatMessages() {
     <div className="flex-1 overflow-y-auto" tabIndex={0}>
       {groups.map((group, groupIndex) => {
         const isLastGroup = groupIndex === groups.length - 1
+        const lastMessage = group.messages[group.messages.length - 1]
         return (
           <div
             key={group.id}
@@ -64,7 +65,11 @@ export default function ChatMessages() {
                 />
               ),
             )}
-            {isLastGroup && waitingForReply && <AssistantProgress />}
+            {isLastGroup &&
+              waitingForReply &&
+              (!lastMessage || lastMessage.complete || lastMessage.content.length === 0) && (
+                <AssistantProgress />
+              )}
           </div>
         )
       })}

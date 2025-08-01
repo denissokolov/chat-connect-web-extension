@@ -1570,7 +1570,7 @@ describe('messageSlice', () => {
       })
     })
 
-    it('should handle FunctionCall event', () => {
+    it('should handle FunctionCallAdded event', () => {
       const mockDate = '2024-01-01T12:00:00Z'
       vi.setSystemTime(new Date(mockDate))
 
@@ -1579,6 +1579,49 @@ describe('messageSlice', () => {
         threadId: 'test-thread-id',
         role: MessageRole.Assistant,
         content: [],
+        createdAt: mockDate,
+        complete: true,
+      }
+
+      useChatStore.setState({
+        messages: { list: [existingMessage], loading: false, error: null, ready: true },
+      })
+
+      const functionCallContent: FunctionCallContent = {
+        id: 'call-1',
+        type: MessageContentType.FunctionCall,
+        name: FunctionName.Placeholder,
+      }
+
+      const { handleMessageEvent } = useChatStore.getState()
+
+      handleMessageEvent({
+        type: ProviderMessageEventType.FunctionCallAdded,
+        messageId: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        content: functionCallContent,
+      })
+
+      const state = useChatStore.getState()
+      expect(state.messages.list[0].content[0]).toEqual(functionCallContent)
+      expect(state.waitingForTools).toBe(true)
+    })
+
+    it('should handle FunctionCallDone event', () => {
+      const mockDate = '2024-01-01T12:00:00Z'
+      vi.setSystemTime(new Date(mockDate))
+
+      const existingMessage: Message = {
+        id: 'assistant-message-id',
+        threadId: 'test-thread-id',
+        role: MessageRole.Assistant,
+        content: [
+          {
+            id: 'call-1',
+            type: MessageContentType.FunctionCall,
+            name: FunctionName.Placeholder,
+          },
+        ],
         createdAt: mockDate,
         complete: true,
       }
@@ -1603,7 +1646,7 @@ describe('messageSlice', () => {
       const { handleMessageEvent } = useChatStore.getState()
 
       handleMessageEvent({
-        type: ProviderMessageEventType.FunctionCall,
+        type: ProviderMessageEventType.FunctionCallDone,
         messageId: 'assistant-message-id',
         threadId: 'test-thread-id',
         content: functionCallContent,

@@ -11,7 +11,7 @@ import type { StoreMessages } from '@/stores/useChatStore.types'
 
 import {
   addMessage,
-  addMessageContent,
+  addOrUpdateMessageContent,
   appendMessageTextContent,
   setMessageError,
   setMessageComplete,
@@ -98,20 +98,134 @@ describe('messageSlice.utils', () => {
     })
   })
 
-  describe('addMessageContent', () => {
-    it('should add content to existing message', () => {
+  describe('addOrUpdateMessageContent', () => {
+    it('should add new content when content ID does not exist', () => {
       const newContent: MessageContent = {
         type: MessageContentType.OutputText,
         text: 'Additional content',
         id: 'content-3',
       }
 
-      const result = addMessageContent(mockMessages, 'test-message-id', newContent)
+      const result = addOrUpdateMessageContent(mockMessages, 'test-message-id', newContent)
 
       expect(result.list[0].content).toEqual([
         { type: MessageContentType.OutputText, text: 'Hello', id: 'content-1' },
         { type: MessageContentType.OutputText, text: 'Additional content', id: 'content-3' },
       ])
+    })
+
+    it('should update existing content when content ID exists', () => {
+      const updatedContent: MessageContent = {
+        type: MessageContentType.OutputText,
+        text: 'Updated content',
+        id: 'content-1',
+      }
+
+      const result = addOrUpdateMessageContent(mockMessages, 'test-message-id', updatedContent)
+
+      expect(result.list[0].content).toEqual([
+        { type: MessageContentType.OutputText, text: 'Updated content', id: 'content-1' },
+      ])
+      expect(result.list[0].content).toHaveLength(1)
+    })
+
+    it('should update content type when updating existing content', () => {
+      const functionContent: MessageContent = {
+        type: MessageContentType.FunctionCall,
+        id: 'content-1',
+        name: FunctionName.FillInput,
+        status: FunctionStatus.Pending,
+        arguments: {
+          input_type: 'text',
+          input_value: 'test',
+          input_selector: 'input',
+          label_value: 'test',
+        },
+      }
+
+      const result = addOrUpdateMessageContent(mockMessages, 'test-message-id', functionContent)
+
+      expect(result.list[0].content).toEqual([functionContent])
+      expect(result.list[0].content[0].type).toBe(MessageContentType.FunctionCall)
+    })
+
+    it('should handle message with multiple content items', () => {
+      const messageWithMultipleContent: Message = {
+        id: 'multi-content-message-id',
+        role: MessageRole.Assistant,
+        content: [
+          { type: MessageContentType.OutputText, text: 'First content', id: 'content-1' },
+          { type: MessageContentType.OutputText, text: 'Second content', id: 'content-2' },
+        ],
+        createdAt: mockDate,
+        threadId: 'test-thread-id',
+        complete: true,
+      }
+
+      const messagesWithMultipleContent: StoreMessages = {
+        list: [messageWithMultipleContent],
+        loading: false,
+        error: null,
+        ready: true,
+      }
+
+      const updatedContent: MessageContent = {
+        type: MessageContentType.OutputText,
+        text: 'Updated second content',
+        id: 'content-2',
+      }
+
+      const result = addOrUpdateMessageContent(
+        messagesWithMultipleContent,
+        'multi-content-message-id',
+        updatedContent,
+      )
+
+      expect(result.list[0].content).toEqual([
+        { type: MessageContentType.OutputText, text: 'First content', id: 'content-1' },
+        { type: MessageContentType.OutputText, text: 'Updated second content', id: 'content-2' },
+      ])
+      expect(result.list[0].content).toHaveLength(2)
+    })
+
+    it('should add content to message with multiple existing content items', () => {
+      const messageWithMultipleContent: Message = {
+        id: 'multi-content-message-id',
+        role: MessageRole.Assistant,
+        content: [
+          { type: MessageContentType.OutputText, text: 'First content', id: 'content-1' },
+          { type: MessageContentType.OutputText, text: 'Second content', id: 'content-2' },
+        ],
+        createdAt: mockDate,
+        threadId: 'test-thread-id',
+        complete: true,
+      }
+
+      const messagesWithMultipleContent: StoreMessages = {
+        list: [messageWithMultipleContent],
+        loading: false,
+        error: null,
+        ready: true,
+      }
+
+      const newContent: MessageContent = {
+        type: MessageContentType.OutputText,
+        text: 'Third content',
+        id: 'content-3',
+      }
+
+      const result = addOrUpdateMessageContent(
+        messagesWithMultipleContent,
+        'multi-content-message-id',
+        newContent,
+      )
+
+      expect(result.list[0].content).toEqual([
+        { type: MessageContentType.OutputText, text: 'First content', id: 'content-1' },
+        { type: MessageContentType.OutputText, text: 'Second content', id: 'content-2' },
+        { type: MessageContentType.OutputText, text: 'Third content', id: 'content-3' },
+      ])
+      expect(result.list[0].content).toHaveLength(3)
     })
 
     it('should not modify other messages', () => {
@@ -128,7 +242,7 @@ describe('messageSlice.utils', () => {
         id: 'content-3',
       }
 
-      const result = addMessageContent(messagesWithMultiple, 'test-message-id', newContent)
+      const result = addOrUpdateMessageContent(messagesWithMultiple, 'test-message-id', newContent)
 
       expect(result.list[0].content).toHaveLength(2)
       expect(result.list[1].content).toHaveLength(1)
@@ -142,7 +256,7 @@ describe('messageSlice.utils', () => {
         id: 'content-3',
       }
 
-      const result = addMessageContent(mockMessages, 'non-existent-id', newContent)
+      const result = addOrUpdateMessageContent(mockMessages, 'non-existent-id', newContent)
 
       expect(result.list[0].content).toHaveLength(1)
       expect(result.list[0].content[0]).toEqual({
@@ -159,12 +273,28 @@ describe('messageSlice.utils', () => {
         id: 'content-3',
       }
 
-      const result = addMessageContent(mockMessages, 'test-message-id', newContent)
+      const result = addOrUpdateMessageContent(mockMessages, 'test-message-id', newContent)
 
       expect(result).not.toBe(mockMessages)
       expect(result.list).not.toBe(mockMessages.list)
       expect(result.list[0]).not.toBe(mockMessage)
       expect(result.list[0].content).not.toBe(mockMessage.content)
+    })
+
+    it('should maintain immutability when updating existing content', () => {
+      const updatedContent: MessageContent = {
+        type: MessageContentType.OutputText,
+        text: 'Updated content',
+        id: 'content-1',
+      }
+
+      const result = addOrUpdateMessageContent(mockMessages, 'test-message-id', updatedContent)
+
+      expect(result).not.toBe(mockMessages)
+      expect(result.list).not.toBe(mockMessages.list)
+      expect(result.list[0]).not.toBe(mockMessage)
+      expect(result.list[0].content).not.toBe(mockMessage.content)
+      expect(result.list[0].content[0]).not.toBe(mockMessage.content[0])
     })
   })
 

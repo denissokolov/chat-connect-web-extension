@@ -67,7 +67,10 @@ export class OpenAIAssistant implements IAssistant {
     this.progress = true
 
     const input = params.message.content.reduce((acc, content) => {
-      if (content.type === MessageContentType.FunctionCall) {
+      if (
+        content.type === MessageContentType.FunctionCall &&
+        content.name !== FunctionName.Placeholder
+      ) {
         acc.push({
           type: 'function_call_output',
           call_id: content.id,
@@ -139,12 +142,27 @@ export class OpenAIAssistant implements IAssistant {
           })
           break
 
+        case 'response.output_item.added':
+          if (event.item.type === 'function_call') {
+            eventHandler({
+              type: ProviderMessageEventType.FunctionCallAdded,
+              messageId: this.getResponseId(),
+              threadId,
+              content: {
+                id: event.item.call_id,
+                type: MessageContentType.FunctionCall,
+                name: FunctionName.Placeholder,
+              },
+            })
+          }
+          break
+
         case 'response.output_item.done':
           if (event.item.type === 'function_call') {
             const content = this.getFunctionCallContent(event.item)
             if (content) {
               eventHandler({
-                type: ProviderMessageEventType.FunctionCall,
+                type: ProviderMessageEventType.FunctionCallDone,
                 messageId: this.getResponseId(),
                 threadId,
                 content,

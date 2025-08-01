@@ -14,16 +14,31 @@ export function addMessage(messages: StoreMessages, message: Message): StoreMess
   }
 }
 
-export function addMessageContent(
+export function addOrUpdateMessageContent(
   messages: StoreMessages,
   messageId: string,
   content: MessageContent,
 ): StoreMessages {
   return {
     ...messages,
-    list: messages.list.map(msg =>
-      msg.id === messageId ? { ...msg, content: [...msg.content, content] } : msg,
-    ),
+    list: messages.list.map(msg => {
+      if (msg.id !== messageId) {
+        return msg
+      }
+
+      let exists = false
+      const nextContent = msg.content.map(i => {
+        if (i.id === content.id) {
+          exists = true
+          return content
+        }
+        return i
+      })
+      if (!exists) {
+        nextContent.push(content)
+      }
+      return { ...msg, content: nextContent }
+    }),
   }
 }
 

@@ -19,7 +19,8 @@ export enum AIModel {
 export enum ProviderMessageEventType {
   Created = 'created',
   OutputTextDelta = 'output_text_delta',
-  FunctionCall = 'function_call',
+  FunctionCallAdded = 'function_call_added',
+  FunctionCallDone = 'function_call_done',
   Completed = 'completed',
   Error = 'error',
   Fallback = 'fallback',
@@ -39,8 +40,15 @@ type ProviderMessageOutputTextDeltaEvent = {
   textDelta: string
 }
 
-type ProviderMessageFunctionCallEvent = {
-  type: ProviderMessageEventType.FunctionCall
+type ProviderMessageFunctionCallAddedEvent = {
+  type: ProviderMessageEventType.FunctionCallAdded
+  messageId: string
+  threadId: string
+  content: FunctionCallContent
+}
+
+type ProviderMessageFunctionCallDoneEvent = {
+  type: ProviderMessageEventType.FunctionCallDone
   messageId: string
   threadId: string
   content: FunctionCallContent
@@ -73,7 +81,8 @@ type ProviderMessageFallbackEvent = {
 export type ProviderMessageEvent =
   | ProviderMessageCreatedEvent
   | ProviderMessageOutputTextDeltaEvent
-  | ProviderMessageFunctionCallEvent
+  | ProviderMessageFunctionCallAddedEvent
+  | ProviderMessageFunctionCallDoneEvent
   | ProviderMessageCompletedEvent
   | ProviderMessageErrorEvent
   | ProviderMessageFallbackEvent

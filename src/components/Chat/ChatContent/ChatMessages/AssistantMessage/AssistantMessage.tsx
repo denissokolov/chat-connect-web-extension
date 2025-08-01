@@ -3,6 +3,7 @@ import { memo } from 'react'
 import { MessageContentType, type MessageContent } from '@/types/chat.types'
 import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
+import AssistantProgress from '@/components/Chat/ChatContent/ChatMessages/AssistantProgress/AssistantProgress'
 import FillInputMessage from './functions/FillInputMessage'
 import ClickElementMessage from './functions/ClickElementMessage'
 import GetPageContentMessage from './functions/GetPageContentMessage'
@@ -34,46 +35,47 @@ function AssistantMessage({
         }
 
         if (item.type === MessageContentType.FunctionCall) {
-          if (item.name === FunctionName.FillInput) {
-            return (
-              <FillInputMessage
-                key={item.id}
-                args={item.arguments}
-                messageId={messageId}
-                callId={item.id}
-                status={item.status}
-                error={item.result?.error}
-                saveResult={saveFunctionResult}
-                autoExecute={autoExecuteTools}
-              />
-            )
-          }
-          if (item.name === FunctionName.ClickElement) {
-            return (
-              <ClickElementMessage
-                key={item.id}
-                args={item.arguments}
-                messageId={messageId}
-                callId={item.id}
-                status={item.status}
-                error={item.result?.error}
-                saveResult={saveFunctionResult}
-                autoExecute={autoExecuteTools}
-              />
-            )
-          }
-          if (item.name === FunctionName.GetPageContent) {
-            return (
-              <GetPageContentMessage
-                key={item.id}
-                args={item.arguments}
-                messageId={messageId}
-                callId={item.id}
-                status={item.status}
-                error={item.result?.error}
-                saveResult={saveFunctionResult}
-              />
-            )
+          switch (item.name) {
+            case FunctionName.FillInput:
+              return (
+                <FillInputMessage
+                  key={item.id}
+                  args={item.arguments}
+                  messageId={messageId}
+                  callId={item.id}
+                  status={item.status}
+                  error={item.result?.error}
+                  saveResult={saveFunctionResult}
+                  autoExecute={autoExecuteTools}
+                />
+              )
+            case FunctionName.ClickElement:
+              return (
+                <ClickElementMessage
+                  key={item.id}
+                  args={item.arguments}
+                  messageId={messageId}
+                  callId={item.id}
+                  status={item.status}
+                  error={item.result?.error}
+                  saveResult={saveFunctionResult}
+                  autoExecute={autoExecuteTools}
+                />
+              )
+            case FunctionName.GetPageContent:
+              return (
+                <GetPageContentMessage
+                  key={item.id}
+                  args={item.arguments}
+                  messageId={messageId}
+                  callId={item.id}
+                  status={item.status}
+                  error={item.result?.error}
+                  saveResult={saveFunctionResult}
+                />
+              )
+            case FunctionName.Placeholder:
+              return <AssistantProgress key={item.id} />
           }
         }
 
