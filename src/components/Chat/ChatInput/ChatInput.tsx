@@ -1,4 +1,4 @@
-import { ArrowUp, X } from 'lucide-react'
+import { ArrowUp, Square } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -71,7 +71,7 @@ function ChatInput() {
               aria-label="Stop generating response"
               className="rounded-full ml-auto"
             >
-              <X className="size-5" />
+              <Square className="size-4 fill-white" />
             </Button>
           ) : (
             <Button
