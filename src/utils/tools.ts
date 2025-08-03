@@ -8,7 +8,7 @@ const tools: AssistantTool[] = [
       {
         name: 'input_type',
         description: 'The type of the input to fill',
-        enum: ['input', 'textarea', 'select', 'radio', 'checkbox'],
+        enum: ['input', 'textarea', 'select', 'radio', 'checkbox', 'content_editable'],
         required: true,
       },
       {

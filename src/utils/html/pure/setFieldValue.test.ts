@@ -347,6 +347,145 @@ describe('html setFieldValue', () => {
     })
   })
 
+  describe('Content Editable Elements', () => {
+    it('should set text content for content editable element', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const result = setFieldValue('#test-editable', 'Hello World')
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe('Hello World')
+    })
+
+    it('should set empty content for content editable element', () => {
+      document.body.innerHTML =
+        '<div id="test-editable" contenteditable="true">existing content</div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const result = setFieldValue('#test-editable', '')
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe('')
+    })
+
+    it('should handle multi-line content', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+      const multiLineContent = 'Line 1\nLine 2\nLine 3'
+
+      const result = setFieldValue('#test-editable', multiLineContent)
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe(multiLineContent)
+    })
+
+    it('should handle special characters and unicode', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+      const specialContent = '🚀 Special chars: <>&"\'中文'
+
+      const result = setFieldValue('#test-editable', specialContent)
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe(specialContent)
+    })
+
+    it('should work with different contenteditable values', () => {
+      // Test with contenteditable="false" - still handled as content editable due to hasAttribute check
+      document.body.innerHTML = '<div id="test-editable" contenteditable="false"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const result = setFieldValue('#test-editable', 'test')
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe('test')
+    })
+
+    it('should not handle elements without contenteditable attribute', () => {
+      // Test regular div without contenteditable attribute - should be unsupported
+      document.body.innerHTML = '<div id="test-div">Not editable</div>'
+
+      const result = setFieldValue('#test-div', 'test')
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Unsupported element type',
+      })
+    })
+
+    it('should work with contenteditable attribute without value', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const result = setFieldValue('#test-editable', 'Test content')
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe('Test content')
+    })
+
+    it('should replace existing HTML content with plain text', () => {
+      document.body.innerHTML =
+        '<div id="test-editable" contenteditable="true"><p>Existing <strong>HTML</strong></p></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const result = setFieldValue('#test-editable', 'Plain text replacement')
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe('Plain text replacement')
+      // Verify that HTML structure is removed (textContent strips HTML)
+      expect(editableDiv.innerHTML).toBe('Plain text replacement')
+    })
+
+    it('should dispatch events for content editable elements', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const inputSpy = vi.fn()
+      const changeSpy = vi.fn()
+
+      editableDiv.addEventListener('input', inputSpy)
+      editableDiv.addEventListener('change', changeSpy)
+
+      const result = setFieldValue('#test-editable', 'test content')
+
+      expect(result).toEqual({ success: true })
+      expect(inputSpy).toHaveBeenCalledTimes(1)
+      expect(changeSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle very long content', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+      const longContent = 'a'.repeat(10000)
+
+      const result = setFieldValue('#test-editable', longContent)
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.textContent).toBe(longContent)
+      expect(editableDiv.textContent?.length).toBe(10000)
+    })
+
+    it('should work with different HTML elements that are content editable', () => {
+      const testCases = [
+        { tag: 'div', id: 'editable-div' },
+        { tag: 'p', id: 'editable-p' },
+        { tag: 'span', id: 'editable-span' },
+        { tag: 'article', id: 'editable-article' },
+      ]
+
+      testCases.forEach(({ tag, id }) => {
+        document.body.innerHTML = `<${tag} id="${id}" contenteditable="true"></${tag}>`
+        const element = document.getElementById(id) as HTMLElement
+
+        const result = setFieldValue(`#${id}`, `Content for ${tag}`)
+
+        expect(result).toEqual({ success: true })
+        expect(element.textContent).toBe(`Content for ${tag}`)
+      })
+    })
+  })
+
   describe('Event Dispatching', () => {
     it('should dispatch input, change, and blur events after successful value change', () => {
       document.body.innerHTML = '<input type="text" id="test-input" />'

@@ -103,6 +103,11 @@ export function setFieldValue(selector: string, value: string): FunctionCallResu
     return { success: false, error: 'Option not found' }
   }
 
+  const handleContentEditableElement = (contentEditable: Element): FunctionCallResult => {
+    contentEditable.textContent = value
+    return { success: true }
+  }
+
   const isValidEmail = (email: string): boolean => {
     // Use a safer regex pattern to avoid ReDoS attacks
     // This pattern is more restrictive but avoids backtracking issues
@@ -144,6 +149,8 @@ export function setFieldValue(selector: string, value: string): FunctionCallResu
       result = handleTextAreaElement(field)
     } else if (field instanceof HTMLSelectElement) {
       result = handleSelectElement(field)
+    } else if (field.hasAttribute('contenteditable')) {
+      result = handleContentEditableElement(field)
     } else {
       console.error(`Unsupported element type for selector: ${selector}`)
       result = { success: false, error: 'Unsupported element type' }
