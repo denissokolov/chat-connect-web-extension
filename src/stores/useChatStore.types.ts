@@ -14,6 +14,7 @@ export type ThreadSlice = {
   }
   loadThreads: () => Promise<void>
   selectThread: (threadId: string) => Promise<void>
+  clearHistory: () => Promise<void>
 }
 
 export type ProviderSlice = {

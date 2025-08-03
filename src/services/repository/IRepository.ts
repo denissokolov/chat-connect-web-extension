@@ -9,4 +9,5 @@ export interface IRepository {
   getMessages(threadId: string): Promise<Message[]>
   createMessage(message: Message): Promise<void>
   updateMessage(message: Message): Promise<void>
+  clearAll(): Promise<void>
 }

@@ -1,11 +1,13 @@
 import { memo } from 'react'
-import { AlertCircle, MessageSquare } from 'lucide-react'
+import { AlertCircle, MessageSquare, Trash2 } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import useChatStore from '@/stores/useChatStore'
 
 function ChatHistory() {
   const threads = useChatStore(state => state.threads)
   const onThreadSelect = useChatStore(state => state.selectThread)
+  const clearHistory = useChatStore(state => state.clearHistory)
 
   if (threads.loading) {
     return (
@@ -51,6 +53,18 @@ function ChatHistory() {
 
   return (
     <div className="h-full flex-1 flex flex-col">
+      <div className="p-2 border-b border-border">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={clearHistory}
+          disabled={threads.loading}
+          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          {'Clear history'}
+        </Button>
+      </div>
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-1 p-2">
           {threads.list.map(thread => (

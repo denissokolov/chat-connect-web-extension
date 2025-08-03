@@ -188,4 +188,23 @@ export class IndexedDBRepository implements IRepository {
       transaction.onerror = () => reject(transaction.error)
     })
   }
+
+  clearAll(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const transaction = this.getDB().transaction(
+        [this.threadsStore, this.messagesStore],
+        'readwrite',
+      )
+      const threadsStore = transaction.objectStore(this.threadsStore)
+      const messagesStore = transaction.objectStore(this.messagesStore)
+
+      const clearThreadsRequest = threadsStore.clear()
+      const clearMessagesRequest = messagesStore.clear()
+
+      transaction.oncomplete = () => resolve()
+      transaction.onerror = () => reject(transaction.error)
+      clearThreadsRequest.onerror = () => reject(clearThreadsRequest.error)
+      clearMessagesRequest.onerror = () => reject(clearMessagesRequest.error)
+    })
+  }
 }

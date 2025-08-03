@@ -67,4 +67,29 @@ export const createThreadSlice: StateCreator<ChatStore, [], [], ThreadSlice> = (
       })
     }
   },
+  clearHistory: async () => {
+    const { threads, assistant } = get()
+
+    if (assistant) {
+      assistant.cancelActiveRequest()
+    }
+
+    set({ threads: { ...threads, loading: true, error: null } })
+
+    try {
+      await repository.clearAll()
+      set({
+        threadId: crypto.randomUUID(),
+        threads: { list: emptyThreads, loading: false, error: null, ready: true },
+        messages: { list: emptyMessages, loading: false, error: null, ready: true },
+        waitingForReply: false,
+        waitingForTools: false,
+        currentView: ChatView.Chat,
+      })
+    } catch (error) {
+      set({
+        threads: { ...threads, loading: false, error: getStringError(error) },
+      })
+    }
+  },
 })
