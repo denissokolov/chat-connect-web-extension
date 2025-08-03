@@ -1,12 +1,13 @@
-import { ArrowUp, Square } from 'lucide-react'
+import { ArrowUp, Square, Zap } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Toggle } from '@/components/ui/toggle'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import ContextDisplay from '@/components/Chat/ContextDisplay/ContextDisplay'
 import useChatStore from '@/stores/useChatStore'
 import ModelSelect from '@/components/Chat/ModelSelect/ModelSelect'
-import AutoExecute from './AutoExecute/AutoExecute'
 
 function ChatInput() {
   const [input, setInput] = useState('')
@@ -19,6 +20,9 @@ function ChatInput() {
   const waitingForReply = useChatStore(state => state.waitingForReply)
   const waitingForTools = useChatStore(state => state.waitingForTools)
   const messagesReady = useChatStore(state => state.messages.ready)
+
+  const autoExecuteTools = useChatStore(state => state.autoExecuteTools)
+  const setAutoExecuteTools = useChatStore(state => state.setAutoExecuteTools)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -59,32 +63,54 @@ function ChatInput() {
           autoFocus={true}
         />
 
-        <div className="flex items-center m-2 gap-4">
+        <div className="flex items-center my-1 ml-1 mr-2 gap-4">
           <ModelSelect />
-          <AutoExecute />
-          {waitingForReply || waitingForTools ? (
-            <Button
-              type="button"
-              onClick={handleStop}
-              size="icon"
-              title="Stop"
-              aria-label="Stop generating response"
-              className="rounded-full ml-auto"
-            >
-              <Square className="size-4 fill-white" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              disabled={!input.trim() || !messagesReady}
-              size="icon"
-              title="Send"
-              aria-label="Send message"
-              className="rounded-full ml-auto"
-            >
-              <ArrowUp className="size-5" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2 ml-auto">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle
+                    pressed={autoExecuteTools}
+                    onPressedChange={setAutoExecuteTools}
+                    size="sm"
+                    aria-label="Toggle auto-execute tools"
+                  >
+                    {autoExecuteTools ? (
+                      <Zap className="size-4 fill-current" />
+                    ) : (
+                      <Zap className="size-4" />
+                    )}
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{'Auto-run tools'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {waitingForReply || waitingForTools ? (
+              <Button
+                type="button"
+                onClick={handleStop}
+                size="icon"
+                title="Stop"
+                aria-label="Stop generating response"
+                className="rounded-full"
+              >
+                <Square className="size-4 fill-white" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={!input.trim() || !messagesReady}
+                size="icon"
+                title="Send"
+                aria-label="Send message"
+                className="rounded-full"
+              >
+                <ArrowUp className="size-5" />
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </div>

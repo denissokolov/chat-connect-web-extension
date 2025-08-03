@@ -34,7 +34,7 @@ function ModelSelect() {
   return (
     <Select value={model} onValueChange={handleValueChange}>
       <SelectTrigger
-        className=" w-auto shadow-none gap-2 px-2 text-xs font-medium rounded-lg cursor-pointer"
+        className="bg-transparent border-none w-auto shadow-none gap-2 px-2 text-xs font-medium rounded-lg cursor-pointer"
         id="model-select"
         aria-label="Select AI model"
       >
