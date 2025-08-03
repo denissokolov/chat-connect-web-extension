@@ -104,7 +104,9 @@ export function setFieldValue(selector: string, value: string): FunctionCallResu
   }
 
   const handleContentEditableElement = (contentEditable: Element): FunctionCallResult => {
-    contentEditable.textContent = value
+    // Convert \n to <br> tags for proper newline display in contenteditable elements
+    const htmlValue = value.replace(/\n/g, '<br>')
+    contentEditable.innerHTML = htmlValue
     return { success: true }
   }
 

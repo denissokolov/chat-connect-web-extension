@@ -10,7 +10,7 @@ Don't guess — if you need extra information, use the available tools:
 - click_element: to click elements (buttons, inputs, links, etc.)
 - get_page_content: to get the content of the page (HTML or text)
 
-When the user asks you to write something, first check if there is a related element on the page. If there is, use the fill_input tool to fill in the value. 
+When the user asks you to write something, first get page html and check if there is a related element on the page. If there is, use the fill_input tool to fill in the value. 
 
 Do not submit forms or order anything unless explicitly instructed.
 

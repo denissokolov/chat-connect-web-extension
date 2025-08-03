@@ -369,7 +369,7 @@ describe('html setFieldValue', () => {
       expect(editableDiv.textContent).toBe('')
     })
 
-    it('should handle multi-line content', () => {
+    it('should handle multi-line content by converting newlines to <br> tags', () => {
       document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
       const editableDiv = document.getElementById('test-editable') as HTMLElement
       const multiLineContent = 'Line 1\nLine 2\nLine 3'
@@ -377,7 +377,18 @@ describe('html setFieldValue', () => {
       const result = setFieldValue('#test-editable', multiLineContent)
 
       expect(result).toEqual({ success: true })
-      expect(editableDiv.textContent).toBe(multiLineContent)
+      expect(editableDiv.innerHTML).toBe('Line 1<br>Line 2<br>Line 3')
+      expect(editableDiv.textContent).toBe('Line 1Line 2Line 3')
+    })
+
+    it('should support \\n character for newlines in contenteditable elements', () => {
+      document.body.innerHTML = '<div id="test-editable" contenteditable="true"></div>'
+      const editableDiv = document.getElementById('test-editable') as HTMLElement
+
+      const result = setFieldValue('#test-editable', 'First line\nSecond line')
+
+      expect(result).toEqual({ success: true })
+      expect(editableDiv.innerHTML).toBe('First line<br>Second line')
     })
 
     it('should handle special characters and unicode', () => {
@@ -433,7 +444,6 @@ describe('html setFieldValue', () => {
 
       expect(result).toEqual({ success: true })
       expect(editableDiv.textContent).toBe('Plain text replacement')
-      // Verify that HTML structure is removed (textContent strips HTML)
       expect(editableDiv.innerHTML).toBe('Plain text replacement')
     })
 
