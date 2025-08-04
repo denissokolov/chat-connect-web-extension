@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react'
+import { Eye } from 'lucide-react'
 
 import browser from '@/services/browser'
 import { type GetPageContentArguments } from '@/types/tool.types'
@@ -38,8 +39,11 @@ function GetPageContentMessage({
         : '...'
 
   return (
-    <div className="rounded-lg p-3 text-sm/normal my-2 space-y-2 border">
-      <div className="text-muted-foreground">{`Getting page ${args.format}${statusText}`}</div>
+    <div className="rounded-lg py-3 text-sm/normal my-2 space-y-2">
+      <div className="text-muted-foreground flex items-center gap-2">
+        <Eye className="h-4 w-4" />
+        {`Getting page ${args.format}${statusText}`}
+      </div>
       {error && <p className="text-destructive">{error}</p>}
     </div>
   )
