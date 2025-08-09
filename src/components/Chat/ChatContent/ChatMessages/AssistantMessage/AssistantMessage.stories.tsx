@@ -238,11 +238,12 @@ export const WithMultipleFunctionCalls: Story = {
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    // Should show grouped fill inputs with Fill All Fields button
+    expect(canvas.getByText('Fill All Fields')).toBeInTheDocument()
     expect(canvas.getByText('Postcode')).toBeInTheDocument()
     expect(canvas.getByText('1234')).toBeInTheDocument()
     expect(canvas.getByText('Postcode letters')).toBeInTheDocument()
     expect(canvas.getByText('AB')).toBeInTheDocument()
-    expect(canvas.queryAllByText('Fill the field')).toHaveLength(2)
   },
 }
 

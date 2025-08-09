@@ -1,10 +1,15 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 
-import { MessageContentType, type MessageContent } from '@/types/chat.types'
+import {
+  MessageContentType,
+  type MessageContent,
+  type FunctionCallContent,
+} from '@/types/chat.types'
 import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 import AssistantProgress from '@/components/Chat/ChatContent/ChatMessages/AssistantProgress/AssistantProgress'
 import FillInputMessage from './functions/FillInputMessage'
+import FillInputGroup from './functions/FillInputGroup'
 import ClickElementMessage from './functions/ClickElementMessage'
 import GetPageContentMessage from './functions/GetPageContentMessage'
 
@@ -27,9 +32,62 @@ function AssistantMessage({
   autoExecuteTools,
   error,
 }: AssistantMessageProps) {
+  // Group consecutive FillInput calls
+  const groupedContent = useMemo(() => {
+    const groups: Array<MessageContent | MessageContent[]> = []
+    let currentFillGroup: MessageContent[] = []
+
+    content.forEach(item => {
+      if (item.type === MessageContentType.FunctionCall && item.name === FunctionName.FillInput) {
+        currentFillGroup.push(item)
+      } else {
+        if (currentFillGroup.length > 0) {
+          // Add grouped fill inputs if we have more than one
+          groups.push(currentFillGroup.length > 1 ? [...currentFillGroup] : currentFillGroup[0])
+          currentFillGroup = []
+        }
+        groups.push(item)
+      }
+    })
+
+    // Don't forget the last group if it exists
+    if (currentFillGroup.length > 0) {
+      groups.push(currentFillGroup.length > 1 ? [...currentFillGroup] : currentFillGroup[0])
+    }
+
+    return groups
+  }, [content])
+
   return (
     <div className="max-w-full leading-1">
-      {content.map(item => {
+      {groupedContent.map((item, index) => {
+        // Handle grouped FillInput calls
+        if (Array.isArray(item)) {
+          const fillItems = item
+            .filter(
+              (fillItem): fillItem is FunctionCallContent & { name: FunctionName.FillInput } =>
+                fillItem.type === MessageContentType.FunctionCall &&
+                fillItem.name === FunctionName.FillInput,
+            )
+            .map(fillItem => ({
+              id: fillItem.id,
+              args: fillItem.arguments,
+              status: fillItem.status,
+              error: fillItem.result?.error,
+            }))
+
+          return (
+            <FillInputGroup
+              key={`group-${index}`}
+              items={fillItems}
+              messageId={messageId}
+              saveResult={saveFunctionResult}
+              autoExecute={autoExecuteTools}
+            />
+          )
+        }
+
+        // Handle individual items
         if (item.type === MessageContentType.OutputText) {
           return <MarkdownMessage key={item.id} text={item.text} />
         }
@@ -37,6 +95,7 @@ function AssistantMessage({
         if (item.type === MessageContentType.FunctionCall) {
           switch (item.name) {
             case FunctionName.FillInput:
+              // Single FillInput - use original component
               return (
                 <FillInputMessage
                   key={item.id}
