@@ -14,6 +14,7 @@ export enum AIModel {
   OpenAI_GPT_4_1_nano = 'gpt-4.1-nano',
   OpenAI_GPT_4o = 'gpt-4o',
   OpenAI_ChatGPT_4o = 'chatgpt-4o-latest',
+  OpenAI_GPT_5 = 'gpt-5',
 }
 
 export enum ProviderMessageEventType {

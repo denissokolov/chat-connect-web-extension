@@ -15,6 +15,7 @@ export const getProviderByModel = (model: AIModel): AIProvider => {
     case AIModel.OpenAI_GPT_4_1_nano:
     case AIModel.OpenAI_GPT_4o:
     case AIModel.OpenAI_ChatGPT_4o:
+    case AIModel.OpenAI_GPT_5:
       return AIProvider.OpenAI
   }
 }
@@ -37,6 +38,8 @@ export function getModelDisplayName(model: AIModel): string {
       return 'GPT-4o'
     case AIModel.OpenAI_ChatGPT_4o:
       return 'ChatGPT-4o'
+    case AIModel.OpenAI_GPT_5:
+      return 'GPT-5'
     default:
       return model
   }
