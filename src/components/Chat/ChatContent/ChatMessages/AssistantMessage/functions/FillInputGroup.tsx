@@ -91,19 +91,28 @@ function renderItemStatusControl(
     return <CircleAlertIcon className="w-4 h-4 text-destructive" />
   }
   if (item.status === FunctionStatus.Pending || isExecutingItem) {
-    return <Loader2 className="w-4 h-4 animate-spin" />
+    return (
+      <span className="inline-flex" title="Executing...">
+        <Loader2 className="w-4 h-4 animate-spin" />
+      </span>
+    )
   }
   if (isExecutingAll || isAnyExecuting) {
     return null
   }
   return (
     <Button
+      type="button"
       size="icon"
       variant="ghost"
-      className={cn('h-8 w-8 transition-opacity opacity-0 group-hover:opacity-100')}
+      className={cn(
+        'h-8 w-8 transition-opacity opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+      )}
       onClick={onExecute}
+      aria-label={`Fill field: ${item.args.label_value}`}
+      title={`Fill field: ${item.args.label_value}`}
     >
-      <PlayIcon className="w-4 h-4" />
+      <PlayIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
     </Button>
   )
 }
@@ -165,7 +174,11 @@ function FillInputGroup({ items, messageId, saveResult, autoExecute }: FillInput
               item.status === FunctionStatus.Error && 'border-destructive/50 bg-destructive/10',
             )}
           >
-            <div className="flex items-start justify-between">
+            <div
+              className="flex items-start justify-between"
+              role="group"
+              aria-label={`Fill input action for ${item.args.label_value}`}
+            >
               <div className="flex-1 space-y-1">
                 <div className="text-muted-foreground">{item.args.label_value}</div>
                 <div className="font-medium">{item.args.input_value}</div>

@@ -203,7 +203,7 @@ export const WithOneFunctionCall: Story = {
     const canvas = within(canvasElement)
     expect(canvas.getByText('Postcode')).toBeInTheDocument()
     expect(canvas.getByText('1234')).toBeInTheDocument()
-    expect(canvas.getByText('Fill the field')).toBeInTheDocument()
+    expect(canvas.getByText('Fill field')).toBeInTheDocument()
   },
 }
 
@@ -238,12 +238,13 @@ export const WithMultipleFunctionCalls: Story = {
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // Should show grouped fill inputs with Fill All Fields button
-    expect(canvas.getByText('Fill All Fields')).toBeInTheDocument()
     expect(canvas.getByText('Postcode')).toBeInTheDocument()
     expect(canvas.getByText('1234')).toBeInTheDocument()
     expect(canvas.getByText('Postcode letters')).toBeInTheDocument()
     expect(canvas.getByText('AB')).toBeInTheDocument()
+    // Each row has an icon-only per-item button; assert via accessible name
+    const itemButtons = canvas.getAllByRole('button', { name: /fill field:/i })
+    expect(itemButtons).toHaveLength(2)
   },
 }
 
@@ -338,9 +339,13 @@ export const WithFunctionCallSuccess: Story = {
   },
   play: ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    // Assert label/value rendered
     expect(canvas.getByText('Postcode')).toBeInTheDocument()
     expect(canvas.getByText('1234')).toBeInTheDocument()
-    expect(canvas.getByText('Success!')).toBeInTheDocument()
+    // In Success state, no execute button is rendered; success is shown via check icon and green styling
+    const group = canvas.getByRole('group', { name: /fill input action for postcode/i })
+    const checkIcon = group.querySelector('svg.lucide-check')
+    expect(checkIcon).not.toBeNull()
   },
 }
 
@@ -368,7 +373,9 @@ export const WithFunctionCallError: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    expect(await canvas.findByText('Error!')).toBeInTheDocument()
+    // In error state for FillInput, there is no button; only an icon and the error text.
+    // Assert the error detail paragraph is rendered.
+    expect(await canvas.findByText(/Invalid selector/i)).toBeInTheDocument()
   },
 }
 
