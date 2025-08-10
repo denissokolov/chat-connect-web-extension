@@ -43,34 +43,34 @@ function getGroupState(
   return 'idle'
 }
 
-function renderGroupContent(state: GroupState) {
+function renderGroupContent(state: GroupState, isSingle: boolean) {
   switch (state) {
     case 'executing':
       return (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>{'Filling all fields...'}</span>
+          <span>{'Filling...'}</span>
         </>
       )
     case 'success':
       return (
         <>
           <CheckIcon className="w-4 h-4" />
-          <span>{'All fields filled!'}</span>
+          <span>{isSingle ? 'Field filled!' : 'All fields filled!'}</span>
         </>
       )
     case 'error':
       return (
         <>
           <CircleAlertIcon className="w-4 h-4" />
-          <span>{'Some fields failed'}</span>
+          <span>{isSingle ? 'Failed' : 'Some fields failed'}</span>
         </>
       )
     default:
       return (
         <>
           <PlayIcon className="w-4 h-4" />
-          <span>{'Fill all'}</span>
+          <span>{isSingle ? 'Fill field' : 'Fill all'}</span>
         </>
       )
   }
@@ -191,7 +191,7 @@ function FillInputGroup({ items, messageId, saveResult, autoExecute }: FillInput
       {(hasIdleItems || executingAll) && (
         <div className="p-2">
           <Button variant="default" className="w-full" onClick={executeAll}>
-            {renderGroupContent(groupState)}
+            {renderGroupContent(groupState, items.length === 1)}
           </Button>
         </div>
       )}

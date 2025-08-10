@@ -8,7 +8,6 @@ import {
 import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 import AssistantProgress from '@/components/Chat/ChatContent/ChatMessages/AssistantProgress/AssistantProgress'
-import FillInputMessage from './functions/FillInputMessage'
 import FillInputGroup from './functions/FillInputGroup'
 import ClickElementMessage from './functions/ClickElementMessage'
 import GetPageContentMessage from './functions/GetPageContentMessage'
@@ -42,8 +41,8 @@ function AssistantMessage({
         currentFillGroup.push(item)
       } else {
         if (currentFillGroup.length > 0) {
-          // Add grouped fill inputs if we have more than one
-          groups.push(currentFillGroup.length > 1 ? [...currentFillGroup] : currentFillGroup[0])
+          // Always add as array to use FillInputGroup
+          groups.push([...currentFillGroup])
           currentFillGroup = []
         }
         groups.push(item)
@@ -52,7 +51,7 @@ function AssistantMessage({
 
     // Don't forget the last group if it exists
     if (currentFillGroup.length > 0) {
-      groups.push(currentFillGroup.length > 1 ? [...currentFillGroup] : currentFillGroup[0])
+      groups.push([...currentFillGroup])
     }
 
     return groups
@@ -94,20 +93,6 @@ function AssistantMessage({
 
         if (item.type === MessageContentType.FunctionCall) {
           switch (item.name) {
-            case FunctionName.FillInput:
-              // Single FillInput - use original component
-              return (
-                <FillInputMessage
-                  key={item.id}
-                  args={item.arguments}
-                  messageId={messageId}
-                  callId={item.id}
-                  status={item.status}
-                  error={item.result?.error}
-                  saveResult={saveFunctionResult}
-                  autoExecute={autoExecuteTools}
-                />
-              )
             case FunctionName.ClickElement:
               return (
                 <ClickElementMessage
