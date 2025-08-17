@@ -5,7 +5,6 @@ export default defineConfig({
   srcDir: 'src',
   outDir: 'dist',
   modules: ['@wxt-dev/module-react'],
-  // @ts-expect-error - plugins has wrong type
   vite: () => ({
     plugins: [tailwindcss()],
   }),
@@ -28,5 +27,8 @@ export default defineConfig({
   zip: {
     name: 'chat-connect',
     artifactTemplate: '{{name}}-{{browser}}.zip',
+  },
+  webExt: {
+    disabled: true,
   },
 })
