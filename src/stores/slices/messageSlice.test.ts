@@ -75,7 +75,7 @@ describe('messageSlice', () => {
     beforeEach(() => {
       useChatStore.setState({
         assistant: mockAssistant,
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         waitingForTools: false,
       })
     })
@@ -152,7 +152,7 @@ describe('messageSlice', () => {
 
       expect(state.waitingForReply).toBe(false)
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: expect.objectContaining({
           role: MessageRole.User,
           content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
@@ -188,7 +188,7 @@ describe('messageSlice', () => {
       await sendMessage('Hello')
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: expect.objectContaining({
           role: MessageRole.User,
           content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
@@ -238,7 +238,7 @@ describe('messageSlice', () => {
       await sendMessage('Hello')
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: expect.objectContaining({
           role: MessageRole.User,
           content: [{ type: MessageContentType.OutputText, text: 'Hello', id: expect.any(String) }],
@@ -326,7 +326,7 @@ describe('messageSlice', () => {
       await sendMessage('')
 
       expect(mockAssistant.sendMessage).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: expect.objectContaining({
           role: MessageRole.User,
           content: [{ type: MessageContentType.OutputText, text: '', id: expect.any(String) }],
@@ -512,7 +512,7 @@ describe('messageSlice', () => {
     beforeEach(() => {
       useChatStore.setState({
         assistant: mockAssistant,
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
       })
     })
 
@@ -733,7 +733,7 @@ describe('messageSlice', () => {
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: {
           ...messageWithSingleCall,
           content: [
@@ -1118,7 +1118,7 @@ describe('messageSlice', () => {
     beforeEach(() => {
       useChatStore.setState({
         assistant: mockAssistant,
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         threadId: 'test-thread-id',
       })
     })
@@ -1257,7 +1257,7 @@ describe('messageSlice', () => {
       expect(state.waitingForReply).toBe(false)
       expect(state.waitingForTools).toBe(false)
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: mockMessage,
         eventHandler: expect.any(Function),
         tools: toolsMock,
@@ -1357,7 +1357,7 @@ describe('messageSlice', () => {
 
       // The error should be handled by handleMessageError
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: mockMessage,
         eventHandler: expect.any(Function),
         tools: toolsMock,
@@ -1726,7 +1726,7 @@ describe('messageSlice', () => {
         messages: { list: [existingMessage], loading: false, error: null, ready: true },
         waitingForReply: true,
         assistant: mockAssistant,
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
       })
 
       // Mock assistant to simulate event flow
@@ -1763,7 +1763,7 @@ describe('messageSlice', () => {
         history: true,
       })
       expect(mockAssistant.sendFunctionCallResponse).toHaveBeenCalledWith({
-        model: AIModel.OpenAI_ChatGPT_4o,
+        model: AIModel.OpenAI_GPT_5,
         message: existingMessage,
         eventHandler: expect.any(Function),
         tools: toolsMock,

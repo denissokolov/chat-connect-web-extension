@@ -36,7 +36,7 @@ describe('providerSlice', () => {
 
       const { setupProvider } = useChatStore.getState()
 
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
+      await setupProvider(AIModel.OpenAI_GPT_5)
 
       expect(browser.getSecureValue).not.toHaveBeenCalled()
       expect(useChatStore.getState().assistant).toBe(existingAssistant)
@@ -47,14 +47,14 @@ describe('providerSlice', () => {
 
       const { setupProvider } = useChatStore.getState()
 
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
+      await setupProvider(AIModel.OpenAI_GPT_5)
 
       const state = useChatStore.getState()
       expect(state.provider.configured).toBe(true)
       expect(state.provider.ready).toBe(true)
       expect(state.provider.loading).toBe(false)
       expect(state.provider.error).toBeNull()
-      expect(state.model).toBe(AIModel.OpenAI_ChatGPT_4o)
+      expect(state.model).toBe(AIModel.OpenAI_GPT_5)
       expect(MockAssistant).toHaveBeenCalledWith('test-api-key')
       expect(state.assistant).toBeTruthy()
     })
@@ -68,7 +68,7 @@ describe('providerSlice', () => {
 
       const { setupProvider } = useChatStore.getState()
 
-      await setupProvider(AIModel.OpenAI_ChatGPT_4o)
+      await setupProvider(AIModel.OpenAI_GPT_5)
 
       const state = useChatStore.getState()
       expect(state.provider).toEqual({
@@ -89,7 +89,7 @@ describe('providerSlice', () => {
 
       const { setupProvider } = useChatStore.getState()
 
-      const setupPromise = setupProvider(AIModel.OpenAI_ChatGPT_4o)
+      const setupPromise = setupProvider(AIModel.OpenAI_GPT_5)
 
       expect(useChatStore.getState().provider.loading).toBe(true)
       expect(useChatStore.getState().provider.ready).toBe(false)
@@ -108,7 +108,7 @@ describe('providerSlice', () => {
       const { setupProvider } = useChatStore.getState()
 
       try {
-        await setupProvider(AIModel.OpenAI_ChatGPT_4o)
+        await setupProvider(AIModel.OpenAI_GPT_5)
       } catch (error) {
         expect(error).toBeNull()
       }

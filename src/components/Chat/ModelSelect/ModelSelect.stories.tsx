@@ -26,16 +26,16 @@ type Story = StoryObj<typeof ModelSelect>
 
 export const Default: Story = {}
 
-export const WithGPT4o: Story = {
+export const WithGPT5: Story = {
   play: async ({ canvas, userEvent }) => {
     const select = canvas.getByRole('combobox')
     await userEvent.click(select)
 
     const options = document.body.querySelectorAll('[role="option"]')
-    const gpt4oOption = Array.from(options).find(opt => opt.textContent?.includes('ChatGPT-4o'))
-    expect(gpt4oOption).toBeInTheDocument()
-    if (gpt4oOption) {
-      await userEvent.click(gpt4oOption)
+    const gpt5Option = Array.from(options).find(opt => opt.textContent?.includes('GPT-5'))
+    expect(gpt5Option).toBeInTheDocument()
+    if (gpt5Option) {
+      await userEvent.click(gpt5Option)
     }
   },
 }
@@ -65,9 +65,9 @@ export const ShowAllModels: Story = {
       'o3',
       'GPT-4.1',
       'GPT-4.1 Mini',
-      'GPT-4.1 Nano',
       'GPT-4o',
-      'ChatGPT-4o',
+      'GPT-5',
+      'GPT-5 Mini',
     ]
 
     const options = document.body.querySelectorAll('[role="option"]')
