@@ -19,6 +19,12 @@ export class WXTBrowser implements IBrowser {
     return result || null
   }
 
+  subscribeToSecureValue(key: string, callback: (value: string | null) => void): () => void {
+    return storage.watch<string>(`sync:${key}`, value => {
+      callback(value || null)
+    })
+  }
+
   async saveSecureValue(key: string, value: string): Promise<void> {
     await storage.setItem(`sync:${key}`, value)
   }

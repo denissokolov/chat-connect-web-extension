@@ -267,12 +267,15 @@ describe('threadSlice', () => {
     it('should work with existing state from other slices', () => {
       // Set up some initial state from other slices
       useChatStore.setState({
-        model: AIModel.OpenAI_GPT_4o,
-        provider: {
+        settings: {
           ready: true,
           loading: false,
-          configured: true,
           error: null,
+          data: {
+            openAIToken: '',
+            model: AIModel.OpenAI_GPT_4o,
+            autoExecuteTools: false,
+          },
         },
         assistant: null,
       })
@@ -283,8 +286,7 @@ describe('threadSlice', () => {
 
       const state = useChatStore.getState()
       // Should preserve other slice state
-      expect(state.model).toBe(AIModel.OpenAI_GPT_4o)
-      expect(state.provider.configured).toBe(true)
+      expect(state.settings.data?.model).toBe(AIModel.OpenAI_GPT_4o)
       expect(state.assistant).toBe(null)
     })
   })

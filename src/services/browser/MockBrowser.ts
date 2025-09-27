@@ -10,7 +10,11 @@ export class MockBrowser implements IBrowser {
   openExtensionSettings() {}
 
   getSecureValue(): Promise<string | null> {
-    return Promise.resolve('mock-value')
+    return Promise.resolve(null)
+  }
+
+  subscribeToSecureValue(): () => void {
+    return () => {}
   }
 
   saveSecureValue(): Promise<void> {

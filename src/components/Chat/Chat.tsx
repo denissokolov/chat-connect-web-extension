@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect } from 'react'
+import { memo, useEffect } from 'react'
 
 import ChatInput from './ChatInput/ChatInput'
 import ChatContent from './ChatContent/ChatContent'
@@ -7,26 +7,22 @@ import ChatHeader from './ChatHeader/ChatHeader'
 import useChatStore from '@/stores/useChatStore'
 
 function Chat() {
-  const setupProvider = useChatStore(state => state.setupProvider)
-  const model = useChatStore(state => state.model)
+  const initSettings = useChatStore(state => state.initSettings)
+  const loadSettings = useChatStore(state => state.loadSettings)
 
   const currentView = useChatStore(state => state.currentView)
   const setCurrentView = useChatStore(state => state.setCurrentView)
 
   useEffect(() => {
-    setupProvider(model)
-  }, [setupProvider, model])
-
-  const retryInitialization = useCallback(() => {
-    setupProvider(model)
-  }, [setupProvider, model])
+    initSettings()
+  }, [initSettings])
 
   return (
     <div className="h-full flex-1 flex flex-col">
       <ChatHeader currentView={currentView} setCurrentView={setCurrentView} />
       {currentView === 'chat' ? (
         <>
-          <ChatContent retryInitialization={retryInitialization} />
+          <ChatContent retryInitialization={loadSettings} />
           <ChatInput />
         </>
       ) : (

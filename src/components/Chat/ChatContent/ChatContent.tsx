@@ -12,11 +12,11 @@ interface ChatContentProps {
 }
 
 function ChatContent({ retryInitialization }: ChatContentProps) {
-  const provider = useChatStore(state => state.provider)
+  const settings = useChatStore(state => state.settings)
   const messages = useChatStore(state => state.messages)
 
   const centerClassName = 'flex-1 flex flex-col items-center justify-center text-center'
-  if (provider.loading || messages.loading) {
+  if (settings.loading || messages.loading) {
     return (
       <div className={centerClassName}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -27,33 +27,31 @@ function ChatContent({ retryInitialization }: ChatContentProps) {
     )
   }
 
-  if (messages.error || provider.error) {
+  if (messages.error || settings.error) {
     return (
       <div className={centerClassName}>
         <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
-        <p className="text-sm text-destructive mb-4">{messages.error || provider.error}</p>
-        {provider.error && (
-          <Button onClick={retryInitialization} size="sm">
-            {'Retry'}
-          </Button>
+        <p className="text-sm text-destructive mb-4">{messages.error || settings.error}</p>
+        {settings.error && (
+          <>
+            <Button onClick={retryInitialization} size="sm">
+              {'Retry'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={browser.openExtensionSettings}
+              size="sm"
+              className="mt-2"
+            >
+              {'Open settings'}
+            </Button>
+          </>
         )}
       </div>
     )
   }
 
-  if (provider.configured === false) {
-    return (
-      <div className={centerClassName}>
-        <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
-        <p className="text-sm text-destructive mb-4">{'Provider not configured'}</p>
-        <Button onClick={browser.openExtensionSettings} size="sm">
-          {'Open settings'}
-        </Button>
-      </div>
-    )
-  }
-
-  if (!provider.ready || !messages.ready) {
+  if (!settings.ready || !messages.ready) {
     return null
   }
 

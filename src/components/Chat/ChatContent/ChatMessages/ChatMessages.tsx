@@ -14,7 +14,7 @@ export default function ChatMessages() {
   const groups = useMemo(() => splitMessagesIntoGroups(messages), [messages])
 
   const waitingForReply = useChatStore(state => state.waitingForReply)
-  const autoExecuteTools = useChatStore(state => state.autoExecuteTools)
+  const autoExecuteTools = useChatStore(state => state.settings.data?.autoExecuteTools || false)
 
   const saveFunctionResult = useChatStore(state => state.saveFunctionResult)
 

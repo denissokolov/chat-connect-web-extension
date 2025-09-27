@@ -17,19 +17,23 @@ import browser from '@/services/browser'
 const availableModels = Object.values(AIModel)
 
 function ModelSelect() {
-  const setModel = useChatStore(state => state.setModel)
-  const model = useChatStore(state => state.model)
+  const updateSettings = useChatStore(state => state.updateSettings)
+  const model = useChatStore(state => state.settings.data?.model)
 
   const handleValueChange = useCallback(
     (value: string) => {
       if (value === 'manage-keys') {
         browser.openExtensionSettings()
       } else {
-        setModel(value as AIModel)
+        updateSettings({ model: value as AIModel })
       }
     },
-    [setModel],
+    [updateSettings],
   )
+
+  if (!model) {
+    return null
+  }
 
   return (
     <Select value={model} onValueChange={handleValueChange}>

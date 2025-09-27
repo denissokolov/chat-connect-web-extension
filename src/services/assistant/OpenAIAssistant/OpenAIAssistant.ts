@@ -17,11 +17,11 @@ export class OpenAIAssistant implements IAssistant {
   private responseId: string | undefined
   private progress: boolean = false
 
-  constructor(apiKey: string | null) {
+  constructor(apiKey: string) {
     this.client = new OpenAI({
       dangerouslyAllowBrowser: true,
       baseURL: 'https://api.chat-connect.ai/proxy/openai',
-      apiKey: apiKey ?? '',
+      apiKey,
     })
   }
 

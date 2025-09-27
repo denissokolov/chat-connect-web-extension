@@ -8,6 +8,8 @@ import { MessageContentType, MessageRole } from '@/types/chat.types'
 import { MockAssistant } from '@/services/assistant'
 import { messagesMock, messagesWithFunctionCallMock } from './Chat.mocks'
 import { FunctionName } from '@/types/tool.types'
+import { ChatStore } from '@/stores/useChatStore.types'
+import { AIModel } from '@/types/provider.types'
 
 const meta: Meta<typeof Chat> = {
   title: 'Chat / Chat',
@@ -27,7 +29,19 @@ const meta: Meta<typeof Chat> = {
 export default meta
 type Story = StoryObj<typeof Chat>
 
-const initialState = useChatStore.getInitialState()
+const initialState: ChatStore = {
+  ...useChatStore.getInitialState(),
+  settings: {
+    ready: true,
+    loading: false,
+    error: null,
+    data: {
+      model: AIModel.OpenAI_GPT_5,
+      openAIToken: 'mock-api-key',
+      autoExecuteTools: false,
+    },
+  },
+}
 
 export const Default: Story = {
   beforeEach: () => {
@@ -70,7 +84,7 @@ export const Empty: Story = {
 export const Typing: Story = {
   beforeEach: () => {
     useChatStore.setState({
-      ...useChatStore.getInitialState(),
+      ...initialState,
       messages: {
         list: [],
         loading: false,
@@ -100,12 +114,6 @@ export const WriteMessage: Story = {
       },
       waitingForReply: false,
       assistant: mockAssistant,
-      provider: {
-        ready: true,
-        loading: false,
-        configured: true,
-        error: null,
-      },
     })
   },
   play: async ({ canvas, userEvent }) => {
@@ -155,12 +163,6 @@ export const WithFunctionCall: Story = {
       ...initialState,
       waitingForReply: false,
       assistant: mockAssistant,
-      provider: {
-        ready: true,
-        loading: false,
-        configured: true,
-        error: null,
-      },
       messages: {
         list: messagesWithFunctionCallMock,
         loading: false,
@@ -178,12 +180,6 @@ export const MessagesLoading: Story = {
       ...initialState,
       waitingForReply: false,
       assistant: mockAssistant,
-      provider: {
-        ready: true,
-        loading: false,
-        configured: true,
-        error: null,
-      },
       messages: {
         list: [],
         loading: true,
@@ -205,12 +201,6 @@ export const MessagesError: Story = {
       ...initialState,
       waitingForReply: false,
       assistant: mockAssistant,
-      provider: {
-        ready: true,
-        loading: false,
-        configured: true,
-        error: null,
-      },
       messages: {
         list: [],
         loading: false,
@@ -221,6 +211,42 @@ export const MessagesError: Story = {
   },
   play: async ({ canvas }) => {
     const error = canvas.getByText('Error loading messages')
+    await expect(error).toBeInTheDocument()
+  },
+}
+
+export const SettingsLoading: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      settings: {
+        data: null,
+        ready: false,
+        loading: true,
+        error: null,
+      },
+    })
+  },
+  play: async ({ canvas }) => {
+    const loading = canvas.getByText('Initializing chat...')
+    await expect(loading).toBeInTheDocument()
+  },
+}
+
+export const SettingsError: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      settings: {
+        data: null,
+        ready: false,
+        loading: false,
+        error: 'Error loading settings',
+      },
+    })
+  },
+  play: async ({ canvas }) => {
+    const error = canvas.getByText('Error loading settings')
     await expect(error).toBeInTheDocument()
   },
 }

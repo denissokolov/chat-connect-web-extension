@@ -2,10 +2,25 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 
 import ModelSelect from './ModelSelect'
+import useChatStore from '@/stores/useChatStore'
+import { AIModel } from '@/types/provider.types'
 
 const meta: Meta<typeof ModelSelect> = {
   title: 'Chat / Model Select',
   component: ModelSelect,
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ...useChatStore.getInitialState().settings,
+        data: {
+          model: AIModel.OpenAI_GPT_5,
+          openAIToken: '',
+          autoExecuteTools: false,
+        },
+      },
+    })
+  },
   parameters: {
     // Fix accessibility issue by ensuring proper focus management
     a11y: {

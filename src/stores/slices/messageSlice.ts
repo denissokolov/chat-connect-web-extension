@@ -14,7 +14,11 @@ import {
   areMessageFunctionsComplete,
 } from '@/utils/message'
 import { emptyMessages } from '@/utils/empty'
-import { ProviderMessageEventType, type ProviderMessageEvent } from '@/types/provider.types'
+import {
+  AIProvider,
+  ProviderMessageEventType,
+  type ProviderMessageEvent,
+} from '@/types/provider.types'
 import {
   addMessage,
   appendMessageTextContent,
@@ -27,6 +31,8 @@ import {
 } from './messageSlice.utils'
 import type { FunctionCallResult } from '@/types/tool.types'
 import { getAvailableTools } from '@/utils/tools'
+import { getProviderByModel } from '@/utils/provider'
+import { MockAssistant, OpenAIAssistant } from '@/services/assistant'
 
 export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> = (set, get) => ({
   messages: {
@@ -45,9 +51,10 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     set({ waitingForReply: false, waitingForTools: false })
   },
   sendMessage: async (text: string) => {
-    const { assistant, model, messages, threadId, handleMessageEvent } = get()
-    if (!assistant || !model) {
-      throw new Error('Assistant not initialized')
+    const { assistant: actualAssistant, settings, messages, threadId, handleMessageEvent } = get()
+    const model = settings.data?.model
+    if (!model) {
+      throw new Error('Model not selected')
     }
 
     let pageContext: PageContext | null = null
@@ -61,9 +68,25 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
 
     const newMessage = createUserMessage(threadId, text, pageContext, pageContextError)
 
+    let assistant = actualAssistant
+    const provider = getProviderByModel(model)
+    if (!assistant || assistant.getProvider() !== provider) {
+      try {
+        if (provider === AIProvider.OpenAI) {
+          assistant = new OpenAIAssistant(settings.data?.openAIToken || '')
+        } else {
+          assistant = new MockAssistant('')
+        }
+      } catch (error) {
+        get().handleMessageError(threadId, error, newMessage.id)
+        return
+      }
+    }
+
     set(state => ({
       messages: addMessage(state.messages, newMessage),
       waitingForReply: !pageContextError,
+      assistant,
     }))
 
     if (pageContextError) {
@@ -103,7 +126,8 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }
   },
   sendFunctionResults: async (message: Message) => {
-    const { assistant, model, threadId, handleMessageEvent } = get()
+    const { assistant, settings, threadId, handleMessageEvent } = get()
+    const model = settings.data?.model
     if (!assistant || !model) {
       throw new Error('Assistant not initialized')
     }

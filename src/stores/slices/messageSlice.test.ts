@@ -66,6 +66,17 @@ describe('messageSlice', () => {
     useChatStore.setState({
       ...useChatStore.getInitialState(),
       threadId: 'test-thread-id',
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: {
+          openAIToken: 'test-token',
+          model: AIModel.OpenAI_GPT_5,
+          autoExecuteTools: false,
+        },
+      },
+      assistant: mockAssistant,
     })
 
     vi.clearAllMocks()
@@ -74,29 +85,38 @@ describe('messageSlice', () => {
   describe('sendMessage', () => {
     beforeEach(() => {
       useChatStore.setState({
-        assistant: mockAssistant,
-        model: AIModel.OpenAI_GPT_5,
         waitingForTools: false,
       })
     })
 
-    it('should throw error when assistant is not initialized', async () => {
-      useChatStore.setState({ assistant: null })
-
-      const { sendMessage } = useChatStore.getState()
-
-      await expect(sendMessage('Hello')).rejects.toThrow('Assistant not initialized')
-    })
-
-    it('should throw error when model is not set', async () => {
+    it('should throw error when model is not selected', async () => {
       useChatStore.setState({
-        assistant: mockAssistant,
-        model: null as unknown as AIModel,
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: null,
+        },
       })
 
       const { sendMessage } = useChatStore.getState()
 
-      await expect(sendMessage('Hello')).rejects.toThrow('Assistant not initialized')
+      await expect(sendMessage('Hello')).rejects.toThrow('Model not selected')
+    })
+
+    it('should throw error when settings data is null', async () => {
+      useChatStore.setState({
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: null,
+        },
+      })
+
+      const { sendMessage } = useChatStore.getState()
+
+      await expect(sendMessage('Hello')).rejects.toThrow('Model not selected')
     })
 
     it('should add user message and send to assistant successfully', async () => {
@@ -510,10 +530,7 @@ describe('messageSlice', () => {
 
   describe('saveFunctionResult', () => {
     beforeEach(() => {
-      useChatStore.setState({
-        assistant: mockAssistant,
-        model: AIModel.OpenAI_GPT_5,
-      })
+      // Settings and assistant are already set in the main beforeEach
     })
 
     it('should handle missing assistant gracefully when message is incomplete', async () => {
@@ -560,8 +577,12 @@ describe('messageSlice', () => {
 
     it('should handle missing model gracefully when message is incomplete', async () => {
       useChatStore.setState({
-        assistant: mockAssistant,
-        model: null as unknown as AIModel,
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: null,
+        },
       })
 
       const messageWithIncompleteCall: Message = {
@@ -1117,8 +1138,6 @@ describe('messageSlice', () => {
   describe('sendFunctionResults', () => {
     beforeEach(() => {
       useChatStore.setState({
-        assistant: mockAssistant,
-        model: AIModel.OpenAI_GPT_5,
         threadId: 'test-thread-id',
       })
     })
@@ -1154,10 +1173,14 @@ describe('messageSlice', () => {
       await expect(sendFunctionResults(mockMessage)).rejects.toThrow('Assistant not initialized')
     })
 
-    it('should throw error when model is not set', async () => {
+    it('should throw error when model is not selected', async () => {
       useChatStore.setState({
-        assistant: mockAssistant,
-        model: null as unknown as AIModel,
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: null,
+        },
       })
 
       const mockMessage: Message = {
@@ -1367,9 +1390,7 @@ describe('messageSlice', () => {
 
   describe('stopMessage', () => {
     beforeEach(() => {
-      useChatStore.setState({
-        assistant: mockAssistant,
-      })
+      // Assistant is already set in the main beforeEach
     })
 
     it('should reset waiting states and cancel active request', () => {
@@ -1725,8 +1746,6 @@ describe('messageSlice', () => {
       useChatStore.setState({
         messages: { list: [existingMessage], loading: false, error: null, ready: true },
         waitingForReply: true,
-        assistant: mockAssistant,
-        model: AIModel.OpenAI_GPT_5,
       })
 
       // Mock assistant to simulate event flow

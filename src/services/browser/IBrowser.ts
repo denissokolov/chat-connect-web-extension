@@ -5,6 +5,7 @@ export interface IBrowser {
   openExtensionSettings(): void
 
   getSecureValue: (key: string) => Promise<string | null>
+  subscribeToSecureValue(key: string, callback: (value: string | null) => void): () => void
   saveSecureValue: (key: string, value: string) => Promise<void>
 
   subscribeToPageInfo(callback: (title: string | null, favicon: string | null) => void): () => void

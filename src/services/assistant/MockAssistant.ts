@@ -8,7 +8,7 @@ import {
 import type { IAssistant } from './IAssistant'
 
 export class MockAssistant implements IAssistant {
-  constructor(_apiKey: string | null) {}
+  constructor(_apiKey: string) {}
 
   private progress: boolean = false
 

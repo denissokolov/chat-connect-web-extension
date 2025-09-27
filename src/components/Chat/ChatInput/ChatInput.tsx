@@ -21,8 +21,8 @@ function ChatInput() {
   const waitingForTools = useChatStore(state => state.waitingForTools)
   const messagesReady = useChatStore(state => state.messages.ready)
 
-  const autoExecuteTools = useChatStore(state => state.autoExecuteTools)
-  const setAutoExecuteTools = useChatStore(state => state.setAutoExecuteTools)
+  const autoExecuteTools = useChatStore(state => state.settings.data?.autoExecuteTools)
+  const updateSettings = useChatStore(state => state.updateSettings)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -71,7 +71,7 @@ function ChatInput() {
                 <TooltipTrigger asChild>
                   <Toggle
                     pressed={autoExecuteTools}
-                    onPressedChange={setAutoExecuteTools}
+                    onPressedChange={() => updateSettings({ autoExecuteTools: !autoExecuteTools })}
                     size="sm"
                     aria-label="Toggle auto-execute tools"
                   >

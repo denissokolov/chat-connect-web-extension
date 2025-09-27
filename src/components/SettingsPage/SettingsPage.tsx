@@ -1,5 +1,5 @@
-import { CheckCircle2Icon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { CheckCircle2Icon, AlertCircleIcon } from 'lucide-react'
+import { useEffect } from 'react'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -13,32 +13,19 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AIProvider } from '@/types/provider.types'
-import { getTokenKey } from '@/utils/token'
-import browser from '@/services/browser'
-
-const openAITokenKey = getTokenKey(AIProvider.OpenAI)
+import useChatStore from '@/stores/useChatStore'
 
 export default function SettingsPage() {
-  const [openAIToken, setOpenAIToken] = useState('')
-  const [saved, setSaved] = useState(false)
+  const { initSettings, updateSettingsForm, saveSettingsForm, settingsForm, settings } =
+    useChatStore()
 
   useEffect(() => {
-    browser.getSecureValue(openAITokenKey).then(token => {
-      if (token) {
-        setOpenAIToken(token)
-      }
-    })
-  }, [])
+    initSettings()
+  }, [initSettings])
 
-  const handleSave = async () => {
-    await browser.saveSecureValue(openAITokenKey, openAIToken)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
-
-  const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setOpenAIToken(e.target.value)
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    saveSettingsForm()
   }
 
   return (
@@ -52,14 +39,16 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
+            <form className="space-y-2" onSubmit={onSubmit}>
               <Label htmlFor="openai-token">{'OpenAI API Key'}</Label>
               <Input
                 id="openai-token"
                 type="password"
-                value={openAIToken}
-                onChange={handleTokenChange}
+                autoComplete="off"
+                value={settingsForm.data?.openAIToken ?? ''}
+                onChange={e => updateSettingsForm({ openAIToken: e.target.value })}
                 placeholder="Enter your API token"
+                disabled={settings.loading}
               />
               <p className="text-sm text-muted-foreground">
                 {'Your token will be stored only in your browser. '}
@@ -74,15 +63,24 @@ export default function SettingsPage() {
                 </a>
                 {'.'}
               </p>
-            </div>
+            </form>
           </CardContent>
           <CardFooter className="justify-end">
-            <Button onClick={handleSave} disabled={!openAIToken.trim()}>
+            <Button
+              onClick={saveSettingsForm}
+              disabled={settingsForm.saving || !settingsForm.changed || settings.loading}
+            >
               {'Save Settings'}
             </Button>
           </CardFooter>
         </Card>
-        {saved && (
+        {(settings.error || settingsForm.saveError) && (
+          <Alert className="mt-4" variant="destructive">
+            <AlertCircleIcon />
+            <AlertDescription>{settings.error || settingsForm.saveError}</AlertDescription>
+          </Alert>
+        )}
+        {settingsForm.saved && (
           <Alert className="mt-4">
             <CheckCircle2Icon />
             <AlertDescription>{'Settings saved successfully!'}</AlertDescription>

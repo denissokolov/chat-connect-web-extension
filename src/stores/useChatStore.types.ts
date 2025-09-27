@@ -1,7 +1,8 @@
 import type { IAssistant } from '@/services/assistant'
 import type { ChatView, Message, Thread } from '@/types/chat.types'
 import type { FunctionCallResult } from '@/types/tool.types'
-import type { AIModel, ProviderMessageEvent } from '@/types/provider.types'
+import type { ProviderMessageEvent } from '@/types/provider.types'
+import { Settings } from '@/types/settings.types'
 
 export type ThreadSlice = {
   threadId: string
@@ -16,22 +17,26 @@ export type ThreadSlice = {
   selectThread: (threadId: string) => Promise<void>
 }
 
-export type ProviderSlice = {
-  provider: {
+export type SettingsSlice = {
+  settings: {
     ready: boolean
     loading: boolean
-    configured: boolean | undefined
     error: string | null
+    data: Settings | null
   }
-  setupProvider: (model: AIModel) => Promise<void>
-}
-
-export type ModelSlice = {
-  model: AIModel
-  setModel: (model: AIModel) => void
+  initSettings: () => Promise<void>
+  loadSettings: () => Promise<void>
+  updateSettings: (settings: Partial<Settings>) => void
+  settingsForm: {
+    saving: boolean
+    saved: boolean
+    saveError: string | null
+    changed: boolean
+    data: Settings | null
+  }
+  updateSettingsForm: (settings: Partial<Settings>) => void
+  saveSettingsForm: () => Promise<void>
   assistant: IAssistant | null
-  autoExecuteTools: boolean
-  setAutoExecuteTools: (autoExecuteTools: boolean) => void
 }
 
 export type ViewSlice = {
@@ -67,4 +72,4 @@ export type MessageSlice = {
   sendFunctionResults: (message: Message) => Promise<void>
 }
 
-export type ChatStore = ThreadSlice & ProviderSlice & ModelSlice & ViewSlice & MessageSlice
+export type ChatStore = ThreadSlice & SettingsSlice & ViewSlice & MessageSlice
