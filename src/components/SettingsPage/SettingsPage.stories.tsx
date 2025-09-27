@@ -148,3 +148,24 @@ export const VisibleValue: Story = {
     await expect(canvas.getByDisplayValue('1234567890')).toHaveAttribute('type', 'text')
   },
 }
+
+export const LongValue: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: null,
+      },
+      settingsForm: {
+        changed: true,
+        saving: false,
+        saved: false,
+        saveError: null,
+        data: { ...testSettings, openAIToken: 'a'.repeat(500) },
+      },
+    })
+  },
+}

@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Settings } from '@/types/settings.types'
 
+const MAX_LENGTH = 500
+
 type SettingsInputProps = {
   id: keyof Settings
   label: string
@@ -34,6 +36,7 @@ function SettingsInput({ id, label, value, disabled, updateSettingsForm }: Setti
           onChange={handleChange}
           disabled={disabled}
           className="pr-10"
+          maxLength={MAX_LENGTH}
         />
         <Button
           type="button"
@@ -47,6 +50,11 @@ function SettingsInput({ id, label, value, disabled, updateSettingsForm }: Setti
           <span className="sr-only">{showValue ? 'Hide value' : 'Show value'}</span>
         </Button>
       </div>
+      {value.length >= MAX_LENGTH && (
+        <p className="text-sm text-yellow-600">
+          {'Value is too long. Please verify it is correct.'}
+        </p>
+      )}
     </>
   )
 }
