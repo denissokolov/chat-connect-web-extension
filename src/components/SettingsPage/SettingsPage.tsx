@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PromptLibrary from '@/components/PromptLibrary/PromptLibrary'
 import useChatStore from '@/stores/useChatStore'
 
 export default function SettingsPage() {
@@ -30,7 +31,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-sidebar p-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl">{'Chat Connect Settings'}</CardTitle>
@@ -74,6 +75,7 @@ export default function SettingsPage() {
             </Button>
           </CardFooter>
         </Card>
+        <PromptLibrary />
         {(settings.error || settingsForm.saveError) && (
           <Alert className="mt-4" variant="destructive">
             <AlertCircleIcon />
