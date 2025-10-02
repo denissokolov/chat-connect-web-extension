@@ -2,7 +2,7 @@ import type { IAssistant } from '@/services/assistant'
 import type { ChatView, Message, Thread } from '@/types/chat.types'
 import type { FunctionCallResult } from '@/types/tool.types'
 import type { ProviderMessageEvent } from '@/types/provider.types'
-import { Settings } from '@/types/settings.types'
+import { Settings, Prompt } from '@/types/settings.types'
 
 export type ThreadSlice = {
   threadId: string
@@ -36,6 +36,9 @@ export type SettingsSlice = {
   }
   updateSettingsForm: (settings: Partial<Settings>) => void
   saveSettingsForm: () => Promise<void>
+  addPrompt: (title: string, content: string) => void
+  updatePrompt: (id: string, title: string, content: string) => void
+  deletePrompt: (id: string) => void
   assistant: IAssistant | null
 }
 

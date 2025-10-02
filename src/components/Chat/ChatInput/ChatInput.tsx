@@ -1,16 +1,18 @@
-import { ArrowUp, Square, Zap } from 'lucide-react'
+import { ArrowUp, Square, Zap, BookText } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Toggle } from '@/components/ui/toggle'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import ContextDisplay from '@/components/Chat/ContextDisplay/ContextDisplay'
 import useChatStore from '@/stores/useChatStore'
 import ModelSelect from '@/components/Chat/ModelSelect/ModelSelect'
 
 function ChatInput() {
   const [input, setInput] = useState('')
+  const [promptPopoverOpen, setPromptPopoverOpen] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -23,6 +25,7 @@ function ChatInput() {
 
   const autoExecuteTools = useChatStore(state => state.settings.data?.autoExecuteTools)
   const updateSettings = useChatStore(state => state.updateSettings)
+  const prompts = useChatStore(state => state.settings.data?.prompts || [])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -46,6 +49,12 @@ function ChatInput() {
     stopMessage()
   }
 
+  const handlePromptSelect = (promptContent: string) => {
+    setInput(promptContent)
+    setPromptPopoverOpen(false)
+    textareaRef.current?.focus()
+  }
+
   return (
     <div className="rounded-t-xl bg-card">
       <div className="flex justify-start m-2">
@@ -67,6 +76,45 @@ function ChatInput() {
           <ModelSelect />
           <div className="flex items-center gap-2 ml-auto">
             <TooltipProvider>
+              {prompts.length > 0 && (
+                <Popover open={promptPopoverOpen} onOpenChange={setPromptPopoverOpen}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Select prompt template"
+                          className="size-8"
+                        >
+                          <BookText className="size-4" />
+                        </Button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{'Prompt templates'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <PopoverContent className="w-80 p-2" align="end">
+                    <div className="space-y-1">
+                      <div className="text-sm font-medium px-2 py-1.5">Prompt Templates</div>
+                      {prompts.map(prompt => (
+                        <button
+                          key={prompt.id}
+                          onClick={() => handlePromptSelect(prompt.content)}
+                          className="w-full text-left px-2 py-2 rounded-md hover:bg-accent transition-colors"
+                        >
+                          <div className="font-medium text-sm">{prompt.title}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                            {prompt.content}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Toggle

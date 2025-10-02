@@ -15,6 +15,7 @@ const defaultSettings: Settings = {
   openAIToken: '',
   model: AIModel.OpenAI_GPT_5,
   autoExecuteTools: false,
+  prompts: [],
 }
 
 export const createSettingsSlice: StateCreator<ChatStore, [], [], SettingsSlice> = (set, get) => ({
@@ -119,6 +120,29 @@ export const createSettingsSlice: StateCreator<ChatStore, [], [], SettingsSlice>
     } catch (error) {
       set({ settingsForm: { ...settingsForm, saving: false, saveError: getStringError(error) } })
     }
+  },
+  addPrompt: (title: string, content: string) => {
+    const { settings } = get()
+    const newPrompt = {
+      id: crypto.randomUUID(),
+      title,
+      content,
+      createdAt: new Date().toISOString(),
+    }
+    const prompts = [...(settings.data?.prompts || []), newPrompt]
+    get().updateSettings({ prompts })
+  },
+  updatePrompt: (id: string, title: string, content: string) => {
+    const { settings } = get()
+    const prompts = settings.data?.prompts.map(p =>
+      p.id === id ? { ...p, title, content } : p
+    ) || []
+    get().updateSettings({ prompts })
+  },
+  deletePrompt: (id: string) => {
+    const { settings } = get()
+    const prompts = settings.data?.prompts.filter(p => p.id !== id) || []
+    get().updateSettings({ prompts })
   },
   assistant: null,
 })
