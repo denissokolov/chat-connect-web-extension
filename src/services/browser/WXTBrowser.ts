@@ -5,6 +5,7 @@ import { setFieldValue } from '@/utils/html/pure/setFieldValue'
 import { getDocumentHtml } from '@/utils/html/pure/getDocumentHtml'
 import { getDocumentMarkdown } from '@/utils/html/pure/getDocumentMarkdown'
 import { logError } from '@/utils/log'
+import { encodeSecureValue, decodeSecureValue } from '@/utils/crypto'
 import { Browser } from '#imports'
 
 import type { IBrowser } from './IBrowser'
@@ -15,18 +16,27 @@ export class WXTBrowser implements IBrowser {
   }
 
   async getSecureValue(key: string): Promise<string | null> {
-    const result = await storage.getItem<string>(`sync:${key}`)
-    return result || null
+    const encodedValue = await storage.getItem<string>(`sync:${key}`)
+    if (!encodedValue) {
+      return null
+    }
+    return decodeSecureValue(encodedValue, key)
   }
 
   subscribeToSecureValue(key: string, callback: (value: string | null) => void): () => void {
-    return storage.watch<string>(`sync:${key}`, value => {
-      callback(value || null)
+    return storage.watch<string>(`sync:${key}`, encodedValue => {
+      if (!encodedValue) {
+        callback(null)
+        return
+      }
+      const decodedValue = decodeSecureValue(encodedValue, key)
+      callback(decodedValue)
     })
   }
 
   async saveSecureValue(key: string, value: string): Promise<void> {
-    await storage.setItem(`sync:${key}`, value)
+    const encodedValue = encodeSecureValue(value, key)
+    await storage.setItem(`sync:${key}`, encodedValue)
   }
 
   subscribeToPageInfo(

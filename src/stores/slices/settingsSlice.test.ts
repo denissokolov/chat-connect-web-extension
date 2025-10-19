@@ -145,7 +145,7 @@ describe('settingsSlice', () => {
       await initSettings()
 
       expect(browser.subscribeToSecureValue).toHaveBeenCalledWith(
-        'settings.v1',
+        'settings.v2',
         expect.any(Function),
       )
     })
@@ -180,7 +180,7 @@ describe('settingsSlice', () => {
       expect(state.settingsForm.data?.model).toBe(AIModel.OpenAI_o3_mini)
       expect(state.assistant).toBe(null)
       expect(browser.saveSecureValue).toHaveBeenCalledWith(
-        'settings.v1',
+        'settings.v2',
         JSON.stringify({
           ...mockSettings,
           model: AIModel.OpenAI_o3_mini,

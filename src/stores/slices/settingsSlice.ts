@@ -9,7 +9,7 @@ import { logError } from '@/utils/log'
 import repository from '@/services/repository'
 import { shallowEqual } from '@/utils/object'
 
-const SETTINGS_KEY = 'settings.v1'
+const SETTINGS_KEY = 'settings.v2'
 
 const defaultSettings: Settings = {
   openAIToken: '',
