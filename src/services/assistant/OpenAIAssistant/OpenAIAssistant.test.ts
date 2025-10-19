@@ -100,7 +100,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       // Mock the client.responses.create method to return our mock stream
       const mockCreate = vi.fn().mockResolvedValue({
@@ -275,7 +275,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       // Mock the client.responses.create method
       const mockCreate = vi.fn().mockResolvedValue({
@@ -349,7 +349,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       const mockCreate = vi.fn().mockResolvedValue({
         async *[Symbol.asyncIterator]() {
@@ -420,7 +420,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       const mockCreate = vi.fn().mockResolvedValue({
         async *[Symbol.asyncIterator]() {
@@ -491,7 +491,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       const mockCreate = vi.fn().mockResolvedValue({
         async *[Symbol.asyncIterator]() {
@@ -560,7 +560,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       const mockCreate = vi.fn().mockResolvedValue({
         async *[Symbol.asyncIterator]() {
@@ -630,7 +630,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       const mockCreate = vi.fn().mockResolvedValue({
         async *[Symbol.asyncIterator]() {
@@ -705,7 +705,7 @@ describe('OpenAIAssistant', () => {
         },
       ]
 
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
 
       const mockCreate = vi.fn().mockResolvedValue({
         async *[Symbol.asyncIterator]() {
@@ -769,7 +769,7 @@ describe('OpenAIAssistant', () => {
 
   describe('getProvider', () => {
     it('should return OpenAI provider', () => {
-      const assistant = new OpenAIAssistant('test-api-key')
+      const assistant = new OpenAIAssistant('test-api-key', '')
       expect(assistant.getProvider()).toBe('openai')
     })
   })
@@ -778,7 +778,7 @@ describe('OpenAIAssistant', () => {
     let assistant: OpenAIAssistant
 
     beforeEach(() => {
-      assistant = new OpenAIAssistant('test-api-key')
+      assistant = new OpenAIAssistant('test-api-key', '')
     })
 
     it('should return undefined when tools is empty array', () => {

@@ -16,6 +16,7 @@ type Story = StoryObj<typeof SettingsPage>
 
 const testSettings: Settings = {
   openAIToken: '1234567890',
+  openAIServer: '',
   model: AIModel.OpenAI_GPT_5,
   autoExecuteTools: false,
 }

@@ -24,6 +24,7 @@ vi.mock('@/services/repository', () => ({
 describe('settingsSlice', () => {
   const mockSettings: Settings = {
     openAIToken: 'test-token',
+    openAIServer: '',
     model: AIModel.OpenAI_GPT_4o,
     autoExecuteTools: true,
   }
@@ -62,6 +63,7 @@ describe('settingsSlice', () => {
       expect(state.settings.ready).toBe(true)
       expect(state.settings.data).toEqual({
         openAIToken: '',
+        openAIServer: '',
         model: AIModel.OpenAI_GPT_5,
         autoExecuteTools: false,
       })
@@ -192,6 +194,7 @@ describe('settingsSlice', () => {
       updateSettings({
         model: AIModel.OpenAI_o3,
         openAIToken: 'new-token',
+        openAIServer: 'https://api.openai.com/v1',
         autoExecuteTools: false,
       })
 
@@ -199,6 +202,7 @@ describe('settingsSlice', () => {
       expect(state.settings.data).toEqual({
         model: AIModel.OpenAI_o3,
         openAIToken: 'new-token',
+        openAIServer: 'https://api.openai.com/v1',
         autoExecuteTools: false,
       })
     })
@@ -220,6 +224,7 @@ describe('settingsSlice', () => {
       const state = useChatStore.getState()
       expect(state.settings.data).toEqual({
         openAIToken: 'test-token',
+        openAIServer: '',
         model: AIModel.OpenAI_GPT_5,
         autoExecuteTools: false,
       })
@@ -282,6 +287,7 @@ describe('settingsSlice', () => {
       const state = useChatStore.getState()
       expect(state.settingsForm.data).toEqual({
         openAIToken: 'test-token',
+        openAIServer: '',
         model: AIModel.OpenAI_GPT_5,
         autoExecuteTools: false,
       })

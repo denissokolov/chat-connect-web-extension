@@ -72,6 +72,7 @@ describe('messageSlice', () => {
         error: null,
         data: {
           openAIToken: 'test-token',
+          openAIServer: '',
           model: AIModel.OpenAI_GPT_5,
           autoExecuteTools: false,
         },

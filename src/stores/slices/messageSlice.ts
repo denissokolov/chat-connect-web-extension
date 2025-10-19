@@ -73,9 +73,12 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     if (!assistant || assistant.getProvider() !== provider) {
       try {
         if (provider === AIProvider.OpenAI) {
-          assistant = new OpenAIAssistant(settings.data?.openAIToken || '')
+          assistant = new OpenAIAssistant(
+            settings.data?.openAIToken || '',
+            settings.data?.openAIServer || '',
+          )
         } else {
-          assistant = new MockAssistant('')
+          assistant = new MockAssistant('', '')
         }
       } catch (error) {
         get().handleMessageError(threadId, error, newMessage.id)

@@ -38,27 +38,40 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form className="space-y-2" onSubmit={onSubmit}>
-              <SettingsInput
-                id="openAIToken"
-                label="OpenAI API Key"
-                value={settingsForm.data?.openAIToken ?? ''}
-                disabled={settings.loading}
-                updateSettingsForm={updateSettingsForm}
-              />
-              <p className="text-sm text-muted-foreground">
-                {'Your token will be stored only in your browser. '}
-                {'You can create an API key '}
-                <a
-                  href="https://platform.openai.com/api-keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  {'here'}
-                </a>
-                {'.'}
-              </p>
+            <form className="space-y-4" onSubmit={onSubmit}>
+              <div className="space-y-2">
+                <SettingsInput
+                  id="openAIToken"
+                  label="OpenAI API Key"
+                  value={settingsForm.data?.openAIToken ?? ''}
+                  disabled={settings.loading}
+                  updateSettingsForm={updateSettingsForm}
+                  sensitive={true}
+                />
+                <p className="text-sm text-muted-foreground">
+                  {'Your token will be stored only in your browser. '}
+                  {'You can create an API key '}
+                  <a
+                    href="https://platform.openai.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {'here'}
+                  </a>
+                  {'.'}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <SettingsInput
+                  id="openAIServer"
+                  label="Custom OpenAI Server URL"
+                  value={settingsForm.data?.openAIServer ?? ''}
+                  disabled={settings.loading}
+                  updateSettingsForm={updateSettingsForm}
+                  placeholder="Leave blank to use the official server."
+                />
+              </div>
             </form>
           </CardContent>
           <CardFooter className="justify-end">

@@ -13,6 +13,7 @@ const SETTINGS_KEY = 'settings.v1'
 
 const defaultSettings: Settings = {
   openAIToken: '',
+  openAIServer: '',
   model: AIModel.OpenAI_GPT_5,
   autoExecuteTools: false,
 }
@@ -65,10 +66,10 @@ export const createSettingsSlice: StateCreator<ChatStore, [], [], SettingsSlice>
       browser.subscribeToSecureValue(SETTINGS_KEY, (value: string | null) => {
         const freshData: Settings = value ? JSON.parse(value) : defaultSettings
         const state = get()
-        if (!shallowEqual(data, state.settings.data)) {
+        if (!shallowEqual(freshData, state.settings.data)) {
           set({
             settings: { ...state.settings, data: freshData },
-            settingsForm: { ...state.settingsForm, data: freshData },
+            settingsForm: { ...state.settingsForm, data: freshData, changed: false },
             assistant: null,
           })
         }

@@ -15,7 +15,8 @@ const meta: Meta<typeof ModelSelect> = {
         ...useChatStore.getInitialState().settings,
         data: {
           model: AIModel.OpenAI_GPT_5,
-          openAIToken: '',
+          openAIToken: 'mock-api-key',
+          openAIServer: '',
           autoExecuteTools: false,
         },
       },

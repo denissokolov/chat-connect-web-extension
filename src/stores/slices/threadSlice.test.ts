@@ -272,7 +272,8 @@ describe('threadSlice', () => {
           loading: false,
           error: null,
           data: {
-            openAIToken: '',
+            openAIToken: 'mock-api-key',
+            openAIServer: '',
             model: AIModel.OpenAI_GPT_4o,
             autoExecuteTools: false,
           },

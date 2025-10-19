@@ -39,6 +39,7 @@ const initialState: ChatStore = {
       model: AIModel.OpenAI_GPT_5,
       openAIToken: 'mock-api-key',
       autoExecuteTools: false,
+      openAIServer: '',
     },
   },
 }
@@ -103,7 +104,7 @@ export const Typing: Story = {
 
 export const WriteMessage: Story = {
   beforeEach: () => {
-    const mockAssistant = new MockAssistant('mock-api-key')
+    const mockAssistant = new MockAssistant('mock-api-key', '')
     useChatStore.setState({
       ...initialState,
       messages: {
@@ -158,7 +159,7 @@ export const WithError: Story = {
 
 export const WithFunctionCall: Story = {
   beforeEach: () => {
-    const mockAssistant = new MockAssistant('mock-api-key')
+    const mockAssistant = new MockAssistant('mock-api-key', '')
     useChatStore.setState({
       ...initialState,
       waitingForReply: false,
@@ -175,7 +176,7 @@ export const WithFunctionCall: Story = {
 
 export const MessagesLoading: Story = {
   beforeEach: () => {
-    const mockAssistant = new MockAssistant('mock-api-key')
+    const mockAssistant = new MockAssistant('mock-api-key', '')
     useChatStore.setState({
       ...initialState,
       waitingForReply: false,
@@ -196,7 +197,7 @@ export const MessagesLoading: Story = {
 
 export const MessagesError: Story = {
   beforeEach: () => {
-    const mockAssistant = new MockAssistant('mock-api-key')
+    const mockAssistant = new MockAssistant('mock-api-key', '')
     useChatStore.setState({
       ...initialState,
       waitingForReply: false,
@@ -369,6 +370,20 @@ export const StreamingFunctionEmpty: Story = {
             complete: false,
           },
         ],
+      },
+    })
+  },
+}
+
+export const NoSettings: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...initialState,
+      settings: {
+        data: null,
+        ready: false,
+        loading: false,
+        error: null,
       },
     })
   },

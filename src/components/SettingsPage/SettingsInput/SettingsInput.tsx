@@ -14,10 +14,20 @@ type SettingsInputProps = {
   value: string
   disabled: boolean
   updateSettingsForm: (settings: Partial<Settings>) => void
+  sensitive?: boolean
+  placeholder?: string
 }
 
-function SettingsInput({ id, label, value, disabled, updateSettingsForm }: SettingsInputProps) {
-  const [showValue, setShowValue] = useState(false)
+function SettingsInput({
+  id,
+  label,
+  value,
+  disabled,
+  updateSettingsForm,
+  sensitive,
+  placeholder,
+}: SettingsInputProps) {
+  const [showValue, setShowValue] = useState(!sensitive)
 
   const toggleShowValue = () => setShowValue(show => !show)
 
@@ -30,25 +40,28 @@ function SettingsInput({ id, label, value, disabled, updateSettingsForm }: Setti
       <div className="relative">
         <Input
           id={id}
-          type={showValue ? 'text' : 'password'}
+          type={!sensitive || showValue ? 'text' : 'password'}
           autoComplete="off"
           value={value}
           onChange={handleChange}
           disabled={disabled}
           className="pr-10"
           maxLength={MAX_LENGTH}
+          placeholder={placeholder}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-          onClick={toggleShowValue}
-          disabled={disabled}
-        >
-          {showValue ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-          <span className="sr-only">{showValue ? 'Hide value' : 'Show value'}</span>
-        </Button>
+        {sensitive && value.length > 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            onClick={toggleShowValue}
+            disabled={disabled}
+          >
+            {showValue ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+            <span className="sr-only">{showValue ? 'Hide value' : 'Show value'}</span>
+          </Button>
+        )}
       </div>
       {value.length >= MAX_LENGTH && (
         <p className="text-sm text-yellow-600">
