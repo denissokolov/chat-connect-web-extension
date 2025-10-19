@@ -11,10 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import PromptLibrary from '@/components/PromptLibrary/PromptLibrary'
 import useChatStore from '@/stores/useChatStore'
+import SettingsInput from './SettingsInput/SettingsInput'
 
 export default function SettingsPage() {
   const { initSettings, updateSettingsForm, saveSettingsForm, settingsForm, settings } =
@@ -41,15 +40,12 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <form className="space-y-2" onSubmit={onSubmit}>
-              <Label htmlFor="openai-token">{'OpenAI API Key'}</Label>
-              <Input
-                id="openai-token"
-                type="password"
-                autoComplete="off"
+              <SettingsInput
+                id="openAIToken"
+                label="OpenAI API Key"
                 value={settingsForm.data?.openAIToken ?? ''}
-                onChange={e => updateSettingsForm({ openAIToken: e.target.value })}
-                placeholder="Enter your API token"
                 disabled={settings.loading}
+                updateSettingsForm={updateSettingsForm}
               />
               <p className="text-sm text-muted-foreground">
                 {'Your token will be stored only in your browser. '}

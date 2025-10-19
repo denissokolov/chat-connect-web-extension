@@ -109,3 +109,63 @@ export const LoadingError: Story = {
     })
   },
 }
+
+export const HiddenValue: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: null,
+      },
+    })
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.clear(canvas.getByLabelText('OpenAI API Key'))
+    await userEvent.type(canvas.getByLabelText('OpenAI API Key'), '1234567890')
+    await expect(canvas.getByDisplayValue('1234567890')).toHaveAttribute('type', 'password')
+  },
+}
+
+export const VisibleValue: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: null,
+      },
+    })
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.clear(canvas.getByLabelText('OpenAI API Key'))
+    await userEvent.type(canvas.getByLabelText('OpenAI API Key'), '1234567890')
+    await userEvent.click(canvas.getByText('Show value'))
+    await expect(canvas.getByDisplayValue('1234567890')).toHaveAttribute('type', 'text')
+  },
+}
+
+export const LongValue: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: null,
+      },
+      settingsForm: {
+        changed: true,
+        saving: false,
+        saved: false,
+        saveError: null,
+        data: { ...testSettings, openAIToken: 'a'.repeat(500) },
+      },
+    })
+  },
+}

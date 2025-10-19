@@ -154,6 +154,7 @@ function FillInputGroup({ items, messageId, saveResult, autoExecute }: FillInput
   useEffect(() => {
     if (autoExecute && hasIdleItems && !autoExecuted.current) {
       autoExecuted.current = true
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       executeAll()
     }
   }, [autoExecute, hasIdleItems, executeAll])
