@@ -143,6 +143,34 @@ body,
   --tw-prose-quote-borders: var(--color-gray-200);
 }
 
+.prose-muted {
+  --tw-prose-body: var(--muted-foreground);
+  --tw-prose-headings: var(--muted-foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-bold: var(--muted-foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-quotes: var(--muted-foreground);
+  --tw-prose-code: var(--muted-foreground);
+}
+
+.prose-sm {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  ul,
+  p {
+    margin-bottom: 0.5rem;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

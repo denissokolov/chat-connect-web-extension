@@ -15,6 +15,7 @@ export enum MessageRole {
 export enum MessageContentType {
   OutputText = 'output_text',
   FunctionCall = 'function_call',
+  Reasoning = 'reasoning',
 }
 
 export type FunctionCallContent =
@@ -53,6 +54,13 @@ export type MessageContent =
       id: string
       type: MessageContentType.OutputText
       text: string
+    }
+  | {
+      id: string
+      type: MessageContentType.Reasoning
+      summaryText: string
+      detailText?: string
+      isExpanded?: boolean
     }
   | FunctionCallContent
 

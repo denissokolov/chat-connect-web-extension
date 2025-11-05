@@ -22,6 +22,10 @@ import {
 import {
   addMessage,
   appendMessageTextContent,
+  appendReasoningSummaryText,
+  setReasoningSummaryText,
+  appendReasoningDetailText,
+  setReasoningDetailText,
   saveMessageToRepository,
   setMessageComplete,
   setMessageError,
@@ -188,6 +192,50 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
             event.messageId,
             event.contentId,
             event.textDelta,
+          ),
+        }))
+        break
+
+      case ProviderMessageEventType.ReasoningSummaryTextDelta:
+        set(state => ({
+          messages: appendReasoningSummaryText(
+            state.messages,
+            event.messageId,
+            event.contentId,
+            event.textDelta,
+          ),
+        }))
+        break
+
+      case ProviderMessageEventType.ReasoningSummaryTextDone:
+        set(state => ({
+          messages: setReasoningSummaryText(
+            state.messages,
+            event.messageId,
+            event.contentId,
+            event.text,
+          ),
+        }))
+        break
+
+      case ProviderMessageEventType.ReasoningTextDelta:
+        set(state => ({
+          messages: appendReasoningDetailText(
+            state.messages,
+            event.messageId,
+            event.contentId,
+            event.textDelta,
+          ),
+        }))
+        break
+
+      case ProviderMessageEventType.ReasoningTextDone:
+        set(state => ({
+          messages: setReasoningDetailText(
+            state.messages,
+            event.messageId,
+            event.contentId,
+            event.text,
           ),
         }))
         break

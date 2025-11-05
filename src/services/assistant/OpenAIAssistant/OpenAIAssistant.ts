@@ -48,6 +48,11 @@ export class OpenAIAssistant implements IAssistant {
       store: true,
       tools: this.mapTools(params.tools),
       stream: true,
+      max_output_tokens: 5000,
+      reasoning: {
+        effort: 'low',
+        summary: 'auto',
+      },
     })
 
     await this.handleResponseStream(
@@ -139,6 +144,46 @@ export class OpenAIAssistant implements IAssistant {
             threadId,
             contentId: this.getTextContentId(event.item_id, event.content_index),
             textDelta: event.delta,
+          })
+          break
+
+        case 'response.reasoning_summary_text.delta':
+          eventHandler({
+            type: ProviderMessageEventType.ReasoningSummaryTextDelta,
+            messageId: this.getResponseId(),
+            threadId,
+            contentId: event.item_id,
+            textDelta: event.delta,
+          })
+          break
+
+        case 'response.reasoning_summary_text.done':
+          eventHandler({
+            type: ProviderMessageEventType.ReasoningSummaryTextDone,
+            messageId: this.getResponseId(),
+            threadId,
+            contentId: event.item_id,
+            text: event.text,
+          })
+          break
+
+        case 'response.reasoning_text.delta':
+          eventHandler({
+            type: ProviderMessageEventType.ReasoningTextDelta,
+            messageId: this.getResponseId(),
+            threadId,
+            contentId: event.item_id,
+            textDelta: event.delta,
+          })
+          break
+
+        case 'response.reasoning_text.done':
+          eventHandler({
+            type: ProviderMessageEventType.ReasoningTextDone,
+            messageId: this.getResponseId(),
+            threadId,
+            contentId: event.item_id,
+            text: event.text,
           })
           break
 

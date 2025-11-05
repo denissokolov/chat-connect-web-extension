@@ -8,6 +8,7 @@ import {
 import { FunctionName, type FunctionCallResult } from '@/types/tool.types'
 import MarkdownMessage from '@/components/Chat/ChatContent/ChatMessages/MarkdownMessage/MarkdownMessage'
 import AssistantProgress from '@/components/Chat/ChatContent/ChatMessages/AssistantProgress/AssistantProgress'
+import ReasoningContent from '@/components/Chat/ChatContent/ChatMessages/ReasoningContent/ReasoningContent'
 import FillInputGroup from './functions/FillInputGroup'
 import ClickElementMessage from './functions/ClickElementMessage'
 import GetPageContentMessage from './functions/GetPageContentMessage'
@@ -89,6 +90,17 @@ function AssistantMessage({
         // Handle individual items
         if (item.type === MessageContentType.OutputText) {
           return <MarkdownMessage key={item.id} text={item.text} />
+        }
+
+        if (item.type === MessageContentType.Reasoning) {
+          return (
+            <ReasoningContent
+              key={item.id}
+              summaryText={item.summaryText}
+              detailText={item.detailText}
+              initiallyExpanded={item.isExpanded}
+            />
+          )
         }
 
         if (item.type === MessageContentType.FunctionCall) {

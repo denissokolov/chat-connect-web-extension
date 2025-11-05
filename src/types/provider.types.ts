@@ -21,6 +21,10 @@ export enum ProviderMessageEventType {
   OutputTextDelta = 'output_text_delta',
   FunctionCallAdded = 'function_call_added',
   FunctionCallDone = 'function_call_done',
+  ReasoningSummaryTextDelta = 'reasoning_summary_text_delta',
+  ReasoningSummaryTextDone = 'reasoning_summary_text_done',
+  ReasoningTextDelta = 'reasoning_text_delta',
+  ReasoningTextDone = 'reasoning_text_done',
   Completed = 'completed',
   Error = 'error',
   Fallback = 'fallback',
@@ -78,11 +82,47 @@ type ProviderMessageFallbackEvent = {
   hasTools: boolean
 }
 
+type ProviderMessageReasoningSummaryTextDeltaEvent = {
+  type: ProviderMessageEventType.ReasoningSummaryTextDelta
+  messageId: string
+  threadId: string
+  contentId: string
+  textDelta: string
+}
+
+type ProviderMessageReasoningSummaryTextDoneEvent = {
+  type: ProviderMessageEventType.ReasoningSummaryTextDone
+  messageId: string
+  threadId: string
+  contentId: string
+  text: string
+}
+
+type ProviderMessageReasoningTextDeltaEvent = {
+  type: ProviderMessageEventType.ReasoningTextDelta
+  messageId: string
+  threadId: string
+  contentId: string
+  textDelta: string
+}
+
+type ProviderMessageReasoningTextDoneEvent = {
+  type: ProviderMessageEventType.ReasoningTextDone
+  messageId: string
+  threadId: string
+  contentId: string
+  text: string
+}
+
 export type ProviderMessageEvent =
   | ProviderMessageCreatedEvent
   | ProviderMessageOutputTextDeltaEvent
   | ProviderMessageFunctionCallAddedEvent
   | ProviderMessageFunctionCallDoneEvent
+  | ProviderMessageReasoningSummaryTextDeltaEvent
+  | ProviderMessageReasoningSummaryTextDoneEvent
+  | ProviderMessageReasoningTextDeltaEvent
+  | ProviderMessageReasoningTextDoneEvent
   | ProviderMessageCompletedEvent
   | ProviderMessageErrorEvent
   | ProviderMessageFallbackEvent

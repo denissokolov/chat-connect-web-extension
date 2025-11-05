@@ -79,6 +79,118 @@ export function appendMessageTextContent(
   }
 }
 
+export function appendReasoningSummaryText(
+  messages: StoreMessages,
+  messageId: string,
+  contentId: string,
+  textDelta: string,
+): StoreMessages {
+  return {
+    ...messages,
+    list: messages.list.map(msg => {
+      if (msg.id !== messageId) {
+        return msg
+      }
+
+      let exists = false
+      const nextContent = msg.content.map(i => {
+        if (i.id === contentId) {
+          exists = true
+          if (i.type === MessageContentType.Reasoning) {
+            return { ...i, summaryText: i.summaryText + textDelta }
+          }
+        }
+        return i
+      })
+
+      if (!exists) {
+        nextContent.push({
+          type: MessageContentType.Reasoning,
+          summaryText: textDelta,
+          id: contentId,
+        })
+      }
+
+      return { ...msg, content: nextContent }
+    }),
+  }
+}
+
+export function setReasoningSummaryText(
+  messages: StoreMessages,
+  messageId: string,
+  contentId: string,
+  text: string,
+): StoreMessages {
+  return {
+    ...messages,
+    list: messages.list.map(msg => {
+      if (msg.id !== messageId) {
+        return msg
+      }
+
+      const nextContent = msg.content.map(i => {
+        if (i.id === contentId && i.type === MessageContentType.Reasoning) {
+          return { ...i, summaryText: text }
+        }
+        return i
+      })
+
+      return { ...msg, content: nextContent }
+    }),
+  }
+}
+
+export function appendReasoningDetailText(
+  messages: StoreMessages,
+  messageId: string,
+  contentId: string,
+  textDelta: string,
+): StoreMessages {
+  return {
+    ...messages,
+    list: messages.list.map(msg => {
+      if (msg.id !== messageId) {
+        return msg
+      }
+
+      const nextContent = msg.content.map(i => {
+        if (i.id === contentId && i.type === MessageContentType.Reasoning) {
+          return { ...i, detailText: (i.detailText || '') + textDelta }
+        }
+        return i
+      })
+
+      return { ...msg, content: nextContent }
+    }),
+  }
+}
+
+export function setReasoningDetailText(
+  messages: StoreMessages,
+  messageId: string,
+  contentId: string,
+  text: string,
+): StoreMessages {
+  return {
+    ...messages,
+    list: messages.list.map(msg => {
+      if (msg.id !== messageId) {
+        return msg
+      }
+
+      const nextContent = msg.content.map(i => {
+        if (i.id === contentId && i.type === MessageContentType.Reasoning) {
+          return { ...i, detailText: text }
+        }
+        return i
+      })
+
+      return { ...msg, content: nextContent }
+    }),
+  }
+}
+
 export function setMessageError(
   messages: StoreMessages,
   error: unknown,
