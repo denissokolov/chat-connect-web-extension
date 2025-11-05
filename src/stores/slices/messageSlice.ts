@@ -100,7 +100,9 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
       return
     }
 
-    await saveMessageToRepository(newMessage, messages.list.length === 0)
+    if (settings.data?.historyEnabled !== false) {
+      await saveMessageToRepository(newMessage, messages.list.length === 0)
+    }
 
     try {
       await assistant.sendMessage({
@@ -116,7 +118,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }
   },
   saveFunctionResult: async (messageId: string, callId: string, result: FunctionCallResult) => {
-    const { messages, sendFunctionResults } = get()
+    const { messages, sendFunctionResults, settings } = get()
 
     const updatedMessages = updateMessageFunctionResult(messages, messageId, callId, result)
 
@@ -128,7 +130,9 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     set({ messages: updatedMessages })
 
     if (message.complete && areMessageFunctionsComplete(message)) {
-      await updateMessageInRepository(message)
+      if (settings.data?.historyEnabled !== false) {
+        await updateMessageInRepository(message)
+      }
       await sendFunctionResults(message)
     }
   },
@@ -170,7 +174,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
     }))
   },
   handleMessageEvent: (event: ProviderMessageEvent) => {
-    const { threadId, messages, handleMessageError, sendFunctionResults } = get()
+    const { threadId, messages, handleMessageError, sendFunctionResults, settings } = get()
 
     if (event.threadId !== threadId) {
       return
@@ -256,7 +260,9 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
 
         const message = messages.list.find(msg => msg.id === event.messageId)
         if (message) {
-          saveMessageToRepository(message)
+          if (settings.data?.historyEnabled !== false) {
+            saveMessageToRepository(message, false)
+          }
           if (areMessageFunctionsComplete(message)) {
             sendFunctionResults(message)
           }
@@ -280,7 +286,9 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageSlice> =
           waitingForReply: false,
           waitingForTools: event.hasTools,
         }))
-        saveMessageToRepository(responseMessage)
+        if (settings.data?.historyEnabled !== false) {
+          saveMessageToRepository(responseMessage, false)
+        }
         break
       }
     }

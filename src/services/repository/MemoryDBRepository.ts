@@ -6,9 +6,7 @@ export class MemoryDBRepository implements IRepository {
   private messages: Map<string, Message> = new Map()
 
   init(): Promise<void> {
-    this.threads.clear()
-    this.messages.clear()
-    return Promise.resolve()
+    return this.clearAllHistory()
   }
 
   getThreads(): Promise<Thread[]> {
@@ -52,6 +50,12 @@ export class MemoryDBRepository implements IRepository {
       }
     }
 
+    return Promise.resolve()
+  }
+
+  clearAllHistory(): Promise<void> {
+    this.threads.clear()
+    this.messages.clear()
     return Promise.resolve()
   }
 

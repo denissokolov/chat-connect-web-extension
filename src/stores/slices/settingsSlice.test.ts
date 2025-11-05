@@ -27,6 +27,7 @@ describe('settingsSlice', () => {
     openAIServer: '',
     model: AIModel.OpenAI_GPT_4o,
     autoExecuteTools: true,
+    historyEnabled: true,
   }
 
   beforeEach(() => {
@@ -66,6 +67,7 @@ describe('settingsSlice', () => {
         openAIServer: '',
         model: AIModel.OpenAI_GPT_5,
         autoExecuteTools: false,
+        historyEnabled: true,
       })
     })
 
@@ -204,6 +206,7 @@ describe('settingsSlice', () => {
         openAIToken: 'new-token',
         openAIServer: 'https://api.openai.com/v1',
         autoExecuteTools: false,
+        historyEnabled: true,
       })
     })
 
@@ -227,6 +230,7 @@ describe('settingsSlice', () => {
         openAIServer: '',
         model: AIModel.OpenAI_GPT_5,
         autoExecuteTools: false,
+        historyEnabled: true,
       })
     })
   })
@@ -290,6 +294,7 @@ describe('settingsSlice', () => {
         openAIServer: '',
         model: AIModel.OpenAI_GPT_5,
         autoExecuteTools: false,
+        historyEnabled: true,
       })
     })
   })

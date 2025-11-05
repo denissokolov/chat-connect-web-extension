@@ -13,6 +13,7 @@ interface ChatHeaderProps {
 
 function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
   const startNewThread = useChatStore(state => state.startNewThread)
+  const historyEnabled = useChatStore(state => state.settings.data?.historyEnabled ?? true)
 
   const handleStartNewThread = useCallback(() => {
     startNewThread()
@@ -72,16 +73,18 @@ function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
           </Button>
           <p>{'New chat'}</p>
           <div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleShowHistory}
-              className="rounded-xl"
-              title="Show chat history"
-            >
-              <History />
-            </Button>
+            {historyEnabled && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleShowHistory}
+                className="rounded-xl"
+                title="Show chat history"
+              >
+                <History />
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"

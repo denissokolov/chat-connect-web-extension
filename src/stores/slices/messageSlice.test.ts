@@ -527,6 +527,126 @@ describe('messageSlice', () => {
 
       expect(useChatStore.getState().waitingForTools).toBe(true)
     })
+
+    it('should not save message to repository when history is disabled', async () => {
+      useChatStore.setState({
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: {
+            openAIToken: 'test-token',
+            openAIServer: '',
+            model: AIModel.OpenAI_GPT_5,
+            autoExecuteTools: false,
+            historyEnabled: false,
+          },
+        },
+      })
+      ;(browser.getPageContext as Mock).mockResolvedValue(null)
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
+
+      const { sendMessage } = useChatStore.getState()
+
+      await sendMessage('Hello')
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(repository.createMessage).not.toHaveBeenCalled()
+      expect(repository.createThread).not.toHaveBeenCalled()
+      expect(repository.updateThread).not.toHaveBeenCalled()
+    })
+
+    it('should save message to repository when history is enabled', async () => {
+      useChatStore.setState({
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: {
+            openAIToken: 'test-token',
+            openAIServer: '',
+            model: AIModel.OpenAI_GPT_5,
+            autoExecuteTools: false,
+            historyEnabled: true,
+          },
+        },
+      })
+      ;(browser.getPageContext as Mock).mockResolvedValue(null)
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
+
+      const { sendMessage } = useChatStore.getState()
+
+      await sendMessage('Hello')
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(repository.createMessage).toHaveBeenCalledTimes(2)
+      expect(repository.createThread).toHaveBeenCalledTimes(1)
+    })
+
+    it('should save message to repository when historyEnabled is undefined (defaults to enabled)', async () => {
+      useChatStore.setState({
+        settings: {
+          ready: true,
+          loading: false,
+          error: null,
+          data: {
+            openAIToken: 'test-token',
+            openAIServer: '',
+            model: AIModel.OpenAI_GPT_5,
+            autoExecuteTools: false,
+          },
+        },
+      })
+      ;(browser.getPageContext as Mock).mockResolvedValue(null)
+      ;(mockAssistant.sendMessage as Mock).mockImplementation(({ eventHandler }) => {
+        eventHandler({
+          type: ProviderMessageEventType.Created,
+          messageId: 'assistant-msg-id',
+          threadId: 'test-thread-id',
+        })
+        eventHandler({
+          type: ProviderMessageEventType.Completed,
+          messageId: 'assistant-msg-id',
+          userMessageId: 'user-msg-id',
+          threadId: 'test-thread-id',
+        })
+      })
+
+      const { sendMessage } = useChatStore.getState()
+
+      await sendMessage('Hello')
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(repository.createMessage).toHaveBeenCalledTimes(2)
+      expect(repository.createThread).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('saveFunctionResult', () => {

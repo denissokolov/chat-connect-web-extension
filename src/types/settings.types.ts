@@ -5,4 +5,5 @@ export type Settings = {
   openAIServer: string
   model: AIModel
   autoExecuteTools: boolean
+  historyEnabled?: boolean | undefined
 }

@@ -11,7 +11,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import useChatStore from '@/stores/useChatStore'
+import repository from '@/services/repository'
+import { logError } from '@/utils/log'
+
 import SettingsInput from './SettingsInput/SettingsInput'
 
 export default function SettingsPage() {
@@ -22,14 +27,26 @@ export default function SettingsPage() {
     initSettings()
   }, [initSettings])
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const historyEnabled = settingsForm.data?.historyEnabled ?? true
+  const handleHistoryEnabledChange = (checked: boolean) => {
+    updateSettingsForm({ historyEnabled: checked })
+  }
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    saveSettingsForm()
+    await saveSettingsForm()
+    if (!historyEnabled) {
+      try {
+        await repository.clearAllHistory()
+      } catch (error) {
+        logError('Failed to clear history', error)
+      }
+    }
   }
 
   return (
     <div className="min-h-screen bg-sidebar p-8">
-      <div className="max-w-2xl mx-auto">
+      <form className="block max-w-2xl mx-auto" onSubmit={onSubmit}>
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl">{'Chat Connect Settings'}</CardTitle>
@@ -38,7 +55,7 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form className="space-y-4" onSubmit={onSubmit}>
+            <div className="space-y-4">
               <div className="space-y-2">
                 <SettingsInput
                   id="openAIToken"
@@ -72,11 +89,34 @@ export default function SettingsPage() {
                   placeholder="Leave blank to use the official server."
                 />
               </div>
-            </form>
+              <div className="mt-8 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="historyEnabled"
+                    checked={historyEnabled}
+                    onCheckedChange={handleHistoryEnabledChange}
+                    disabled={settings.loading}
+                  />
+                  <Label
+                    htmlFor="historyEnabled"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {'Enable chat history'}
+                  </Label>
+                </div>
+                {!historyEnabled && (
+                  <p className="text-sm text-muted-foreground">
+                    {
+                      'Chat history is disabled. Your conversations will not be saved. Existing history will be deleted.'
+                    }
+                  </p>
+                )}
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="justify-end">
             <Button
-              onClick={saveSettingsForm}
+              type="submit"
               disabled={settingsForm.saving || !settingsForm.changed || settings.loading}
             >
               {'Save Settings'}
@@ -95,7 +135,7 @@ export default function SettingsPage() {
             <AlertDescription>{'Settings saved successfully!'}</AlertDescription>
           </Alert>
         )}
-      </div>
+      </form>
     </div>
   )
 }

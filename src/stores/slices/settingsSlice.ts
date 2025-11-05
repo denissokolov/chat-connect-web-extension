@@ -16,6 +16,7 @@ const defaultSettings: Settings = {
   openAIServer: '',
   model: AIModel.OpenAI_GPT_5,
   autoExecuteTools: false,
+  historyEnabled: true,
 }
 
 export const createSettingsSlice: StateCreator<ChatStore, [], [], SettingsSlice> = (set, get) => ({

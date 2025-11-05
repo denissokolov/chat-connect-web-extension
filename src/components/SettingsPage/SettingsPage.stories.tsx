@@ -170,3 +170,94 @@ export const LongValue: Story = {
     })
   },
 }
+
+export const HistoryEnabled: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: { ...testSettings, historyEnabled: true },
+      },
+      settingsForm: {
+        saving: false,
+        saved: false,
+        saveError: null,
+        changed: false,
+        data: { ...testSettings, historyEnabled: true },
+      },
+    })
+  },
+  play: async ({ canvas }) => {
+    const checkbox = canvas.getByLabelText('Enable chat history')
+    await expect(checkbox).toBeChecked()
+    await expect(canvas.queryByText(/conversations will not be saved/)).not.toBeInTheDocument()
+  },
+}
+
+export const HistoryDisabled: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: { ...testSettings, historyEnabled: false },
+      },
+      settingsForm: {
+        saving: false,
+        saved: false,
+        saveError: null,
+        changed: false,
+        data: { ...testSettings, historyEnabled: false },
+      },
+    })
+  },
+  play: async ({ canvas }) => {
+    const checkbox = canvas.getByLabelText('Enable chat history')
+    await expect(checkbox).not.toBeChecked()
+    await expect(
+      canvas.getByText(/Chat history is disabled. Your conversations will not be saved./),
+    ).toBeInTheDocument()
+  },
+}
+
+export const ToggleHistory: Story = {
+  beforeEach: () => {
+    useChatStore.setState({
+      ...useChatStore.getInitialState(),
+      settings: {
+        ready: true,
+        loading: false,
+        error: null,
+        data: { ...testSettings, historyEnabled: true },
+      },
+      settingsForm: {
+        saving: false,
+        saved: false,
+        saveError: null,
+        changed: false,
+        data: { ...testSettings, historyEnabled: true },
+      },
+    })
+  },
+  play: async ({ canvas, userEvent }) => {
+    const checkbox = canvas.getByLabelText('Enable chat history')
+    await expect(checkbox).toBeChecked()
+
+    await userEvent.click(checkbox)
+
+    await expect(checkbox).not.toBeChecked()
+    await expect(
+      canvas.getByText(/Chat history is disabled. Your conversations will not be saved./),
+    ).toBeInTheDocument()
+
+    await userEvent.click(checkbox)
+
+    await expect(checkbox).toBeChecked()
+    await expect(canvas.queryByText(/conversations will not be saved/)).not.toBeInTheDocument()
+  },
+}

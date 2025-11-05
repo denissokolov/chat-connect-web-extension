@@ -226,6 +226,56 @@ describe('MemoryDBRepository', () => {
     })
   })
 
+  describe('clearAllHistory', () => {
+    it('should clear all threads and messages', async () => {
+      await repository.createThread(mockThread1)
+      await repository.createThread(mockThread2)
+      await repository.createMessage(mockMessage1)
+      await repository.createMessage(mockMessage2)
+      await repository.createMessage(mockMessage3)
+
+      const threadsBefore = await repository.getThreads()
+      const messages1Before = await repository.getMessages('thread-1')
+      const messages2Before = await repository.getMessages('thread-2')
+      expect(threadsBefore).toHaveLength(2)
+      expect(messages1Before).toHaveLength(2)
+      expect(messages2Before).toHaveLength(1)
+
+      await repository.clearAllHistory()
+
+      const threadsAfter = await repository.getThreads()
+      const messages1After = await repository.getMessages('thread-1')
+      const messages2After = await repository.getMessages('thread-2')
+      expect(threadsAfter).toHaveLength(0)
+      expect(messages1After).toHaveLength(0)
+      expect(messages2After).toHaveLength(0)
+    })
+
+    it('should handle clearing empty repository', async () => {
+      await expect(repository.clearAllHistory()).resolves.toBeUndefined()
+
+      const threads = await repository.getThreads()
+      expect(threads).toHaveLength(0)
+    })
+
+    it('should allow adding new data after clearing', async () => {
+      await repository.createThread(mockThread1)
+      await repository.createMessage(mockMessage1)
+
+      await repository.clearAllHistory()
+
+      await repository.createThread(mockThread2)
+      await repository.createMessage(mockMessage3)
+
+      const threads = await repository.getThreads()
+      const messages = await repository.getMessages('thread-2')
+      expect(threads).toHaveLength(1)
+      expect(threads[0]).toEqual(mockThread2)
+      expect(messages).toHaveLength(1)
+      expect(messages[0]).toEqual(mockMessage3)
+    })
+  })
+
   describe('getMessages', () => {
     it('should return empty array when no messages exist for thread', async () => {
       const messages = await repository.getMessages('non-existent-thread')
