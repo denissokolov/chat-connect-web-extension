@@ -1,9 +1,10 @@
-import { ArrowLeft, MessageSquarePlus, History } from 'lucide-react'
+import { ArrowLeft, MessageSquarePlus, History, LucideSettings2 } from 'lucide-react'
 import { memo, useCallback } from 'react'
 
 import { Button } from '@/components/ui/button'
 import useChatStore from '@/stores/useChatStore'
 import { ChatView } from '@/types/chat.types'
+import browser from '@/services/browser'
 
 interface ChatHeaderProps {
   currentView: ChatView
@@ -24,6 +25,10 @@ function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
   const handleBackToChat = useCallback(() => {
     setCurrentView(ChatView.Chat)
   }, [setCurrentView])
+
+  const handleShowSettings = useCallback(() => {
+    browser.openExtensionSettings()
+  }, [])
 
   return (
     <div className="flex justify-between gap-1 items-center p-1 border-b border-color-light">
@@ -59,23 +64,35 @@ function ChatHeader({ currentView, setCurrentView }: ChatHeaderProps) {
             type="button"
             variant="ghost"
             size="icon"
-            onClick={handleShowHistory}
+            onClick={handleShowSettings}
             className="rounded-xl"
-            title="Show chat history"
+            title="Show settings"
           >
-            <History />
+            <LucideSettings2 />
           </Button>
           <p>{'New chat'}</p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleStartNewThread}
-            className="rounded-xl"
-            title="Start new chat"
-          >
-            <MessageSquarePlus />
-          </Button>
+          <div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleShowHistory}
+              className="rounded-xl"
+              title="Show chat history"
+            >
+              <History />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleStartNewThread}
+              className="rounded-xl"
+              title="Start new chat"
+            >
+              <MessageSquarePlus />
+            </Button>
+          </div>
         </>
       )}
     </div>
