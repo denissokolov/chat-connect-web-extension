@@ -4,111 +4,93 @@
 [![License](https://img.shields.io/github/license/denissokolov/chat-connect-web-extension.svg)](https://github.com/denissokolov/chat-connect-web-extension/blob/main/LICENSE)
 [![Storybook](https://raw.githubusercontent.com/storybooks/brand/master/badge/badge-storybook.svg)](https://denissokolov.github.io/chat-connect-web-extension/)
 
-## 🔗 Download Build
+An AI agent in Chrome's side panel that works with the page you're on. Ask it about the page, have it write a reply and put it in the right field, or let it fill in a form and click through it.
 
-[Download latest build (ZIP)](https://github.com/denissokolov/chat-connect-web-extension/releases/latest/download/chat-connect-chrome.zip)
+**[Download the latest build (ZIP)](https://github.com/denissokolov/chat-connect-web-extension/releases/latest/download/chat-connect-chrome.zip)**
 
-## Prerequisites
+## What it does
 
-- Node.js (version 22 or higher)
-- npm package manager
-- Google Chrome browser
+- **Understands the current page.** The assistant knows which tab you're on and reads its content when it needs to, as simplified text (visible elements only) or as HTML.
+- **Acts on the page** through three tools:
+  - `get_page_content`: read the page as text or HTML
+  - `fill_input`: fill inputs, textareas, selects, radios, checkboxes and rich-text (contenteditable) editors
+  - `click_element`: click buttons, links and other elements
+- **Stays in control.** Every tool call shows up in the chat with its status. Tools can run automatically or wait for you to press *Execute* (an auto-execute toggle in the chat input). The assistant is instructed never to submit forms or order anything unless you explicitly ask.
+- **Answers in your language,** translating page content when the page is in another one.
+- **OpenAI models:** GPT-5 (default), GPT-5 mini, GPT-4.1, GPT-4.1 mini, GPT-4o, o3, o3-mini and o4-mini, switchable from the chat input. Reasoning summaries are streamed while the model thinks.
+- **Chat history** kept locally in IndexedDB (optional), streaming markdown answers, a stop button, and light and dark themes.
+
+Open it with the toolbar icon or **⌘+Shift+Y** (macOS) / **Ctrl+Shift+Y** (Windows/Linux).
+
+## How it works
+
+```
+side panel (React) ──► OpenAI Responses API (streaming) ──► tool call
+       ▲                  (direct, or via chat-connect-server)  │
+       │                                                         ▼
+       └──── tool result ◄── chrome.scripting.executeScript in the active tab
+```
+
+Each message is sent to the OpenAI Responses API with the page title and URL in the instructions and the three tools attached. When the model calls a tool, the extension runs it in the active tab, returns the result, and the model continues. Conversation state is chained with `previous_response_id`.
+
+## Settings
+
+Open the settings page from the side panel:
+
+| Setting | Notes |
+| --- | --- |
+| OpenAI API key | Your own key, stored in extension storage on your machine. |
+| Custom OpenAI server URL | Leave blank to call OpenAI directly. To use [chat-connect-server](https://github.com/denissokolov/chat-connect-server) instead, set it to `<server-url>/proxy/openai` (e.g. `http://localhost:3001/proxy/openai`). |
+| History | Keep chat threads between sessions. |
 
 ## Development
 
-Install dependencies
+Requires Node.js 22+ and Google Chrome.
 
 ```bash
 npm install
+npx playwright install    # browsers for Storybook tests
+npm run dev               # watch and rebuild
+npm run build             # production build in dist/chrome-mv3
+npm run check             # typecheck, lint, tests, knip
+npm run storybook         # http://localhost:6006
 ```
 
-Install browsers for running playwright tests
+Firefox builds: `npm run dev:firefox`, `npm run build:firefox`.
 
-```
-npx playwright install
-```
+### Load the extension in Chrome
 
-Build the extension for production
+1. Run `npm run build` (or unzip the downloaded release).
+2. Open `chrome://extensions/` and turn on **Developer mode**.
+3. Click **Load unpacked** and select `dist/chrome-mv3` (or the unzipped folder).
 
-```bash
-npm run build
-```
+## Tech stack
 
-Watch for changes and rebuild automatically
+- [WXT](https://wxt.dev/) (Manifest V3), React 19, TypeScript
+- Tailwind CSS v4, [shadcn/ui](https://ui.shadcn.com/) on Radix primitives, [lucide](https://lucide.dev/icons/) icons
+- Zustand store split into slices (messages, threads, settings, view)
+- OpenAI SDK (Responses API, streaming)
+- IndexedDB for chat history
 
-```bash
-npm run dev
-```
+### Architecture
 
-Run all project checks
+The assistant, browser and storage live behind interfaces in `src/services/`, each with a real and a mock implementation:
 
-```bash
-npm run check
-```
+| Interface | Real | Mock |
+| --- | --- | --- |
+| `IAssistant` | `OpenAIAssistant` | `MockAssistant` |
+| `IBrowser` | `WXTBrowser` (Chrome APIs) | `MockBrowser` |
+| `IRepository` | `IndexedDBRepository` | `MemoryDBRepository` |
 
-Run Storybook locally
+This lets the whole UI run and be tested in Storybook without Chrome or an API key. Page-side helpers that are injected into the tab (reading the page, filling fields, clicking) are pure functions in `src/utils/html/pure/` with their own unit tests.
 
-```bash
-npm run storybook
-```
+### Testing and CI
 
-## Useful resources
-
-https://ui.shadcn.com/docs/components - component library
-
-https://lucide.dev/icons/ - icon library
-
-## Installation in Google Chrome
-
-1. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-2. **Build the extension**
-
-   ```bash
-   npm run build
-   ```
-
-3. **Open Chrome Extensions page**
-   - Open Google Chrome
-   - Navigate to `chrome://extensions/` or go to Chrome menu → More tools → Extensions
-
-4. **Enable Developer mode**
-   - Toggle the "Developer mode" switch in the top-right corner of the extensions page
-
-5. **Load the extension**
-   - Click "Load unpacked" button
-   - Navigate to your project folder and select the `dist/chrome-mv3` folder (or the build output folder)
-   - Click "Select Folder"
-
-6. **Verify installation**
-   - The extension should now appear in your extensions list
-   - You should see the extension icon in your Chrome toolbar
-
-## Usage
-
-Once installed, you can access the extension by clicking its icon in the Chrome toolbar or using the keyboard shortcut:
-
-- **Mac**: ⌘+Shift+Y
-- **Windows/Linux**: Ctrl+Shift+Y
-
-## Troubleshooting
-
-- **Extension not loading**: Make sure you've built the project (`npm run build`) and are selecting the correct build output folder
-- **Extension not appearing**: Check that Developer mode is enabled in Chrome extensions
-- **Build errors**: Ensure all dependencies are installed (`npm install`) and you're using a compatible Node.js version
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests with `npm run check`
-5. Submit a pull request
+- Vitest unit tests for the store slices, the OpenAI stream handling and the DOM helpers
+- Storybook stories run as browser tests (Vitest + Playwright), plus Chromatic visual regression tests
+- ESLint (incl. SonarJS rules), Prettier, knip, Husky + lint-staged
+- GitHub Actions: typecheck, lint, knip and tests with coverage on every push. Builds on `main` are published as the [`latest-chrome` release](https://github.com/denissokolov/chat-connect-web-extension/releases/tag/latest-chrome), and Storybook is deployed to [GitHub Pages](https://denissokolov.github.io/chat-connect-web-extension/).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE)
